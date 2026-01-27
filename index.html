@@ -13,8 +13,6 @@
         .rarity-input { border: none !important; margin: 0 !important; outline: none; }
         
         input, select { width: 100%; padding: 10px; margin: 8px 0; border-radius: 5px; border: 1px solid #444; background: #000; color: white; font-weight: bold; box-sizing: border-box; font-size: 1rem; }
-        
-        /* This styles the 'placeholder' text to look subtle */
         input::placeholder { color: #555; font-weight: normal; font-style: italic; }
         
         label { font-size: 0.85rem; color: #ccc; display: block; }
@@ -23,61 +21,89 @@
         .result-val { font-size: 2.2rem; font-weight: bold; color: #add8e6; text-shadow: 0 0 12px rgba(173, 216, 230, 0.7); }
         
         .speed-row { display: flex; gap: 10px; }
-        .footer { text-align: center; margin-top: 25px; }
-        .discord-link { display: block; color: #7289da; text-decoration: none; font-size: 0.75rem; margin-bottom: 5px; font-weight: bold; }
+
+        /* Compact Footer Layout */
+        .footer { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: flex-end; 
+            margin-top: 25px; 
+            padding-top: 10px;
+            border-top: 1px solid #333;
+        }
+        .footer-left { text-align: left; }
+        .discord-link { display: block; color: #7289da; text-decoration: none; font-size: 0.75rem; margin-bottom: 4px; font-weight: bold; }
         .signature { font-size: 0.7rem; color: #666; }
+
+        /* Professional Reset Button */
+        .reset-btn {
+            background: #2a2a35;
+            color: #ccc;
+            border: 1px solid #444;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .reset-btn:hover { background: #3a3a4a; color: white; border-color: #666; }
     </style>
 </head>
 <body>
 
 <div class="calc-card">
-    <h2>Sols Rng Calculator</h2>
-    
-    <div class="section">
-        <label>Rarity of Aura</label>
-        <div class="rarity-container">
-            <span class="prefix">1/</span>
-            <input type="number" id="rarity" class="rarity-input" value="2500000000">
+    <form id="calcForm">
+        <h2>Sols Rng Calculator</h2>
+        
+        <div class="section">
+            <label>Rarity of Aura</label>
+            <div class="rarity-container">
+                <span class="prefix">1/</span>
+                <input type="number" id="rarity" class="rarity-input" value="2500000000">
+            </div>
+
+            <label>Current luck without left glove</label>
+            <input type="number" id="luck" value="30">
+
+            <label>Left hand glove</label>
+            <select id="mult">
+                <option value="1.8">Darkshader</option>
+                <option value="1.98">Unfathomable Ruins</option>
+            </select>
+
+            <label>Roll Speed (Rolls / Seconds)</label>
+            <div class="speed-row">
+                <input type="number" id="speedR" value="20">
+                <input type="number" id="speedS" value="10">
+            </div>
         </div>
 
-        <label>Current luck without left glove (read from stats board)</label>
-        <input type="number" id="luck" value="30">
-
-        <label>Left hand glove</label>
-        <select id="mult">
-            <option value="1.8">Darkshader</option>
-            <option value="1.98">Unfathomable Ruins</option>
-        </select>
-
-        <label>Roll Speed (Rolls / Seconds)</label>
-        <div class="speed-row">
-            <input type="number" id="speedR" value="20">
-            <input type="number" id="speedS" value="10">
+        <div class="section">
+            <label>Time Period</label>
+            <input type="number" id="days" placeholder="How many days you'll roll for">
+            <div class="result-box">
+                <label style="color: white; font-size: 0.75rem; opacity: 0.8; margin-bottom: 5px; display: block;">CHANCE OF SUCCESS</label>
+                <div class="result-val" id="outputChance">0.00%</div>
+            </div>
         </div>
-    </div>
 
-    <div class="section">
-        <label>Time Period</label>
-        <input type="number" id="days" placeholder="How many days you'll roll for">
-        <div class="result-box">
-            <label style="color: white; font-size: 0.75rem; opacity: 0.8; margin-bottom: 5px; display: block;">CHANCE OF SUCCESS</label>
-            <div class="result-val" id="outputChance">0.00%</div>
+        <div class="section">
+            <label>Target Success Rate (%)</label>
+            <input type="number" id="targetP" placeholder="What % chance do you want?">
+            <div class="result-box">
+                <label style="color: white; font-size: 0.75rem; opacity: 0.8; margin-bottom: 5px; display: block;">TIME REQUIRED</label>
+                <div class="result-val" id="outputTime">-- Days</div>
+            </div>
         </div>
-    </div>
 
-    <div class="section">
-        <label>Target Success Rate (%)</label>
-        <input type="number" id="targetP" placeholder="What % chance do you want?">
-        <div class="result-box">
-            <label style="color: white; font-size: 0.75rem; opacity: 0.8; margin-bottom: 5px; display: block;">TIME REQUIRED</label>
-            <div class="result-val" id="outputTime">-- Days</div>
+        <div class="footer">
+            <div class="footer-left">
+                <a href="https://discord.gg/yTreH64JBC" class="discord-link" target="_blank">https://discord.gg/yTreH64JBC</a>
+                <div class="signature">Created by LubJub</div>
+            </div>
+            <button type="reset" class="reset-btn" onclick="setTimeout(calculate, 10)">Reset All</button>
         </div>
-    </div>
-
-    <div class="footer">
-        <a href="https://discord.gg/yTreH64JBC" class="discord-link" target="_blank">https://discord.gg/yTreH64JBC</a>
-        <div class="signature">Created by LubJub</div>
-    </div>
+    </form>
 </div>
 
 <script>
@@ -88,14 +114,16 @@
         var r = parseFloat(document.getElementById('speedR').value) || 0;
         var s = parseFloat(document.getElementById('speedS').value) || 1;
         
-        // Use 0 if the box is empty
-        var d = parseFloat(document.getElementById('days').value) || 0;
-        var targetP = (parseFloat(document.getElementById('targetP').value) || 0) / 100;
+        var dInput = document.getElementById('days').value;
+        var d = dInput === "" ? 0 : parseFloat(dInput);
+        
+        var tInput = document.getElementById('targetP').value;
+        var targetP = (tInput === "" ? 0 : parseFloat(tInput)) / 100;
 
         var rollsPerDay = (r / s) * 86400;
         var pRoll = (L * M) / R;
 
-        // Chance calculation
+        // Success Chance
         if (d > 0) {
             var P = 1 - Math.pow((1 - pRoll), (rollsPerDay * d));
             document.getElementById('outputChance').innerText = (P * 100).toFixed(2) + "%";
@@ -103,7 +131,7 @@
             document.getElementById('outputChance').innerText = "0.00%";
         }
 
-        // Time calculation
+        // Time Required
         if (targetP > 0 && targetP < 1 && pRoll > 0) {
             var neededRolls = Math.log(1 - targetP) / Math.log(1 - pRoll);
             var neededDays = neededRolls / rollsPerDay;
@@ -113,7 +141,7 @@
         }
     }
 
-    // Connect all inputs to the math function
+    // Connect all inputs
     document.querySelectorAll('input, select').forEach(element => {
         element.oninput = calculate;
     });
