@@ -7,7 +7,6 @@
         .calc-card { width: 100%; max-width: 420px; background: #0d141f; padding: 25px; border-radius: 12px; border: 2px solid #00d4ff; box-shadow: 0 0 20px rgba(0, 212, 255, 0.4), 0 0 40px rgba(0, 212, 255, 0.2), 0 0 80px rgba(0, 212, 255, 0.1); }
         h2 { text-align: center; text-transform: uppercase; margin-top: 0; margin-bottom: 20px; letter-spacing: 2px; }
         
-        /* The Mode Switch now lives lower down */
         .mode-switch { display: flex; background: #000; border-radius: 10px; padding: 6px; margin-bottom: 20px; border: 2px solid #444; }
         .mode-btn { flex: 1; padding: 12px; border: none; background: none; color: #888; cursor: pointer; font-weight: 900; font-size: 0.8rem; border-radius: 7px; text-transform: uppercase; transition: 0.2s; }
         .mode-btn.active { background: #add8e6; color: #000; }
@@ -110,7 +109,8 @@
         </div>
 
         <div id="sectionTime" class="section" style="display:none;">
-            <label>Desired Success Rate (%)</label><input type="number" id="targetP" placeholder="e.g., 50">
+            <label>Desired Success Rate (%)</label>
+            <input type="number" id="targetP" placeholder="Max 99.99" step="0.01" max="99.99" oninput="if(this.value>=100)this.value=99.99">
             <div class="result-box" id="timeBox">
                 <div class="result-val" id="outputTime">-- Days</div>
                 <span class="luck-status" id="timeLabel">AFK TIME</span>
@@ -201,7 +201,11 @@
         document.getElementById('outputChance').innerText = (P >= 0.9999999) ? "99.99%+" : (P * 100).toFixed(2) + "%";
         document.getElementById('totalRolls').innerText = Math.floor(totalRolls).toLocaleString() + " rolls";
         
-        const targetVal = (parseFloat(document.getElementById('targetP').value) || 0) / 100;
+        const targetInput = document.getElementById('targetP');
+        let targetVal = (parseFloat(targetInput.value) || 0) / 100;
+        
+        if (targetVal >= 1) { targetVal = 0.9999; targetInput.value = 99.99; }
+
         if (targetVal > 0 && targetVal < 1 && pAvg > 0) {
             const rollsRequired = Math.log(1 - targetVal) / Math.log(1 - pAvg);
             const skipsNeeded = Math.min(rollsRequired, skipCount);
@@ -213,6 +217,7 @@
             
             document.getElementById('outputTime').innerText = daysNeeded > 1000 ? daysNeeded.toExponential(2) + " Days" : daysNeeded.toFixed(2) + " Days";
             document.getElementById('rollsNeeded').innerText = Math.ceil(rollsRequired).toLocaleString() + " total rolls";
+            document.getElementById('timeLabel').innerText = (targetInput.value == 99.99) ? "VIRTUAL GUARANTEE" : "AFK TIME";
         }
 
         updateVisuals('chance', P, (d > 0 || skipCount > 0));
@@ -229,7 +234,7 @@
         }
         if (prob < 0.1) { b.classList.add('status-low'); l.innerText = "Extreme Longshot"; l.style.color = "#ff4d4d"; }
         else if (prob < 0.5) { b.classList.add('status-mid'); l.innerText = "Fair Odds"; l.style.color = "#ffcc00"; }
-        else { b.classList.add('status-high'); l.innerText = "Safe Bet"; l.style.color = "#00ff88"; }
+        else { b.classList.add('status-high'); l.innerText = (id === 'time' && document.getElementById('targetP').value == 99.99) ? "VIRTUAL GUARANTEE" : "Safe Bet"; l.style.color = "#00ff88"; }
     }
     document.querySelectorAll('input, select').forEach(el => el.addEventListener('input', calculate));
     calculate();
