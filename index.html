@@ -7,7 +7,6 @@
         .calc-card { width: 100%; max-width: 400px; background: #16161d; padding: 25px; border-radius: 12px; border: 2px solid #3e3e4a; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
         h2 { color: white; text-align: center; text-transform: uppercase; margin-top: 0; margin-bottom: 20px; letter-spacing: 1px; }
         
-        /* HIGH-VISIBILITY TOGGLE */
         .mode-switch { 
             display: flex; 
             background: #000; 
@@ -191,6 +190,7 @@
         const isRainy = document.getElementById('isRainy').checked;
         
         let pAvg;
+        let speedMult = 1;
         const rainyDiv = isRainy ? 4 : 1;
 
         if (glove === "blessed") {
@@ -199,7 +199,11 @@
             pAvg = (9 * ((baseL + 0.5) / R_base) + 1 * (((baseL + 0.5) * 2) / (R_base / rainyDiv))) / 10;
         } else {
             let L = baseL, M = 1;
-            if (glove === "pole") { L += 5; M = 1.1; }
+            if (glove === "pole") { 
+                L += 5; 
+                M = 1.1; 
+                speedMult = 35 / 31; // Bonus 5 rolls every 30 cycle
+            }
             else if (glove === "grav") { M = 1.5; }
             else if (glove === "jackpot") { L += 0.77; }
             else if (glove === "gemstone") { L += 0.075; }
@@ -211,7 +215,7 @@
 
         const rInput = parseFloat(document.getElementById('speedR').value) || 1;
         const sInput = parseFloat(document.getElementById('speedS').value) || 1;
-        const rollsPerDay = (rInput / sInput) * 86400;
+        const rollsPerDay = (rInput / sInput) * 86400 * speedMult;
 
         const d = parseFloat(document.getElementById('days').value) || 0;
         const P = d > 0 ? 1 - Math.pow((1 - pAvg), (rollsPerDay * d)) : 0;
