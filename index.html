@@ -6,11 +6,9 @@
         body { font-family: sans-serif; padding: 20px; background: #050a0f; color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
         .calc-card { width: 100%; max-width: 420px; background: #0d141f; padding: 25px; border-radius: 12px; border: 2px solid #00d4ff; box-shadow: 0 0 20px rgba(0, 212, 255, 0.4), 0 0 40px rgba(0, 212, 255, 0.2), 0 0 80px rgba(0, 212, 255, 0.1); }
         h2 { text-align: center; text-transform: uppercase; margin-top: 0; margin-bottom: 20px; letter-spacing: 2px; }
-        
         .mode-switch { display: flex; background: #000; border-radius: 10px; padding: 6px; margin-bottom: 20px; border: 2px solid #444; }
         .mode-btn { flex: 1; padding: 12px; border: none; background: none; color: #888; cursor: pointer; font-weight: 900; font-size: 0.8rem; border-radius: 7px; text-transform: uppercase; transition: 0.2s; }
         .mode-btn.active { background: #add8e6; color: #000; }
-        
         .section { margin-bottom: 15px; padding: 12px; background: #161c26; border-radius: 8px; border: 1px solid #2a3545; }
         .rarity-container { display: flex; align-items: center; background: #000; border: 1px solid #444; border-radius: 5px; padding: 0 10px; margin: 8px 0; }
         .prefix { font-weight: bold; margin-right: 5px; font-size: 1.1rem; }
@@ -64,31 +62,22 @@
             <label>Right Hand (Speed)</label>
             <select id="rightGlove">
                 <option value="0">None</option><option value="120">Heavenly Device (+120%)</option><option value="100">Genesis Drive (+100%)</option><option value="70">Neuralyzer (+70%)</option><option value="50">Starshaper (+50%)</option><option value="40">Ragnaröker (+40%)</option><option value="35">Hologrammer (+35%)</option><option value="35.1">Exoflex (+35%)</option><option value="35.2">Volcanic (+35%)</option><option value="30">Galactic (+30%)</option><option value="30.1">Subzero (+30%)</option><option value="25">Windstorm (+25%)</option><option value="25.1">Frozen Gauntlet (+25%)</option><option value="20">Exo Gauntlet (+20%)</option><option value="15">Eclipse (+15%)</option><option value="15.1">Lunar Device (+15%)</option>
-                <option value="30.2" class="event-speed" style="display:none;">Snow Rider (+30%)</option><option value="30.3" class="event-speed" style="display:none;">Vampire Hunter (+30%)</option><option value="-50" class="event-speed" style="display:none;">Pump Punch (-50%)</option>
             </select>
             <div class="grid-2">
-                <div><label>Resonance % (Max 22)</label><input type="number" id="resonance" value="0" min="0" max="22" oninput="if(this.value>22)this.value=22"></div>
-                <div style="display: flex; align-items: flex-end;"><label class="check-row" style="margin-bottom: 15px;"><input type="checkbox" id="showEventSpeed" onchange="toggleEvents()"> Show Event Gear</label></div>
-            </div>
-            <div class="grid-2">
-                <div><label>Bank</label><select id="buffBank"><option value="0">None</option><option value="7">Bank (+7%)</option></select></div>
-                <div><label>Speed Potion</label><select id="buffBasic"><option value="0">None</option><option value="10">Speed Potion (+10%)</option></select></div>
+                <div><label>Resonance %</label><input type="number" id="resonance" value="0" min="0" max="22"></div>
+                <div><label>Speed Pot</label><select id="buffBasic"><option value="0">None</option><option value="10">Speed Potion (+10%)</option></select></div>
             </div>
             <div class="grid-2">
                 <div><label>Haste Potion</label><select id="buffHaste"><option value="0">None</option><option value="20">Haste I (+20%)</option><option value="25">Haste II (+25%)</option><option value="30">Haste III (+30%)</option></select></div>
                 <div><label>Godly Potion</label>
                     <select id="buffGod">
-                        <option value="0">None</option><option value="75">Poseidon (+75%)</option><option value="30">Zeus (+30%)</option><option value="-10">Hades (-10%)</option>
+                        <option value="0">None</option><option value="75">Poseidon (+75%)</option><option value="30">Zeus (+30%)</option>
                     </select>
                 </div>
             </div>
             <div class="grid-2">
-                <div><label>Strange/Rudolph</label><select id="buffKnowledge"><option value="0">None</option><option value="30">Knowledge 1 (+30%)</option><option value="40">Knowledge 2 (+40%)</option><option value="20">Rudolph (+20%)</option><option value="-15">Sloth 1 (-15%)</option><option value="-25">Sloth 2 (-25%)</option></select></div>
-                <div><label>Event Potion</label><select id="buffEventPot"><option value="0">None</option><option value="20">Santa (+20%)</option><option value="25">Hwache (+25%)</option></select></div>
-            </div>
-            <div class="grid-2">
-                <div><label>Other Potions</label><select id="buffCombat"><option value="0">None</option><option value="35">Rage Pot (+35%)</option><option value="40">Diver Pot (+40%)</option></select></div>
-                <div><label>Active Roll Skips</label><input type="number" id="rollSkips" value="0" placeholder="Available skips"></div>
+                <div><label>Active Roll Skips</label><input type="number" id="rollSkips" value="0"></div>
+                <div style="display: flex; align-items: flex-end;"><label class="check-row" style="margin-bottom: 15px;"><input type="checkbox" id="showEventSpeed" onchange="toggleEvents()"> Show Event Gear</label></div>
             </div>
         </div>
 
@@ -140,8 +129,6 @@
         const speedChecked = document.getElementById('showEventSpeed').checked;
         document.querySelectorAll('.event-luck').forEach(el => el.style.display = luckChecked ? "block" : "none");
         document.querySelectorAll('.event-speed').forEach(el => el.style.display = speedChecked ? "block" : "none");
-        if (!luckChecked && document.getElementById('leftGlove').selectedOptions[0].classList.contains('event-luck')) document.getElementById('leftGlove').value = "1";
-        if (!speedChecked && document.getElementById('rightGlove').selectedOptions[0].classList.contains('event-speed')) document.getElementById('rightGlove').value = "0";
         checkRainySupport();
     }
     function checkRainySupport() {
@@ -159,67 +146,61 @@
         const skipCount = parseFloat(document.getElementById('rollSkips').value) || 0;
 
         let luckM = 1;
-        const v = document.getElementById('vip').checked, vp = document.getElementById('vipPlus').checked;
-        if (v && vp) luckM = 1.3; else if (v || vp) luckM = 1.2;
+        if (document.getElementById('vip').checked || document.getElementById('vipPlus').checked) luckM = 1.2;
+        if (document.getElementById('vip').checked && document.getElementById('vipPlus').checked) luckM = 1.3;
         if (document.getElementById('event2x').checked) luckM *= 2;
         
         let rawL = L / luckM, pAvg, speedM = 1;
-        const rDiv = rainy ? 4 : 1;
         
-        if (left === "blessed") { pAvg = (5 * (rawL / R) + 1 * ((rawL * 3) / (R / rDiv))) / 6 * luckM; }
-        else if (left === "tide") { pAvg = (9 * ((rawL + 0.5) / R) + 1 * (((rawL + 0.5) * 2) / (R / rDiv))) / 10 * luckM; }
+        // GEAR LOGIC
+        if (left === "blessed") { pAvg = (5 * (rawL / R) + 1 * ((rawL * 3) / (R / (rainy?4:1)))) / 6 * luckM; }
+        else if (left === "tide") { pAvg = (9 * ((rawL + 0.5) / R) + 1 * (((rawL + 0.5) * 2) / (R / (rainy?4:1)))) / 10 * luckM; }
         else {
             let add = 0, mg = 1;
-            if (left === "pole") { add = 5; mg = 1.1; speedM += (34/30)-1; }
+            if (left === "pole") { add = 5; mg = 1.1; speedM += 0.133; }
             else if (left === "jackpot") { add = 0.77; speedM += 0.07; }
             else if (left === "grav") { mg = 1.5; }
-            else if (left === "gemstone") { add = 0.075; }
-            else if (left === "xmas") { mg = 1.5; }
-            else if (left === "present") { mg = 1.36; }
-            else if (left === "1.35") { mg = 1.35; }
+            else if (left === "gemstone") { 
+                add = 0.075; // Average Luck
+                speedM += 0.0125; // Average Speed (+15% for 10 rolls every 2 mins)
+            }
             else { mg = parseFloat(left) || 1; }
             pAvg = ((rawL + add) * mg * luckM) / R;
         }
 
+        // SPEED BUFFS
         speedM += (parseFloat(document.getElementById('resonance').value) || 0) / 100;
-        const buffIds = ['rightGlove', 'buffBank', 'buffBasic', 'buffHaste', 'buffGod', 'buffKnowledge', 'buffEventPot', 'buffCombat'];
-        buffIds.forEach(id => speedM += (parseFloat(document.getElementById(id).value) || 0) / 100);
+        speedM += (parseFloat(document.getElementById('rightGlove').value) || 0) / 100;
+        speedM += (parseFloat(document.getElementById('buffBasic').value) || 0) / 100;
+        speedM += (parseFloat(document.getElementById('buffHaste').value) || 0) / 100;
+        speedM += (parseFloat(document.getElementById('buffGod').value) || 0) / 100;
         
         const d = parseFloat(document.getElementById('days').value) || 0;
         const totalSessionTime = 86400 * d;
         const skipSpeed = speedM + 10;
 
-        const maxSkipsInTime = totalSessionTime * skipSpeed;
-        const skipsActuallyDone = Math.min(skipCount, maxSkipsInTime);
-        const timeSpentOnSkips = skipsActuallyDone / skipSpeed;
-        const remainingTime = Math.max(0, totalSessionTime - timeSpentOnSkips);
-        const normalRolls = remainingTime * speedM;
-        const totalRolls = normalRolls + skipsActuallyDone;
+        const maxSkips = totalSessionTime * skipSpeed;
+        const skipsDone = Math.min(skipCount, maxSkips);
+        const skipTime = skipsDone / skipSpeed;
+        const normRolls = Math.max(0, totalSessionTime - skipTime) * speedM;
+        const totalRolls = normRolls + skipsDone;
         
-        const P = (totalRolls > 0 && pAvg > 0) ? 1 - Math.pow((1 - pAvg), totalRolls) : 0;
-        
+        const P = (totalRolls > 0) ? 1 - Math.pow((1 - pAvg), totalRolls) : 0;
         document.getElementById('outputChance').innerText = (P >= 0.9999999) ? "99.99%+" : (P * 100).toFixed(2) + "%";
         document.getElementById('totalRolls').innerText = Math.floor(totalRolls).toLocaleString() + " rolls";
         
         const targetInput = document.getElementById('targetP');
         let targetVal = (parseFloat(targetInput.value) || 0) / 100;
-        
-        if (targetVal >= 1) { targetVal = 0.9999; targetInput.value = 99.99; }
+        if (targetVal >= 1) targetVal = 0.9999;
 
-        if (targetVal > 0 && targetVal < 1 && pAvg > 0) {
-            const rollsRequired = Math.log(1 - targetVal) / Math.log(1 - pAvg);
-            const skipsNeeded = Math.min(rollsRequired, skipCount);
-            const skipTimeNeeded = skipsNeeded / skipSpeed;
-            const remainingRollsNeeded = Math.max(0, rollsRequired - skipCount);
-            const normalTimeNeeded = remainingRollsNeeded / speedM;
-            const totalSecondsNeeded = skipTimeNeeded + normalTimeNeeded;
-            const daysNeeded = totalSecondsNeeded / 86400;
-            
+        if (targetVal > 0 && pAvg > 0) {
+            const rollsReq = Math.log(1 - targetVal) / Math.log(1 - pAvg);
+            const sTime = Math.min(rollsReq, skipCount) / skipSpeed;
+            const nTime = Math.max(0, rollsReq - skipCount) / speedM;
+            const daysNeeded = (sTime + nTime) / 86400;
             document.getElementById('outputTime').innerText = daysNeeded > 1000 ? daysNeeded.toExponential(2) + " Days" : daysNeeded.toFixed(2) + " Days";
-            document.getElementById('rollsNeeded').innerText = Math.ceil(rollsRequired).toLocaleString() + " total rolls";
-            document.getElementById('timeLabel').innerText = (targetInput.value == 99.99) ? "VIRTUAL GUARANTEE" : "AFK TIME";
+            document.getElementById('rollsNeeded').innerText = Math.ceil(rollsReq).toLocaleString() + " total rolls";
         }
-
         updateVisuals('chance', P, (d > 0 || skipCount > 0));
         updateVisuals('time', targetVal, targetVal > 0);
     }
@@ -228,13 +209,11 @@
         const b = document.getElementById(id + 'Box');
         const l = document.getElementById(id + 'Label');
         b.classList.remove('status-low', 'status-mid', 'status-high');
-        if (!hasData) {
-            l.innerText = (id === 'chance' ? "WAITING..." : "AFK TIME");
-            l.style.color = "#add8e6"; return;
-        }
-        if (prob < 0.1) { b.classList.add('status-low'); l.innerText = "Extreme Longshot"; l.style.color = "#ff4d4d"; }
-        else if (prob < 0.5) { b.classList.add('status-mid'); l.innerText = "Fair Odds"; l.style.color = "#ffcc00"; }
-        else { b.classList.add('status-high'); l.innerText = (id === 'time' && document.getElementById('targetP').value == 99.99) ? "VIRTUAL GUARANTEE" : "Safe Bet"; l.style.color = "#00ff88"; }
+        if (!hasData) { l.innerText = "WAITING..."; return; }
+        if (prob < 0.1) b.classList.add('status-low');
+        else if (prob < 0.5) b.classList.add('status-mid');
+        else b.classList.add('status-high');
+        l.innerText = prob < 0.1 ? "Longshot" : prob < 0.5 ? "Fair Odds" : "Safe Bet";
     }
     document.querySelectorAll('input, select').forEach(el => el.addEventListener('input', calculate));
     calculate();
