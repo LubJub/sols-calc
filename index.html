@@ -25,7 +25,7 @@
         #rainyContainer { background: rgba(0, 150, 255, 0.1); border: 1px dashed rgba(0, 150, 255, 0.4); padding: 5px 10px; border-radius: 5px; margin-top: 5px; display: none; }
 
         .result-box { background: rgba(0, 150, 255, 0.15); padding: 20px; border-radius: 8px; border: 1px solid rgba(0, 150, 255, 0.5); text-align: center; margin-top: 10px; }
-        .result-val { font-size: 2.2rem; font-weight: bold; color: #add8e6; text-shadow: 0 0 12px rgba(173, 216, 230, 0.7); }
+        .result-val { font-size: 2.1rem; font-weight: bold; color: #add8e6; text-shadow: 0 0 12px rgba(173, 216, 230, 0.7); }
         
         .footer { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 25px; padding-top: 10px; border-top: 1px solid #333; }
         .discord-link { color: #7289da; font-size: 0.75rem; text-decoration: none; font-weight: bold; display: block; margin-bottom: 2px; }
@@ -112,7 +112,7 @@
         </div>
 
         <div class="disclaimer">
-            *Results are based on statistical averages. Actual luck may vary.
+            *Luck results are based on cumulative probability. Success is never 100% guaranteed.
         </div>
 
         <div class="footer">
@@ -149,9 +149,6 @@
         const isChecked = document.getElementById('showEvent').checked;
         const select = document.getElementById('mult');
         const items = document.getElementsByClassName('event-item');
-        if (!isChecked && select.options[select.selectedIndex].getAttribute('data-event') === "true") {
-            select.value = "1.98";
-        }
         for (let item of items) { item.style.display = isChecked ? "block" : "none"; }
         checkRainySupport();
     }
@@ -199,7 +196,6 @@
             else if (glove === "gemstone") { L_add = 0.075; }
             else if (glove === "xmas") { M_glove = 1.5; }
             else if (glove === "present") { M_glove = 1.36; }
-            else if (glove === "1.35") { M_glove = 1.35; } // Coffin
             else { M_glove = parseFloat(glove) || 1; }
             
             pAvg = ((rawLuck + L_add) * M_glove * finalMult) / R_base;
@@ -209,10 +205,18 @@
         const sInput = parseFloat(document.getElementById('speedS').value) || 1;
         const rollsPerDay = (rInput / sInput) * 86400 * speedMult;
 
+        // MODE A: CHANCE FIX
         const d = parseFloat(document.getElementById('days').value) || 0;
         const P = d > 0 ? 1 - Math.pow((1 - pAvg), (rollsPerDay * d)) : 0;
-        document.getElementById('outputChance').innerText = (P * 100).toFixed(2) + "%";
+        
+        let displayChance = "";
+        if (P >= 0.9999999) displayChance = "99.9999%+";
+        else if (P > 0.99) displayChance = (P * 100).toFixed(4) + "%";
+        else displayChance = (P * 100).toFixed(2) + "%";
+        
+        document.getElementById('outputChance').innerText = displayChance;
 
+        // MODE B: TIME
         const targetP = (parseFloat(document.getElementById('targetP').value) || 0) / 100;
         if (targetP > 0 && targetP < 1 && pAvg > 0) {
             const neededDays = (Math.log(1 - targetP) / Math.log(1 - pAvg)) / rollsPerDay;
