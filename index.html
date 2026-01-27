@@ -22,7 +22,6 @@
         
         .speed-row { display: flex; gap: 10px; }
 
-        /* Compact Footer Layout */
         .footer { 
             display: flex; 
             justify-content: space-between; 
@@ -35,7 +34,6 @@
         .discord-link { display: block; color: #7289da; text-decoration: none; font-size: 0.75rem; margin-bottom: 4px; font-weight: bold; }
         .signature { font-size: 0.7rem; color: #666; }
 
-        /* Professional Reset Button */
         .reset-btn {
             background: #2a2a35;
             color: #ccc;
@@ -44,9 +42,7 @@
             border-radius: 4px;
             font-size: 0.75rem;
             cursor: pointer;
-            transition: all 0.2s;
         }
-        .reset-btn:hover { background: #3a3a4a; color: white; border-color: #666; }
     </style>
 </head>
 <body>
@@ -69,6 +65,7 @@
             <select id="mult">
                 <option value="1.8">Darkshader</option>
                 <option value="1.98">Unfathomable Ruins</option>
+                <option value="pole">Pole Light Core</option>
             </select>
 
             <label>Roll Speed (Rolls / Seconds)</label>
@@ -109,21 +106,30 @@
 <script>
     function calculate() {
         var R = parseFloat(document.getElementById('rarity').value) || 1;
-        var L = parseFloat(document.getElementById('luck').value) || 0;
-        var M = parseFloat(document.getElementById('mult').value);
+        var baseL = parseFloat(document.getElementById('luck').value) || 0;
+        var glove = document.getElementById('mult').value;
+        
+        var L, M;
+        
+        // Custom logic for Pole Light Core
+        if (glove === "pole") {
+            L = baseL + 5; // Adds the +5 luck first
+            M = 1.1;       // Average multiplier (9 rolls at 1x, 1 roll at 2x)
+        } else {
+            L = baseL;
+            M = parseFloat(glove);
+        }
+
         var r = parseFloat(document.getElementById('speedR').value) || 0;
         var s = parseFloat(document.getElementById('speedS').value) || 1;
-        
         var dInput = document.getElementById('days').value;
         var d = dInput === "" ? 0 : parseFloat(dInput);
-        
         var tInput = document.getElementById('targetP').value;
         var targetP = (tInput === "" ? 0 : parseFloat(tInput)) / 100;
 
         var rollsPerDay = (r / s) * 86400;
         var pRoll = (L * M) / R;
 
-        // Success Chance
         if (d > 0) {
             var P = 1 - Math.pow((1 - pRoll), (rollsPerDay * d));
             document.getElementById('outputChance').innerText = (P * 100).toFixed(2) + "%";
@@ -131,17 +137,15 @@
             document.getElementById('outputChance').innerText = "0.00%";
         }
 
-        // Time Required
         if (targetP > 0 && targetP < 1 && pRoll > 0) {
             var neededRolls = Math.log(1 - targetP) / Math.log(1 - pRoll);
             var neededDays = neededRolls / rollsPerDay;
-            document.getElementById('outputTime').innerText = neededDays.toFixed(2) + " Days";
+            document.getElementById('outputTime').innerText = Math.max(0, neededDays).toFixed(2) + " Days";
         } else {
             document.getElementById('outputTime').innerText = "-- Days";
         }
     }
 
-    // Connect all inputs
     document.querySelectorAll('input, select').forEach(element => {
         element.oninput = calculate;
     });
