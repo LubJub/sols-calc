@@ -101,31 +101,45 @@
                 <a href="https://discord.gg/yTreH64JBC" style="color:#7289da; font-size:0.75rem; text-decoration:none; font-weight:bold;" target="_blank">Discord Support</a>
                 <div class="signature">Created by LubJub</div>
             </div>
-            <button type="reset" class="reset-btn" onclick="setTimeout(() => { toggleEventGear(); calculate(); }, 10)">Reset</button>
+            <button type="button" class="reset-btn" onclick="fullReset()">Reset All</button>
         </div>
     </form>
 </div>
 
 <script>
+    function fullReset() {
+        document.getElementById('calcForm').reset();
+        toggleEventGear();
+        checkRainySupport();
+        calculate();
+    }
+
     function toggleEventGear() {
         const isChecked = document.getElementById('showEvent').checked;
         const select = document.getElementById('mult');
         const items = document.getElementsByClassName('event-item');
         
-        // Default back to Ruins if event gear is hidden while equipped
         if (!isChecked && select.options[select.selectedIndex].getAttribute('data-event') === "true") {
             select.value = "1.98";
-            checkRainySupport();
         }
 
-        for (let item of items) { item.style.display = isChecked ? "block" : "none"; }
+        for (let item of items) { 
+            item.style.display = isChecked ? "block" : "none"; 
+        }
+        checkRainySupport();
     }
 
     function checkRainySupport() {
         const glove = document.getElementById('mult').value;
         const container = document.getElementById('rainyContainer');
-        container.style.display = (glove === "tide" || glove === "blessed") ? "block" : "none";
-        if (container.style.display === "none") document.getElementById('isRainy').checked = false;
+        const checkbox = document.getElementById('isRainy');
+        
+        if (glove === "tide" || glove === "blessed") {
+            container.style.display = "block";
+        } else {
+            container.style.display = "none";
+            checkbox.checked = false;
+        }
         calculate();
     }
 
@@ -138,19 +152,15 @@
         let pAvg;
         const rainyDiv = isRainy ? 4 : 1;
 
-        // Math: (RollsAtNormalLuck + RollsAtBonusLuck) / TotalSet
         if (glove === "blessed") {
-            // 5 rolls at 1x luck, 1 roll at (Rarity/4) + 3x luck
             let pNormal = baseL / R_base;
             let pBonus = (baseL * 3) / (R_base / rainyDiv);
             pAvg = (5 * pNormal + 1 * pBonus) / 6;
         } else if (glove === "tide") {
-            // 9 rolls at 1x luck (+0.5 base), 1 roll at (Rarity/4) + 2x luck
             let pNormal = (baseL + 0.5) / R_base;
             let pBonus = ((baseL + 0.5) * 2) / (R_base / rainyDiv);
             pAvg = (9 * pNormal + 1 * pBonus) / 10;
         } else {
-            // Standard gloves
             let L = baseL, M = 1;
             if (glove === "pole") { L += 5; M = 1.1; }
             else if (glove === "grav") { M = 1.5; }
