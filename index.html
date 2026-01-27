@@ -17,32 +17,19 @@
         
         label { font-size: 0.85rem; color: #ccc; display: block; }
         
+        /* Event Toggle Styling */
+        .event-toggle { display: flex; align-items: center; gap: 8px; margin-top: -5px; margin-bottom: 10px; cursor: pointer; font-size: 0.75rem; color: #888; }
+        .event-toggle input { width: auto; margin: 0; cursor: pointer; }
+
         .result-box { background: rgba(0, 150, 255, 0.15); padding: 20px; border-radius: 8px; border: 1px solid rgba(0, 150, 255, 0.5); text-align: center; margin-top: 10px; }
         .result-val { font-size: 2.2rem; font-weight: bold; color: #add8e6; text-shadow: 0 0 12px rgba(173, 216, 230, 0.7); }
         
         .speed-row { display: flex; gap: 10px; }
-
-        .footer { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: flex-end; 
-            margin-top: 25px; 
-            padding-top: 10px;
-            border-top: 1px solid #333;
-        }
+        .footer { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 25px; padding-top: 10px; border-top: 1px solid #333; }
         .footer-left { text-align: left; }
         .discord-link { display: block; color: #7289da; text-decoration: none; font-size: 0.75rem; margin-bottom: 4px; font-weight: bold; }
         .signature { font-size: 0.7rem; color: #666; }
-
-        .reset-btn {
-            background: #2a2a35;
-            color: #ccc;
-            border: 1px solid #444;
-            padding: 6px 12px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            cursor: pointer;
-        }
+        .reset-btn { background: #2a2a35; color: #ccc; border: 1px solid #444; padding: 6px 12px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -69,7 +56,16 @@
                 <option value="grav">Gravitational Device</option>
                 <option value="1.35">Flesh Device</option>
                 <option value="jackpot">Jackpot Gauntlet</option>
+                <option value="xmas" class="event-item" style="display:none;">X-Mas Champion</option>
+                <option value="present" class="event-item" style="display:none;">Present Giver</option>
+                <option value="blessed" class="event-item" style="display:none;">Blessed Tide Gauntlet</option>
+                <option value="tide" class="event-item" style="display:none;">Tide Gauntlet</option>
+                <option value="1.3" class="event-item" style="display:none;">Ominous Coffin</option>
             </select>
+            
+            <label class="event-toggle">
+                <input type="checkbox" id="showEvent" onchange="toggleEventGear()"> Show Event Gear
+            </label>
 
             <label>Roll Speed (Rolls / Seconds)</label>
             <div class="speed-row">
@@ -107,58 +103,56 @@
 </div>
 
 <script>
+    function toggleEventGear() {
+        const isChecked = document.getElementById('showEvent').checked;
+        const items = document.getElementsByClassName('event-item');
+        for (let item of items) {
+            item.style.display = isChecked ? "block" : "none";
+        }
+    }
+
     function calculate() {
         var R = parseFloat(document.getElementById('rarity').value) || 1;
         var baseL = parseFloat(document.getElementById('luck').value) || 0;
         var glove = document.getElementById('mult').value;
         
-        var L, M;
+        var L = baseL;
+        var M = 1;
         
-        // Complex Glove Logic
-        if (glove === "pole") {
-            L = baseL + 5; 
-            M = 1.1; // (9*1 + 1*2)/10
-        } else if (glove === "grav") {
-            L = baseL;
-            M = 1.5; // (9*1 + 1*6)/10
-        } else if (glove === "jackpot") {
-            L = baseL + 0.77;
-            M = 1.0; 
-        } else {
-            L = baseL;
-            M = parseFloat(glove);
+        // Advanced Glove Logic
+        switch(glove) {
+            case "pole":    L += 5; M = 1.1; break; // (9*1 + 1*2)/10
+            case "grav":    M = 1.5; break;        // (9*1 + 1*6)/10
+            case "jackpot": L += 0.77; break;
+            case "xmas":    M = 1.5; break;        // (5*1 + 1*4)/6
+            case "present": M = 1.36; break;       // (10*1 + 1*5)/11
+            case "blessed": M = 1.33; break;       // (5*1 + 1*3)/6
+            case "tide":    L += 0.5; M = 1.1; break; // (9*1 + 1*2)/10
+            default:        M = parseFloat(glove) || 1;
         }
 
         var r = parseFloat(document.getElementById('speedR').value) || 0;
         var s = parseFloat(document.getElementById('speedS').value) || 1;
-        var dInput = document.getElementById('days').value;
-        var d = dInput === "" ? 0 : parseFloat(dInput);
-        var tInput = document.getElementById('targetP').value;
-        var targetP = (tInput === "" ? 0 : parseFloat(tInput)) / 100;
+        var d = parseFloat(document.getElementById('days').value) || 0;
+        var targetP = (parseFloat(document.getElementById('targetP').value) || 0) / 100;
 
         var rollsPerDay = (r / s) * 86400;
         var pRoll = (L * M) / R;
 
-        if (d > 0) {
-            var P = 1 - Math.pow((1 - pRoll), (rollsPerDay * d));
-            document.getElementById('outputChance').innerText = (P * 100).toFixed(2) + "%";
-        } else {
-            document.getElementById('outputChance').innerText = "0.00%";
-        }
+        // Chance
+        var P = d > 0 ? 1 - Math.pow((1 - pRoll), (rollsPerDay * d)) : 0;
+        document.getElementById('outputChance').innerText = (P * 100).toFixed(2) + "%";
 
+        // Time
         if (targetP > 0 && targetP < 1 && pRoll > 0) {
-            var neededRolls = Math.log(1 - targetP) / Math.log(1 - pRoll);
-            var neededDays = neededRolls / rollsPerDay;
+            var neededDays = (Math.log(1 - targetP) / Math.log(1 - pRoll)) / rollsPerDay;
             document.getElementById('outputTime').innerText = Math.max(0, neededDays).toFixed(2) + " Days";
         } else {
             document.getElementById('outputTime').innerText = "-- Days";
         }
     }
 
-    document.querySelectorAll('input, select').forEach(element => {
-        element.oninput = calculate;
-    });
-
+    document.querySelectorAll('input, select').forEach(el => el.oninput = calculate);
     calculate();
 </script>
 
