@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sols Rng Calculator</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #0b0b0e; color: white; display: flex; justify-content: center; }
+        .calc-card { width: 100%; max-width: 400px; background: #16161d; padding: 25px; border-radius: 12px; border: 1px solid #3e3e4a; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
+        h2 { color: white; text-align: center; text-transform: uppercase; margin-top: 0; margin-bottom: 20px; letter-spacing: 1px; }
+        .section { margin-bottom: 15px; padding: 12px; background: #1c1c26; border-radius: 8px; }
+        
+        .rarity-container { display: flex; align-items: center; background: #000; border: 1px solid #444; border-radius: 5px; padding: 0 10px; margin: 8px 0; }
+        .prefix { color: white; font-weight: bold; margin-right: 5px; font-size: 1.1rem; }
+        .rarity-input { border: none !important; margin: 0 !important; outline: none; }
+        
+        input, select { width: 100%; padding: 10px; margin: 8px 0; border-radius: 5px; border: 1px solid #444; background: #000; color: white; font-weight: bold; box-sizing: border-box; font-size: 1rem; }
+        label { font-size: 0.85rem; color: #ccc; display: block; }
+        
+        /* Unified Blue Glowing Boxes */
+        .result-box { background: rgba(0, 150, 255, 0.15); padding: 20px; border-radius: 8px; border: 1px solid rgba(0, 150, 255, 0.5); text-align: center; margin-top: 10px; }
+        .result-val { font-size: 2.2rem; font-weight: bold; color: #add8e6; text-shadow: 0 0 12px rgba(173, 216, 230, 0.7); }
+        
+        .speed-row { display: flex; gap: 10px; }
+
+        /* Footer Links & Signature */
+        .footer { text-align: center; margin-top: 25px; }
+        .discord-link { display: block; color: #7289da; text-decoration: none; font-size: 0.75rem; margin-bottom: 5px; font-weight: bold; }
+        .discord-link:hover { text-decoration: underline; }
+        .signature { font-size: 0.7rem; color: #666; }
+    </style>
+</head>
+<body>
+
+<div class="calc-card">
+    <h2>Sols Rng Calculator</h2>
+    
+    <div class="section">
+        <label>Rarity of Aura</label>
+        <div class="rarity-container">
+            <span class="prefix">1/</span>
+            <input type="number" id="rarity" class="rarity-input" value="2500000000">
+        </div>
+
+        <label>Current luck without left glove (read from stats board)</label>
+        <input type="number" id="luck" value="30">
+
+        <label>Left hand glove</label>
+        <select id="mult">
+            <option value="1.8">Darkshader</option>
+            <option value="1.98">Unfathomable Ruins</option>
+        </select>
+
+        <label>Roll Speed (Rolls / Seconds)</label>
+        <div class="speed-row">
+            <input type="number" id="speedR" value="100">
+            <input type="number" id="speedS" value="25">
+        </div>
+    </div>
+
+    <div class="section">
+        <label>Time (Days)</label>
+        <input type="number" id="days" value="30">
+        <div class="result-box">
+            <label style="color: white; font-size: 0.75rem; opacity: 0.8; margin-bottom: 5px; display: block;">CHANCE OF SUCCESS</label>
+            <div class="result-val" id="outputChance">20.06%</div>
+        </div>
+    </div>
+
+    <div class="section">
+        <label>Target Chance (%)</label>
+        <input type="number" id="targetP" value="50">
+        <div class="result-box">
+            <label style="color: white; font-size: 0.75rem; opacity: 0.8; margin-bottom: 5px; display: block;">TIME REQUIRED</label>
+            <div class="result-val" id="outputTime">-- Days</div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <a href="https://discord.gg/yTreH64JBC" class="discord-link" target="_blank">https://discord.gg/yTreH64JBC</a>
+        <div class="signature">Created by LubJub</div>
+    </div>
+</div>
+
+<script>
+    function calculate() {
+        var R = parseFloat(document.getElementById('rarity').value) || 1;
+        var L = parseFloat(document.getElementById('luck').value) || 0;
+        var M = parseFloat(document.getElementById('mult').value);
+        var r = parseFloat(document.getElementById('speedR').value) || 0;
+        var s = parseFloat(document.getElementById('speedS').value) || 1;
+        var d = parseFloat(document.getElementById('days').value) || 0;
+        var targetP = (parseFloat(document.getElementById('targetP').value) || 0) / 100;
+
+        var rollsPerDay = (r / s) * 86400;
+        var pRoll = (L * M) / R;
+
+        // Chance
+        var P = 1 - Math.pow((1 - pRoll), (rollsPerDay * d));
+        document.getElementById('outputChance').innerText = (P * 100).toFixed(2) + "%";
+
+        // Time
+        if (targetP > 0 && targetP < 1 && pRoll > 0) {
+            var neededRolls = Math.log(1 - targetP) / Math.log(1 - pRoll);
+            var neededDays = neededRolls / rollsPerDay;
+            document.getElementById('outputTime').innerText = neededDays.toFixed(2) + " Days";
+        } else {
+            document.getElementById('outputTime').innerText = "-- Days";
+        }
+    }
+
+    document.getElementById('rarity').oninput = calculate;
+    document.getElementById('luck').oninput = calculate;
+    document.getElementById('mult').onchange = calculate;
+    document.getElementById('speedR').oninput = calculate;
+    document.getElementById('speedS').oninput = calculate;
+    document.getElementById('days').oninput = calculate;
+    document.getElementById('targetP').oninput = calculate;
+
+    calculate();
+</script>
+
+</body>
+</html>
