@@ -4,7 +4,7 @@
     <title>Sols Rng Calculator</title>
     <style>
         body { font-family: sans-serif; padding: 20px; background: #0b0b0e; color: white; display: flex; justify-content: center; }
-        .calc-card { width: 100%; max-width: 400px; background: #16161d; padding: 25px; border-radius: 12px; border: 1px solid #3e3e4a; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
+        .calc-card { width: 100%; max-width: 400px; background: #16161d; padding: 25px; border-radius: 12px; border: 2px solid #3e3e4a; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
         h2 { color: white; text-align: center; text-transform: uppercase; margin-top: 0; margin-bottom: 20px; letter-spacing: 1px; }
         .section { margin-bottom: 15px; padding: 12px; background: #1c1c26; border-radius: 8px; }
         
@@ -63,9 +63,12 @@
 
             <label>Left hand glove</label>
             <select id="mult">
-                <option value="1.8">Darkshader</option>
                 <option value="1.98">Unfathomable Ruins</option>
-                <option value="pole">Pole Light Core</option>
+                <option value="1.8">Darkshader</option>
+                <option value="pole">Pole Light Core Device</option>
+                <option value="grav">Gravitational Device</option>
+                <option value="1.35">Flesh Device</option>
+                <option value="jackpot">Jackpot Gauntlet</option>
             </select>
 
             <label>Roll Speed (Rolls / Seconds)</label>
@@ -111,10 +114,16 @@
         
         var L, M;
         
-        // Custom logic for Pole Light Core
+        // Complex Glove Logic
         if (glove === "pole") {
-            L = baseL + 5; // Adds the +5 luck first
-            M = 1.1;       // Average multiplier (9 rolls at 1x, 1 roll at 2x)
+            L = baseL + 5; 
+            M = 1.1; // (9*1 + 1*2)/10
+        } else if (glove === "grav") {
+            L = baseL;
+            M = 1.5; // (9*1 + 1*6)/10
+        } else if (glove === "jackpot") {
+            L = baseL + 0.77;
+            M = 1.0; 
         } else {
             L = baseL;
             M = parseFloat(glove);
