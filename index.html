@@ -24,17 +24,15 @@
 
         #rainyContainer { background: rgba(0, 150, 255, 0.1); border: 1px dashed rgba(0, 150, 255, 0.4); padding: 5px 10px; border-radius: 5px; margin-top: 5px; display: none; }
 
-        /* Dynamic Result Box */
         .result-box { padding: 20px; border-radius: 8px; text-align: center; margin-top: 10px; transition: all 0.4s ease; border: 1px solid rgba(0, 150, 255, 0.3); background: rgba(0, 150, 255, 0.05); }
         .result-val { font-size: 2.1rem; font-weight: bold; color: #add8e6; transition: color 0.4s ease; }
         .luck-status { font-size: 0.8rem; font-weight: bold; text-transform: uppercase; margin-top: 4px; display: block; letter-spacing: 1px; color: #add8e6; opacity: 0.8; }
         .stat-subtext { font-size: 0.7rem; color: #888; margin-top: 5px; display: block; }
         
-        /* Status Tiers */
-        .status-idle { color: #add8e6; border-color: rgba(173, 216, 230, 0.3); background: rgba(173, 216, 230, 0.05); }
-        .status-low { color: #ff4d4d; border-color: rgba(255, 77, 77, 0.3); background: rgba(255, 77, 77, 0.05); }
-        .status-mid { color: #ffcc00; border-color: rgba(255, 204, 0, 0.3); background: rgba(255, 204, 0, 0.05); }
-        .status-high { color: #00ff88; border-color: rgba(0, 255, 136, 0.3); background: rgba(0, 255, 136, 0.05); }
+        .status-idle { border-color: rgba(173, 216, 230, 0.3); background: rgba(173, 216, 230, 0.05); }
+        .status-low { border-color: rgba(255, 77, 77, 0.3); background: rgba(255, 77, 77, 0.05); }
+        .status-mid { border-color: rgba(255, 204, 0, 0.3); background: rgba(255, 204, 0, 0.05); }
+        .status-high { border-color: rgba(0, 255, 136, 0.3); background: rgba(0, 255, 136, 0.05); }
 
         .footer { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 25px; padding-top: 10px; border-top: 1px solid #333; }
         .discord-link { color: #7289da; font-size: 0.75rem; text-decoration: none; font-weight: bold; display: block; margin-bottom: 2px; }
@@ -144,7 +142,7 @@
 
     function debouncedCalculate() {
         clearTimeout(calcTimeout);
-        calcTimeout = setTimeout(calculate, 150);
+        calcTimeout = setTimeout(calculate, 100);
     }
 
     function setMode(mode) {
@@ -254,33 +252,39 @@
             pAvg = ((rawLuck + L_add) * M_glove * finalMult) / R_base;
         }
 
-        const rInput = parseFloat(document.getElementById('speedR').value) || 0;
+        const rInput = parseFloat(document.getElementById('speedR').value) || 1;
         const sInput = parseFloat(document.getElementById('speedS').value) || 1;
         const rollsPerDay = (rInput / sInput) * 86400 * speedMult;
 
         // Mode 1: Chance
-        const d = parseFloat(document.getElementById('days').value) || 0;
+        const dInput = document.getElementById('days').value;
+        const d = parseFloat(dInput) || 0;
         const totalRolls = rollsPerDay * d;
         const P = (d > 0 && pAvg > 0) ? 1 - Math.pow((1 - pAvg), totalRolls) : 0;
         
         let displayChance = (P >= 0.9999999) ? "99.9999%+" : (P > 0.99 ? (P * 100).toFixed(4) + "%" : (P * 100).toFixed(2) + "%");
         document.getElementById('outputChance').innerText = displayChance;
         document.getElementById('totalRolls').innerText = Math.floor(totalRolls).toLocaleString() + " total rolls";
-        updateVisuals('chance', P, false);
+        
+        if (currentMode === 'chance') {
+            updateVisuals('chance', (dInput === "" ? 0 : P), false);
+        }
 
         // Mode 2: Time
-        const targetPVal = parseFloat(document.getElementById('targetP').value) || 0;
+        const targetPInput = document.getElementById('targetP').value;
+        const targetPVal = parseFloat(targetPInput) || 0;
         const targetP = targetPVal / 100;
-        if (targetP > 0 && targetP < 1 && pAvg > 0 && pAvg < 1) {
+
+        if (targetP > 0 && targetP < 1 && pAvg > 0) {
             const n_needed = Math.log(1 - targetP) / Math.log(1 - pAvg);
             const neededDays = n_needed / rollsPerDay;
             document.getElementById('outputTime').innerText = neededDays > 1000 ? neededDays.toExponential(2) + " Days" : neededDays.toFixed(2) + " Days";
             document.getElementById('rollsNeeded').innerText = Math.ceil(n_needed).toLocaleString() + " rolls needed";
-            updateVisuals('time', targetP, true);
+            if (currentMode === 'time') updateVisuals('time', targetP, true);
         } else {
             document.getElementById('outputTime').innerText = "-- Days";
             document.getElementById('rollsNeeded').innerText = "0 rolls needed";
-            updateVisuals('time', 0, true);
+            if (currentMode === 'time') updateVisuals('time', 0, true);
         }
     }
 
