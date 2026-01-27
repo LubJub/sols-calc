@@ -3,33 +3,24 @@
 <head>
     <title>Sols Rng Calculator</title>
     <style>
-        /* Optimized styles for performance */
-        body { font-family: sans-serif; padding: 20px; background: #0b0b0e; color: white; display: flex; justify-content: center; }
+        body { font-family: sans-serif; padding: 20px; background: #0b0b0e; color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
         .calc-card { width: 100%; max-width: 400px; background: #16161d; padding: 25px; border-radius: 12px; border: 2px solid #3e3e4a; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
         h2 { color: white; text-align: center; text-transform: uppercase; margin-top: 0; margin-bottom: 20px; letter-spacing: 1px; }
-        
         .mode-switch { display: flex; background: #000; border-radius: 10px; padding: 6px; margin-bottom: 25px; border: 2px solid #444; }
         .mode-btn { flex: 1; padding: 14px; border: none; background: none; color: #888; cursor: pointer; font-weight: 900; font-size: 0.85rem; border-radius: 7px; text-transform: uppercase; }
-        
-        /* Removed heavy blur/glow for better FPS on mobile */
         .mode-btn.active { background: #add8e6; color: #000; box-shadow: 0 0 10px rgba(173, 216, 230, 0.3); }
-
         .section { margin-bottom: 15px; padding: 12px; background: #1c1c26; border-radius: 8px; }
         .rarity-container { display: flex; align-items: center; background: #000; border: 1px solid #444; border-radius: 5px; padding: 0 10px; margin: 8px 0; }
         .prefix { color: white; font-weight: bold; margin-right: 5px; font-size: 1.1rem; }
         .rarity-input { border: none !important; margin: 0 !important; outline: none; }
-        
         input, select { width: 100%; padding: 10px; margin: 8px 0; border-radius: 5px; border: 1px solid #444; background: #000; color: white; font-weight: bold; box-sizing: border-box; font-size: 1rem; }
         label { font-size: 0.85rem; color: #ccc; display: block; }
-        
         .check-row { display: flex; align-items: center; gap: 8px; margin: 5px 0; cursor: pointer; font-size: 0.75rem; color: #888; }
         .check-row input { width: auto; margin: 0; }
-
         #rainyContainer { background: rgba(0, 150, 255, 0.1); border: 1px dashed rgba(0, 150, 255, 0.4); padding: 5px 10px; border-radius: 5px; margin-top: 5px; display: none; }
-
         .result-box { background: rgba(0, 150, 255, 0.1); padding: 20px; border-radius: 8px; border: 1px solid rgba(0, 150, 255, 0.3); text-align: center; margin-top: 10px; }
         .result-val { font-size: 2.1rem; font-weight: bold; color: #add8e6; }
-        
+        .stat-subtext { font-size: 0.7rem; color: #888; margin-top: 5px; display: block; }
         .footer { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 25px; padding-top: 10px; border-top: 1px solid #333; }
         .discord-link { color: #7289da; font-size: 0.75rem; text-decoration: none; font-weight: bold; display: block; margin-bottom: 2px; }
         .reset-btn { background: #2a2a35; color: #ccc; border: 1px solid #444; padding: 6px 12px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; }
@@ -43,15 +34,15 @@
         <h2>Sols Rng Calculator</h2>
         
         <div class="mode-switch">
-            <button type="button" id="btnChance" class="mode-btn active" onclick="setMode('chance')">ROLL CHANCE (%)</button>
-            <button type="button" id="btnTime" class="mode-btn" onclick="setMode('time')">TIME REQUIRED</button>
+            <button type="button" id="btnChance" class="mode-btn active" onclick="setMode('chance')" aria-label="Calculate roll chance">ROLL CHANCE (%)</button>
+            <button type="button" id="btnTime" class="mode-btn" onclick="setMode('time')" aria-label="Calculate time required">TIME REQUIRED</button>
         </div>
 
         <div class="section">
             <label>Rarity of Aura</label>
             <div class="rarity-container">
                 <span class="prefix">1/</span>
-                <input type="number" id="rarity" class="rarity-input" value="2500000000">
+                <input type="number" id="rarity" class="rarity-input" value="2500000000" min="1" step="any">
             </div>
 
             <div id="rainyContainer">
@@ -61,7 +52,7 @@
             </div>
 
             <label>Current luck (incl. gamepasses/events)</label>
-            <input type="number" id="luck" value="30">
+            <input type="number" id="luck" value="30" min="0" step="any">
 
             <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px;">
                 <label class="check-row"><input type="checkbox" id="vip"> VIP</label>
@@ -78,11 +69,11 @@
                 <option value="1.3">Flesh Device</option>
                 <option value="jackpot">Jackpot Gauntlet</option>
                 <option value="gemstone">Gemstone Gauntlet</option>
-                <option value="xmas" class="event-item" data-event="true" style="display:none;">X-Mas Champion</option>
-                <option value="present" class="event-item" data-event="true" style="display:none;">Present Giver</option>
-                <option value="blessed" class="event-item" data-event="true" style="display:none;">Blessed Tide Gauntlet</option>
-                <option value="tide" class="event-item" data-event="true" style="display:none;">Tide Gauntlet</option>
-                <option value="1.35" class="event-item" data-event="true" style="display:none;">Ominous Coffin</option>
+                <option value="xmas" class="event-item" style="display:none;">X-Mas Champion</option>
+                <option value="present" class="event-item" style="display:none;">Present Giver</option>
+                <option value="blessed" class="event-item" style="display:none;">Blessed Tide Gauntlet</option>
+                <option value="tide" class="event-item" style="display:none;">Tide Gauntlet</option>
+                <option value="1.35" class="event-item" style="display:none;">Ominous Coffin</option>
             </select>
             
             <label class="check-row">
@@ -91,26 +82,28 @@
 
             <label>Roll Speed (Rolls / Seconds)</label>
             <div style="display:flex; gap:10px;">
-                <input type="number" id="speedR" value="20">
-                <input type="number" id="speedS" value="10">
+                <input type="number" id="speedR" value="20" min="0.1" step="any">
+                <input type="number" id="speedS" value="10" min="0.1" step="any">
             </div>
         </div>
 
         <div id="sectionChance" class="section">
             <label>Time Period (Days)</label>
-            <input type="number" id="days" placeholder="Days to roll">
+            <input type="number" id="days" placeholder="Days to roll" min="0" step="any">
             <div class="result-box">
                 <label style="color: white; font-size: 0.75rem; opacity: 0.8;">CHANCE OF SUCCESS</label>
                 <div class="result-val" id="outputChance">0.00%</div>
+                <span class="stat-subtext" id="totalRolls">0 total rolls</span>
             </div>
         </div>
 
         <div id="sectionTime" class="section" style="display:none;">
             <label>Target Success Rate (%)</label>
-            <input type="number" id="targetP" placeholder="Target % (e.g. 50)">
+            <input type="number" id="targetP" placeholder="Target % (e.g. 50)" min="0.01" max="99.99" step="any">
             <div class="result-box">
                 <label style="color: white; font-size: 0.75rem; opacity: 0.8;">TIME REQUIRED</label>
                 <div class="result-val" id="outputTime">-- Days</div>
+                <span class="stat-subtext" id="rollsNeeded">0 rolls needed</span>
             </div>
         </div>
 
@@ -132,10 +125,9 @@
     let currentMode = 'chance';
     let calcTimeout;
 
-    // DEBOUNCE FUNCTION: Prevents lag by waiting for user to stop typing
     function debouncedCalculate() {
         clearTimeout(calcTimeout);
-        calcTimeout = setTimeout(calculate, 150); // 150ms delay is unnoticeable but saves CPU
+        calcTimeout = setTimeout(calculate, 150);
     }
 
     function setMode(mode) {
@@ -158,7 +150,22 @@
     function toggleEventGear() {
         const isChecked = document.getElementById('showEvent').checked;
         const items = document.getElementsByClassName('event-item');
-        for (let item of items) { item.style.display = isChecked ? "block" : "none"; }
+        const gloveSelect = document.getElementById('mult');
+        
+        // Check if the currently selected option is any event item
+        const currentOption = gloveSelect.options[gloveSelect.selectedIndex];
+        const isEventOption = currentOption.classList.contains('event-item');
+
+        for (let item of items) { 
+            item.style.display = isChecked ? "block" : "none"; 
+        }
+
+        // If user hides event gear while an event glove is selected, reset to Ruins
+        if (!isChecked && isEventOption) {
+            gloveSelect.value = "1.98"; 
+        }
+
+        checkRainySupport();
         calculate();
     }
 
@@ -175,9 +182,14 @@
         const glove = document.getElementById('mult').value;
         const isRainy = document.getElementById('isRainy').checked;
         
+        // VIP Logic: Restored to original (Either = 1.2x, Both = 1.3x)
         let finalMult = 1;
-        if (document.getElementById('vip').checked && document.getElementById('vipPlus').checked) finalMult = 1.3;
-        else if (document.getElementById('vip').checked || document.getElementById('vipPlus').checked) finalMult = 1.2;
+        const hasVip = document.getElementById('vip').checked;
+        const hasVipPlus = document.getElementById('vipPlus').checked;
+        
+        if (hasVip && hasVipPlus) finalMult = 1.3;
+        else if (hasVip || hasVipPlus) finalMult = 1.2;
+
         if (document.getElementById('event2x').checked) finalMult *= 2;
 
         let rawLuck = displayLuck / finalMult;
@@ -205,10 +217,14 @@
             pAvg = ((rawLuck + L_add) * M_glove * finalMult) / R_base;
         }
 
-        const rollsPerDay = (parseFloat(document.getElementById('speedR').value) / parseFloat(document.getElementById('speedS').value)) * 86400 * speedMult;
+        const rVal = parseFloat(document.getElementById('speedR').value) || 1;
+        const sVal = parseFloat(document.getElementById('speedS').value) || 1;
+        const rollsPerDay = (rVal / sVal) * 86400 * speedMult;
 
+        // Mode 1: Chance of Success
         const d = parseFloat(document.getElementById('days').value) || 0;
-        const P = d > 0 ? 1 - Math.pow((1 - pAvg), (rollsPerDay * d)) : 0;
+        const totalRolls = rollsPerDay * d;
+        const P = (d > 0 && pAvg > 0) ? 1 - Math.pow((1 - pAvg), totalRolls) : 0;
         
         let displayChance = "";
         if (P >= 0.9999999) displayChance = "99.9999%+";
@@ -216,17 +232,23 @@
         else displayChance = (P * 100).toFixed(2) + "%";
         
         document.getElementById('outputChance').innerText = displayChance;
+        document.getElementById('totalRolls').innerText = Math.floor(totalRolls).toLocaleString() + " total rolls";
 
+        // Mode 2: Time Required
         const targetP = (parseFloat(document.getElementById('targetP').value) || 0) / 100;
-        if (targetP > 0 && targetP < 1 && pAvg > 0) {
-            const neededDays = (Math.log(1 - targetP) / Math.log(1 - pAvg)) / rollsPerDay;
-            document.getElementById('outputTime').innerText = Math.max(0, neededDays).toFixed(2) + " Days";
+        if (targetP > 0 && targetP < 1 && pAvg > 0 && pAvg < 1) {
+            const n_needed = Math.log(1 - targetP) / Math.log(1 - pAvg);
+            const neededDays = n_needed / rollsPerDay;
+            
+            document.getElementById('outputTime').innerText = neededDays > 1000 ? neededDays.toExponential(2) + " Days" : neededDays.toFixed(2) + " Days";
+            document.getElementById('rollsNeeded').innerText = Math.ceil(n_needed).toLocaleString() + " rolls needed";
         } else {
             document.getElementById('outputTime').innerText = "-- Days";
+            document.getElementById('rollsNeeded').innerText = "0 rolls needed";
         }
     }
 
-    // Attach listeners to use the Debounce function
+    // Attach listeners
     document.querySelectorAll('input, select').forEach(el => {
         el.addEventListener('input', debouncedCalculate);
     });
