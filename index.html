@@ -29,6 +29,15 @@
         .reset-btn { background: #2a2a35; color: #ccc; border: 1px solid #444; padding: 6px 12px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; }
         .disclaimer { font-size: 0.65rem; color: #666; text-align: center; margin: 10px 0; font-style: italic; }
         .event-toggle-container { display: flex; justify-content: center; margin: 10px 0; }
+        .skip-container { display: flex; gap: 10px; align-items: center; }
+        .skip-container input { flex: 1; }
+        .skip-container label.check-row { margin: 0; white-space: nowrap; }
+        .area-switch { display: flex; background: #000; border-radius: 10px; padding: 6px; margin-bottom: 20px; border: 2px solid #444; }
+        .area-btn { flex: 1; padding: 12px; border: none; background: none; color: #888; cursor: pointer; font-weight: 900; font-size: 0.8rem; border-radius: 7px; text-transform: uppercase; transition: 0.2s; }
+        .area-btn.active { background: #ff6b35; color: #000; }
+        .limbo-only { border-left: 3px solid #ff6b35; padding-left: 10px; margin-top: 10px; }
+        .potion-stack { display: flex; gap: 10px; margin: 8px 0; flex-wrap: wrap; }
+        .potion-stack label { margin: 0; }
     </style>
 </head>
 <body>
@@ -37,80 +46,217 @@
     <form id="calcForm" onsubmit="return false;">
         <h2>Sols Rng Calculator</h2>
 
-        <div class="section">
-            <label>Rarity of Aura</label>
-            <div class="rarity-container">
-                <span class="prefix">1/</span>
-                <input type="number" id="rarity" class="rarity-input" value="2500000000">
-            </div>
-            <div id="rainyContainer" style="display:none; margin-bottom: 10px;"><label class="check-row" style="color: #add8e6;"><input type="checkbox" id="isRainy"> Rainy Aura?</label></div>
-            <div class="grid-2">
-                <div><label>Luck (without L hand glove)</label><input type="number" id="luck" value="30"></div>
-                <div><label>Left Hand (Luck)</label>
-                    <select id="leftGlove" onchange="checkRainySupport()">
-                        <option value="1">None</option><option value="1.98">Unfathomable</option><option value="1.8">Darkshader</option><option value="pole">Pole Light</option><option value="grav">Gravitational</option><option value="1.3">Flesh Device</option><option value="jackpot">Jackpot</option><option value="gemstone">Gemstone</option>
-                        <option value="xmas" class="event-luck" style="display:none;">X-Mas Champ</option><option value="present" class="event-luck" style="display:none;">Present Giver</option><option value="blessed" class="event-luck" style="display:none;">Blessed Tide</option><option value="tide" class="event-luck" style="display:none;">Tide Gauntlet</option><option value="1.35" class="event-luck" style="display:none;">Ominous Coffin</option>
-                    </select>
+        <!-- Area Selection -->
+        <div class="area-switch">
+            <button type="button" id="btnOverworld" class="area-btn active" onclick="setArea('overworld')">OVERWORLD</button>
+            <button type="button" id="btnLimbo" class="area-btn" onclick="setArea('limbo')">LIMBO</button>
+        </div>
+
+        <div id="overworldContent">
+            <div class="section">
+                <label>Rarity of Aura</label>
+                <div class="rarity-container">
+                    <span class="prefix">1/</span>
+                    <input type="number" id="rarity" class="rarity-input" value="2500000000">
+                </div>
+                <div id="rainyContainer" style="display:none; margin-bottom: 10px;"><label class="check-row" style="color: #add8e6;"><input type="checkbox" id="isRainy"> Rainy Aura?</label></div>
+                <div class="grid-2">
+                    <div><label>Luck (without L hand glove)</label><input type="number" id="luck" value="30"></div>
+                    <div><label>Left Hand (Luck)</label>
+                        <select id="leftGlove" onchange="checkRainySupport()">
+                            <option value="1">None</option>
+                            <option value="thing" selected>The Thing</option>
+                            <option value="1.98">Unfathomable</option>
+                            <option value="1.8">Darkshader</option>
+                            <option value="pole">Pole Light</option>
+                            <option value="grav">Gravitational</option>
+                            <option value="1.3">Flesh Device</option>
+                            <option value="jackpot">Jackpot</option>
+                            <option value="gemstone">Gemstone</option>
+                            <option value="xmas" class="event-luck" style="display:none;">X-Mas Champ</option>
+                            <option value="present" class="event-luck" style="display:none;">Present Giver</option>
+                            <option value="blessed" class="event-luck" style="display:none;">Blessed Tide</option>
+                            <option value="tide" class="event-luck" style="display:none;">Tide Gauntlet</option>
+                            <option value="1.35" class="event-luck" style="display:none;">Ominous Coffin</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="check-grid">
+                    <label class="check-row"><input type="checkbox" id="vip"> VIP</label>
+                    <label class="check-row"><input type="checkbox" id="vipPlus"> VIP+</label>
+                    <label class="check-row">Event Multiplier: <input type="number" id="eventMulti" value="1" step="0.1" min="0.1" style="width: 70px; margin-left: 5px;"></label>
                 </div>
             </div>
-            <div class="check-grid">
-                <label class="check-row"><input type="checkbox" id="vip"> VIP</label><label class="check-row"><input type="checkbox" id="vipPlus"> VIP+</label><label class="check-row"><input type="checkbox" id="event2x"> 2x Event</label>
+
+            <div class="section">
+                <label style="color: #00d4ff; font-weight: bold; margin-bottom: 8px;">Roll Speed Buffs</label>
+                <label>Right Hand (Speed)</label>
+                <select id="rightGlove">
+                    <option value="0">None</option>
+                    <option value="200" selected>Singularity Gauntlet (+200%)</option>
+                    <option value="120">Heavenly Device (+120%)</option>
+                    <option value="100">Genesis Drive (+100%)</option>
+                    <option value="70">Neuralyzer (+70%)</option>
+                    <option value="50">Starshaper (+50%)</option>
+                    <option value="40">Ragnaröker (+40%)</option>
+                    <option value="35">Hologrammer (+35%)</option>
+                    <option value="35.1">Exoflex (+35%)</option>
+                    <option value="35.2">Volcanic (+35%)</option>
+                    <option value="30">Galactic (+30%)</option>
+                    <option value="30.1">Subzero (+30%)</option>
+                    <option value="25">Windstorm (+25%)</option>
+                    <option value="25.1">Frozen Gauntlet (+25%)</option>
+                    <option value="20">Exo Gauntlet (+20%)</option>
+                    <option value="15">Eclipse (+15%)</option>
+                    <option value="15.1">Lunar Device (+15%)</option>
+                    <option value="30.2" class="event-speed" style="display:none;">Snow Rider (+30%)</option>
+                    <option value="30.3" class="event-speed" style="display:none;">Vampire Hunter (+30%)</option>
+                    <option value="-50" class="event-speed" style="display:none;">Pump Punch (-50%)</option>
+                </select>
+                <div class="grid-2">
+                    <div><label>Resonance % (0-22)</label><input type="number" id="resonance" value="0" min="0" max="22" step="1"></div>
+                    <div><label>Bank Level</label>
+                        <select id="bankLevel">
+                            <option value="0" selected>None (0%)</option>
+                            <option value="1">Level 1 (+7%)</option>
+                            <option value="2">Level 2 (+14%)</option>
+                            <option value="3">Level 3 (+21%)</option>
+                            <option value="4">Level 4 (+28%)</option>
+                            <option value="5">Level 5 (+35%)</option>
+                            <option value="6">Level 6 (+42%)</option>
+                            <option value="7">Level 7 (+50%)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid-2">
+                    <div><label>Speed Potion</label><select id="buffBasic"><option value="0">None</option><option value="10">Speed Potion (+10%)</option></select></div>
+                    <div><label>Haste Potion</label><select id="buffHaste"><option value="0">None</option><option value="20">Haste I (+20%)</option><option value="25">Haste II (+25%)</option><option value="30">Haste III (+30%)</option></select></div>
+                </div>
+                <div class="grid-2">
+                    <div><label>Godly Potion</label>
+                        <select id="buffGod">
+                            <option value="0">None</option><option value="75">Poseidon (+75%)</option><option value="30">Zeus (+30%)</option><option value="-10">Hades (-10%)</option>
+                        </select>
+                    </div>
+                    <div><label>Strange/Rudolph</label><select id="buffKnowledge"><option value="0">None</option><option value="30">Knowledge 1 (+30%)</option><option value="40">Knowledge 2 (+40%)</option><option value="20">Rudolph (+20%)</option><option value="-15">Sloth 1 (-15%)</option><option value="-25">Sloth 2 (-25%)</option></select></div>
+                </div>
+                <div class="grid-2">
+                    <div><label>Event Potion</label><select id="buffEventPot"><option value="0">None</option><option value="20">Santa (+20%)</option><option value="25">Hwache (+25%)</option></select></div>
+                    <div><label>Other Potions</label><select id="buffCombat"><option value="0">None</option><option value="35">Rage Pot (+35%)</option><option value="40">Diver Pot (+40%)</option></select></div>
+                </div>
+                <label>Roll Skips</label>
+                <div class="skip-container">
+                    <input type="number" id="rollSkips" value="0" placeholder="Number of skips" step="1" min="0">
+                    <label class="check-row"><input type="checkbox" id="infiniteSkips"> Infinite Skips</label>
+                </div>
             </div>
         </div>
 
-        <div class="section">
-            <label style="color: #00d4ff; font-weight: bold; margin-bottom: 8px;">Roll Speed Buffs</label>
-            <label>Right Hand (Speed)</label>
-            <select id="rightGlove">
-                <option value="0">None</option><option value="120">Heavenly Device (+120%)</option><option value="100">Genesis Drive (+100%)</option><option value="70">Neuralyzer (+70%)</option><option value="50">Starshaper (+50%)</option><option value="40">Ragnaröker (+40%)</option><option value="35">Hologrammer (+35%)</option><option value="35.1">Exoflex (+35%)</option><option value="35.2">Volcanic (+35%)</option><option value="30">Galactic (+30%)</option><option value="30.1">Subzero (+30%)</option><option value="25">Windstorm (+25%)</option><option value="25.1">Frozen Gauntlet (+25%)</option><option value="20">Exo Gauntlet (+20%)</option><option value="15">Eclipse (+15%)</option><option value="15.1">Lunar Device (+15%)</option>
-                <option value="30.2" class="event-speed" style="display:none;">Snow Rider (+30%)</option><option value="30.3" class="event-speed" style="display:none;">Vampire Hunter (+30%)</option><option value="-50" class="event-speed" style="display:none;">Pump Punch (-50%)</option>
-            </select>
-            <div class="grid-2">
-                <div><label>Resonance % (Max 22)</label><input type="number" id="resonance" value="0"></div>
-                <div><label>Bank</label><select id="buffBank"><option value="0">None</option><option value="7">Bank (+7%)</option></select></div>
-            </div>
-            <div class="grid-2">
-                <div><label>Speed Potion</label><select id="buffBasic"><option value="0">None</option><option value="10">Speed Potion (+10%)</option></select></div>
-                <div><label>Haste Potion</label><select id="buffHaste"><option value="0">None</option><option value="20">Haste I (+20%)</option><option value="25">Haste II (+25%)</option><option value="30">Haste III (+30%)</option></select></div>
-            </div>
-            <div class="grid-2">
-                <div><label>Godly Potion</label>
-                    <select id="buffGod">
-                        <option value="0">None</option><option value="75">Poseidon (+75%)</option><option value="30">Zeus (+30%)</option><option value="-10">Hades (-10%)</option>
-                    </select>
+        <div id="limboContent" style="display:none;">
+            <div class="section">
+                <label>Rarity of Aura</label>
+                <div class="rarity-container">
+                    <span class="prefix">1/</span>
+                    <input type="number" id="limboRarity" class="rarity-input" value="2500000000">
                 </div>
-                <div><label>Strange/Rudolph</label><select id="buffKnowledge"><option value="0">None</option><option value="30">Knowledge 1 (+30%)</option><option value="40">Knowledge 2 (+40%)</option><option value="20">Rudolph (+20%)</option><option value="-15">Sloth 1 (-15%)</option><option value="-25">Sloth 2 (-25%)</option></select></div>
+                <div class="grid-2">
+                    <div><label>Left Hand (Luck)</label>
+                        <select id="limboLeftGlove">
+                            <option value="1">None</option>
+                            <option value="thing" selected>The Thing</option>
+                            <option value="1.98">Unfathomable</option>
+                            <option value="1.8">Darkshader</option>
+                            <option value="pole">Pole Light</option>
+                            <option value="grav">Gravitational</option>
+                            <option value="1.3">Flesh Device</option>
+                            <option value="jackpot">Jackpot</option>
+                            <option value="gemstone">Gemstone</option>
+                            <option value="xmas" class="event-luck" style="display:none;">X-Mas Champ</option>
+                            <option value="present" class="event-luck" style="display:none;">Present Giver</option>
+                            <option value="blessed" class="event-luck" style="display:none;">Blessed Tide</option>
+                            <option value="tide" class="event-luck" style="display:none;">Tide Gauntlet</option>
+                            <option value="1.35" class="event-luck" style="display:none;">Ominous Coffin</option>
+                        </select>
+                    </div>
+                    <div><label>Right Hand (Speed)</label>
+                        <select id="limboRightGlove">
+                            <option value="0">None</option>
+                            <option value="200" selected>Singularity Gauntlet (+200%)</option>
+                            <option value="120">Heavenly Device (+120%)</option>
+                            <option value="100">Genesis Drive (+100%)</option>
+                            <option value="70">Neuralyzer (+70%)</option>
+                            <option value="50">Starshaper (+50%)</option>
+                            <option value="40">Ragnaröker (+40%)</option>
+                            <option value="35">Hologrammer (+35%)</option>
+                            <option value="35.1">Exoflex (+35%)</option>
+                            <option value="35.2">Volcanic (+35%)</option>
+                            <option value="30">Galactic (+30%)</option>
+                            <option value="30.1">Subzero (+30%)</option>
+                            <option value="25">Windstorm (+25%)</option>
+                            <option value="25.1">Frozen Gauntlet (+25%)</option>
+                            <option value="20">Exo Gauntlet (+20%)</option>
+                            <option value="15">Eclipse (+15%)</option>
+                            <option value="15.1">Lunar Device (+15%)</option>
+                            <option value="30.2" class="event-speed" style="display:none;">Snow Rider (+30%)</option>
+                            <option value="30.3" class="event-speed" style="display:none;">Vampire Hunter (+30%)</option>
+                            <option value="-50" class="event-speed" style="display:none;">Pump Punch (-50%)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="check-grid">
+                    <label class="check-row"><input type="checkbox" id="limboVip"> VIP</label>
+                    <label class="check-row"><input type="checkbox" id="limboVipPlus"> VIP+</label>
+                    <label class="check-row">Event Multiplier: <input type="number" id="limboEventMulti" value="1" step="0.1" min="0.1" style="width: 70px; margin-left: 5px;"></label>
+                </div>
+                
+                <div class="limbo-only">
+                    <label style="color: #ff6b35; font-weight: bold;">Limbo Exclusive Buffs</label>
+                    <div class="grid-2">
+                        <div><label>Dave's Hope</label>
+                            <select id="davesHope">
+                                <option value="1">None</option>
+                                <option value="1.2">1.2x</option>
+                                <option value="1.4">1.4x</option>
+                                <option value="1.6">1.6x</option>
+                                <option value="1.8">1.8x</option>
+                                <option value="2">2.0x</option>
+                            </select>
+                        </div>
+                        <div><label>Forbidden Potions (Stackable)</label>
+                            <div class="potion-stack">
+                                <label class="check-row"><input type="checkbox" id="forbidden1"> Forbidden I (+70% Luck, +10% Speed)</label>
+                                <label class="check-row"><input type="checkbox" id="forbidden2"> Forbidden II (+325% Luck, +25% Speed)</label>
+                                <label class="check-row"><input type="checkbox" id="forbidden3"> Forbidden III (+1350% Luck, +75% Speed)</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="grid-2">
-                <div><label>Event Potion</label><select id="buffEventPot"><option value="0">None</option><option value="20">Santa (+20%)</option><option value="25">Hwache (+25%)</option></select></div>
-                <div><label>Other Potions</label><select id="buffCombat"><option value="0">None</option><option value="35">Rage Pot (+35%)</option><option value="40">Diver Pot (+40%)</option></select></div>
-            </div>
-            <label>Active Roll Skips</label><input type="number" id="rollSkips" value="0" placeholder="Skips">
         </div>
 
         <hr style="border: 0; border-top: 1px solid #333; margin: 20px 0;">
 
         <div class="mode-switch">
-            <button type="button" id="btnChance" class="mode-btn active" onclick="setMode('chance')">CHANCE %</button>
-            <button type="button" id="btnTime" class="mode-btn" onclick="setMode('time')">TIME REQ.</button>
+            <button type="button" id="btnChance" class="mode-btn active" onclick="setMode('chance')">TIME REQ.</button>
+            <button type="button" id="btnTime" class="mode-btn" onclick="setMode('time')">CHANCE %</button>
         </div>
 
         <div id="sectionChance" class="section">
-            <label>Rolling Duration (Days)</label><input type="number" id="days" placeholder="Days AFK">
+            <label>Desired Success Rate (%)</label>
+            <input type="number" id="targetP" placeholder="Max 99.99" step="0.01" max="99.99" oninput="if(this.value>=100)this.value=99.99">
             <div class="result-box" id="chanceBox">
-                <div class="result-val" id="outputChance">0.00%</div>
-                <span class="luck-status" id="chanceLabel">WAITING...</span>
-                <span class="stat-subtext" id="totalRolls">0 total rolls</span>
+                <div class="result-val" id="outputChance">-- Days</div>
+                <span class="luck-status" id="chanceLabel">AFK TIME</span>
+                <span class="stat-subtext" id="totalRolls">0 rolls needed</span>
             </div>
         </div>
 
         <div id="sectionTime" class="section" style="display:none;">
-            <label>Desired Success Rate (%)</label>
-            <input type="number" id="targetP" placeholder="Max 99.99" step="0.01" max="99.99" oninput="if(this.value>=100)this.value=99.99">
+            <label>Rolling Duration (Days)</label><input type="number" id="days" placeholder="Days AFK">
             <div class="result-box" id="timeBox">
-                <div class="result-val" id="outputTime">-- Days</div>
-                <span class="luck-status" id="timeLabel">AFK TIME</span>
-                <span class="stat-subtext" id="rollsNeeded">0 rolls needed</span>
+                <div class="result-val" id="outputTime">0.00%</div>
+                <span class="luck-status" id="timeLabel">WAITING...</span>
+                <span class="stat-subtext" id="rollsNeeded">0 total rolls</span>
             </div>
         </div>
 
@@ -129,6 +275,17 @@
 
 <script>
     let currentMode = 'chance';
+    let currentArea = 'overworld';
+    
+    function setArea(area) {
+        currentArea = area;
+        document.getElementById('overworldContent').style.display = (area === 'overworld') ? 'block' : 'none';
+        document.getElementById('limboContent').style.display = (area === 'limbo') ? 'block' : 'none';
+        document.getElementById('btnOverworld').classList.toggle('active', area === 'overworld');
+        document.getElementById('btnLimbo').classList.toggle('active', area === 'limbo');
+        calculate();
+    }
+    
     function setMode(mode) {
         currentMode = mode;
         document.getElementById('sectionChance').style.display = (mode === 'chance') ? 'block' : 'none';
@@ -140,18 +297,24 @@
     
     function toggleEvents() {
         const checked = document.getElementById('showEventGlobal').checked;
+        
         const luckGlove = document.getElementById('leftGlove');
         const speedGlove = document.getElementById('rightGlove');
-
+        const limboLuckGlove = document.getElementById('limboLeftGlove');
+        const limboSpeedGlove = document.getElementById('limboRightGlove');
+        
         document.querySelectorAll('.event-luck').forEach(el => el.style.display = checked ? "block" : "none");
         document.querySelectorAll('.event-speed').forEach(el => el.style.display = checked ? "block" : "none");
 
         if (!checked) {
-            if (luckGlove.selectedOptions[0].classList.contains('event-luck')) luckGlove.value = "1";
-            if (speedGlove.selectedOptions[0].classList.contains('event-speed')) speedGlove.value = "0";
+            if (luckGlove && luckGlove.selectedOptions[0]?.classList.contains('event-luck')) luckGlove.value = "1";
+            if (speedGlove && speedGlove.selectedOptions[0]?.classList.contains('event-speed')) speedGlove.value = "0";
+            if (limboLuckGlove && limboLuckGlove.selectedOptions[0]?.classList.contains('event-luck')) limboLuckGlove.value = "1";
+            if (limboSpeedGlove && limboSpeedGlove.selectedOptions[0]?.classList.contains('event-speed')) limboSpeedGlove.value = "0";
         }
 
         checkRainySupport();
+        calculate();
     }
 
     function checkRainySupport() {
@@ -161,13 +324,46 @@
     }
     
     function fullReset() { 
-        document.getElementById('calcForm').reset(); 
+        document.getElementById('leftGlove').value = "thing";
+        document.getElementById('rightGlove').value = "200";
+        document.getElementById('bankLevel').value = "0";
+        document.getElementById('eventMulti').value = "1";
+        document.getElementById('infiniteSkips').checked = false;
+        document.getElementById('rollSkips').disabled = false;
+        document.getElementById('rollSkips').value = "0";
+        document.getElementById('resonance').value = "0";
+        
+        document.getElementById('limboLeftGlove').value = "thing";
+        document.getElementById('limboRightGlove').value = "200";
+        document.getElementById('limboEventMulti').value = "1";
+        document.getElementById('limboVip').checked = false;
+        document.getElementById('limboVipPlus').checked = false;
+        document.getElementById('davesHope').value = "1";
+        document.getElementById('forbidden1').checked = false;
+        document.getElementById('forbidden2').checked = false;
+        document.getElementById('forbidden3').checked = false;
+        
+        document.getElementById('rarity').value = "2500000000";
+        document.getElementById('limboRarity').value = "2500000000";
+        document.getElementById('targetP').value = "";
+        document.getElementById('days').value = "";
+        
         toggleEvents(); 
         checkRainySupport(); 
+        setArea('overworld');
         setMode('chance'); 
+        calculate();
     }
 
     function calculate() {
+        if (currentArea === 'overworld') {
+            calculateOverworld();
+        } else {
+            calculateLimbo();
+        }
+    }
+    
+    function calculateOverworld() {
         let rarityInput = document.getElementById('rarity');
         let resInput = document.getElementById('resonance');
 
@@ -177,87 +373,344 @@
             if (rarityInput.value != val) rarityInput.value = val;
         }
 
-        if (parseFloat(resInput.value) > 22) resInput.value = 22;
+        let resValue = parseFloat(resInput.value);
+        if (isNaN(resValue)) resValue = 0;
+        resValue = Math.min(22, Math.max(0, resValue));
+        if (resInput.value != resValue) resInput.value = resValue;
 
         const R = parseFloat(rarityInput.value) || 1;
-        const L = parseFloat(document.getElementById('luck').value) || 0;
+        const baseLuck = 1;
+        const luckInput = parseFloat(document.getElementById('luck').value) || 0;
         const left = document.getElementById('leftGlove').value;
         const rainy = document.getElementById('isRainy').checked;
-        const skipCount = parseFloat(document.getElementById('rollSkips').value) || 0;
+        const skipCountRaw = parseFloat(document.getElementById('rollSkips').value) || 0;
+        const infiniteSkips = document.getElementById('infiniteSkips').checked;
+        
+        const skipCount = infiniteSkips ? 1e15 : skipCountRaw;
 
-        let luckM = 1;
-        const v = document.getElementById('vip').checked, vp = document.getElementById('vipPlus').checked;
-        if (v && vp) luckM = 1.3; else if (v || vp) luckM = 1.2;
-        if (document.getElementById('event2x').checked) luckM *= 2;
+        let leftLuckBonus = 0;
+        let leftSpeedBonus = 0;
+        let leftMultiplier = 1;
         
-        let rawL = L / luckM, pAvg, speedM = 1;
-        
-        if (left === "blessed") { pAvg = (5 * (rawL / R) + 1 * ((rawL * 3) / (R / (rainy?4:1)))) / 6 * luckM; }
-        else if (left === "tide") { pAvg = (9 * ((rawL + 0.5) / R) + 1 * (((rawL + 0.5) * 2) / (R / (rainy?4:1)))) / 10 * luckM; }
-        else {
-            let add = 0, mg = 1;
-            if (left === "pole") { add = 5; mg = 1.1; speedM += 0.133; }
-            else if (left === "jackpot") { add = 0.77; speedM += 0.07; }
-            else if (left === "grav") { mg = 1.5; }
-            else if (left === "gemstone") { add = 0.075; speedM += 0.0125; }
-            else if (left === "xmas") { mg = 1.5; }
-            else if (left === "present") { mg = 1.36; }
-            else if (left === "1.35") { mg = 1.35; }
-            else { mg = parseFloat(left) || 1; }
-            pAvg = ((rawL + add) * mg * luckM) / R;
+        if (left === "thing") {
+            leftMultiplier = 2.0;
+        } else if (left === "pole") { 
+            leftLuckBonus = 5; 
+            leftSpeedBonus = 0.133; 
+            leftMultiplier = 1.1; 
+        } else if (left === "jackpot") { 
+            leftLuckBonus = 0.77; 
+            leftSpeedBonus = 0.07; 
+            leftMultiplier = 1; 
+        } else if (left === "grav") { 
+            leftLuckBonus = 0; 
+            leftMultiplier = 1.5; 
+        } else if (left === "gemstone") { 
+            leftLuckBonus = 0.075; 
+            leftSpeedBonus = 0.0125; 
+            leftMultiplier = 1; 
+        } else if (left === "xmas") { 
+            leftLuckBonus = 0; 
+            leftMultiplier = 1.5; 
+        } else if (left === "present") { 
+            leftLuckBonus = 0; 
+            leftMultiplier = 1.36; 
+        } else if (left === "1.35") { 
+            leftLuckBonus = 0; 
+            leftMultiplier = 1.35; 
+        } else if (left === "blessed" || left === "tide") { 
+            leftLuckBonus = 0; 
+            leftMultiplier = 1; 
+        } else { 
+            leftMultiplier = parseFloat(left) || 1; 
         }
-
-        speedM += (parseFloat(resInput.value) || 0) / 100;
-        speedM += (parseFloat(document.getElementById('rightGlove').value) || 0) / 100;
-        speedM += (parseFloat(document.getElementById('buffBank').value) || 0) / 100;
-        speedM += (parseFloat(document.getElementById('buffBasic').value) || 0) / 100;
-        speedM += (parseFloat(document.getElementById('buffHaste').value) || 0) / 100;
-        speedM += (parseFloat(document.getElementById('buffGod').value) || 0) / 100;
-        speedM += (parseFloat(document.getElementById('buffKnowledge').value) || 0) / 100;
-        speedM += (parseFloat(document.getElementById('buffEventPot').value) || 0) / 100;
-        speedM += (parseFloat(document.getElementById('buffCombat').value) || 0) / 100;
         
-        const d = parseFloat(document.getElementById('days').value) || 0;
-        const totalSessionTime = 86400 * d;
-        const skipSpeed = speedM + 10;
-
-        const maxSkips = totalSessionTime * skipSpeed;
-        const skipsDone = Math.min(skipCount, maxSkips);
-        const skipTime = skipsDone / skipSpeed;
-        const normRolls = Math.max(0, totalSessionTime - skipTime) * speedM;
-        const totalRolls = normRolls + skipsDone;
+        let luckBuffs = baseLuck + luckInput + leftLuckBonus;
+        let luckAfterMulti = luckBuffs * leftMultiplier;
         
-        const P = (totalRolls > 0) ? 1 - Math.pow((1 - pAvg), totalRolls) : 0;
-        document.getElementById('outputChance').innerText = (P >= 0.9999999) ? "99.99%+" : (P * 100).toFixed(2) + "%";
-        document.getElementById('totalRolls').innerText = Math.floor(totalRolls).toLocaleString() + " rolls";
+        const vip = document.getElementById('vip').checked;
+        const vipPlus = document.getElementById('vipPlus').checked;
+        let vipMulti = 1;
+        if (vip && vipPlus) vipMulti = 1.3;
+        else if (vip || vipPlus) vipMulti = 1.2;
+        
+        const eventMulti = parseFloat(document.getElementById('eventMulti').value) || 1;
+        
+        let totalLuck = luckAfterMulti * vipMulti * eventMulti;
+        
+        const rightGlove = document.getElementById('rightGlove').value;
+        if (rightGlove === "200") {
+            totalLuck *= 23;
+        }
+        
+        let pPerRoll;
+        
+        if (left === "blessed") {
+            if (rainy) {
+                let normalP = totalLuck / R;
+                let specialP = (totalLuck * 3) / (R / 4);
+                pPerRoll = (5 * normalP + 1 * specialP) / 6;
+            } else {
+                let normalP = totalLuck / R;
+                let specialP = (totalLuck * 3) / R;
+                pPerRoll = (5 * normalP + 1 * specialP) / 6;
+            }
+        } 
+        else if (left === "tide") {
+            let tideLuck = totalLuck + 0.5;
+            if (rainy) {
+                let normalP = tideLuck / R;
+                let specialP = (tideLuck * 2) / (R / 4);
+                pPerRoll = (9 * normalP + 1 * specialP) / 10;
+            } else {
+                let normalP = tideLuck / R;
+                let specialP = (tideLuck * 2) / R;
+                pPerRoll = (9 * normalP + 1 * specialP) / 10;
+            }
+        }
+        else {
+            pPerRoll = totalLuck / R;
+        }
+        
+        pPerRoll = Math.min(pPerRoll, 1);
+        
+        let speedBonus = 0;
+        speedBonus += resValue;
+        speedBonus += (parseFloat(rightGlove) || 0);
+        
+        const bankLevel = parseInt(document.getElementById('bankLevel').value) || 0;
+        const bankBonuses = {0:0, 1:7, 2:14, 3:21, 4:28, 5:35, 6:42, 7:50};
+        speedBonus += bankBonuses[bankLevel] || 0;
+        
+        speedBonus += (parseFloat(document.getElementById('buffBasic').value) || 0);
+        speedBonus += (parseFloat(document.getElementById('buffHaste').value) || 0);
+        speedBonus += (parseFloat(document.getElementById('buffGod').value) || 0);
+        speedBonus += (parseFloat(document.getElementById('buffKnowledge').value) || 0);
+        speedBonus += (parseFloat(document.getElementById('buffEventPot').value) || 0);
+        speedBonus += (parseFloat(document.getElementById('buffCombat').value) || 0);
+        speedBonus += leftSpeedBonus;
+        
+        let speedM = 1 + (speedBonus / 100);
+        const skipSpeedM = 11;
+        
+        const days = parseFloat(document.getElementById('days').value) || 0;
+        const totalSeconds = 86400 * days;
+        
+        let totalRolls;
+        
+        if (infiniteSkips) {
+            totalRolls = totalSeconds * skipSpeedM;
+        } else {
+            const skipTime = Math.min(skipCount / skipSpeedM, totalSeconds);
+            const skipRolls = skipTime * skipSpeedM;
+            const normalTime = totalSeconds - skipTime;
+            const normalRolls = normalTime * speedM;
+            totalRolls = skipRolls + normalRolls;
+        }
         
         const targetInput = document.getElementById('targetP');
         let targetVal = (parseFloat(targetInput.value) || 0) / 100;
         if (targetVal >= 1) targetVal = 0.9999;
-
-        if (targetVal > 0 && pAvg > 0) {
-            const rollsReq = Math.log(1 - targetVal) / Math.log(1 - pAvg);
-            const sTime = Math.min(rollsReq, skipCount) / skipSpeed;
-            const nTime = Math.max(0, rollsReq - skipCount) / speedM;
-            const daysNeeded = (sTime + nTime) / 86400;
-            document.getElementById('outputTime').innerText = daysNeeded > 1000 ? daysNeeded.toExponential(2) + " Days" : daysNeeded.toFixed(2) + " Days";
-            document.getElementById('rollsNeeded').innerText = Math.ceil(rollsReq).toLocaleString() + " total rolls";
+        
+        if (targetVal > 0 && pPerRoll > 0 && pPerRoll < 1) {
+            const rollsNeeded = Math.log(1 - targetVal) / Math.log(1 - pPerRoll);
+            
+            let timeNeeded;
+            if (infiniteSkips) {
+                timeNeeded = rollsNeeded / skipSpeedM;
+            } else if (skipCount > 0) {
+                const skipRollsAvailable = skipCount;
+                if (skipRollsAvailable >= rollsNeeded) {
+                    timeNeeded = rollsNeeded / skipSpeedM;
+                } else {
+                    const skipTimeNeeded = skipCount / skipSpeedM;
+                    const remainingRolls = rollsNeeded - skipCount;
+                    const normalTimeNeeded = remainingRolls / speedM;
+                    timeNeeded = skipTimeNeeded + normalTimeNeeded;
+                }
+            } else {
+                timeNeeded = rollsNeeded / speedM;
+            }
+            
+            const daysNeeded = timeNeeded / 86400;
+            document.getElementById('outputChance').innerText = daysNeeded > 1000 ? daysNeeded.toExponential(2) + " Days" : daysNeeded.toFixed(2) + " Days";
+            document.getElementById('totalRolls').innerText = Math.ceil(rollsNeeded).toLocaleString() + " rolls needed";
+        } else {
+            document.getElementById('outputChance').innerText = (targetVal <= 0) ? "Enter target %" : "Impossible";
+            document.getElementById('totalRolls').innerText = "0 rolls needed";
         }
-        updateVisuals('chance', P, (d > 0 || skipCount > 0));
-        updateVisuals('time', targetVal, targetVal > 0);
+        
+        const P = (totalRolls > 0 && pPerRoll > 0) ? 1 - Math.pow((1 - pPerRoll), totalRolls) : 0;
+        document.getElementById('outputTime').innerText = (P >= 0.9999999) ? "99.99%+" : (P * 100).toFixed(2) + "%";
+        document.getElementById('rollsNeeded').innerText = Math.floor(totalRolls).toLocaleString() + " total rolls";
+        
+        updateVisuals('chance', targetVal, targetVal > 0);
+        updateVisuals('time', P, (days > 0 || skipCount > 0));
+    }
+    
+    function calculateLimbo() {
+        let rarityInput = document.getElementById('limboRarity');
+
+        if (rarityInput.value !== "") {
+            let val = Math.floor(parseFloat(rarityInput.value));
+            if (val < 1 || isNaN(val)) val = 1;
+            if (rarityInput.value != val) rarityInput.value = val;
+        }
+
+        const R = parseFloat(rarityInput.value) || 1;
+        const baseLuck = 1;
+        
+        const left = document.getElementById('limboLeftGlove').value;
+        let leftLuckBonus = 0;
+        let leftSpeedBonus = 0;
+        let leftMultiplier = 1;
+        
+        if (left === "thing") {
+            leftMultiplier = 2.0;
+        } else if (left === "pole") { 
+            leftLuckBonus = 5; 
+            leftSpeedBonus = 0.133; 
+            leftMultiplier = 1.1; 
+        } else if (left === "jackpot") { 
+            leftLuckBonus = 0.77; 
+            leftSpeedBonus = 0.07; 
+            leftMultiplier = 1; 
+        } else if (left === "grav") { 
+            leftLuckBonus = 0; 
+            leftMultiplier = 1.5; 
+        } else if (left === "gemstone") { 
+            leftLuckBonus = 0.075; 
+            leftSpeedBonus = 0.0125; 
+            leftMultiplier = 1; 
+        } else if (left === "xmas") { 
+            leftLuckBonus = 0; 
+            leftMultiplier = 1.5; 
+        } else if (left === "present") { 
+            leftLuckBonus = 0; 
+            leftMultiplier = 1.36; 
+        } else if (left === "1.35") { 
+            leftLuckBonus = 0; 
+            leftMultiplier = 1.35; 
+        } else { 
+            leftMultiplier = parseFloat(left) || 1; 
+        }
+        
+        let luckBuffs = baseLuck + leftLuckBonus;
+        let luckAfterMulti = luckBuffs * leftMultiplier;
+        
+        const vip = document.getElementById('limboVip').checked;
+        const vipPlus = document.getElementById('limboVipPlus').checked;
+        let vipMulti = 1;
+        if (vip && vipPlus) vipMulti = 1.3;
+        else if (vip || vipPlus) vipMulti = 1.2;
+        
+        const eventMulti = parseFloat(document.getElementById('limboEventMulti').value) || 1;
+        const davesHope = parseFloat(document.getElementById('davesHope').value) || 1;
+        
+        // Stackable Forbidden Potions
+        const forbidden1 = document.getElementById('forbidden1').checked;
+        const forbidden2 = document.getElementById('forbidden2').checked;
+        const forbidden3 = document.getElementById('forbidden3').checked;
+        
+        let forbiddenLuckMulti = 1;
+        let forbiddenSpeedBonus = 0;
+        
+        if (forbidden1) {
+            forbiddenLuckMulti *= 1.7;  // +70%
+            forbiddenSpeedBonus += 10;   // +10%
+        }
+        if (forbidden2) {
+            forbiddenLuckMulti *= 4.25;  // +325%
+            forbiddenSpeedBonus += 25;    // +25%
+        }
+        if (forbidden3) {
+            forbiddenLuckMulti *= 14.5;  // +1350%
+            forbiddenSpeedBonus += 75;    // +75%
+        }
+        
+        let totalLuck = luckAfterMulti * vipMulti * eventMulti * davesHope * forbiddenLuckMulti;
+        
+        const rightGlove = document.getElementById('limboRightGlove').value;
+        if (rightGlove === "200") {
+            totalLuck *= 23;
+        }
+        
+        let pPerRoll = totalLuck / R;
+        pPerRoll = Math.min(pPerRoll, 1);
+        
+        // Speed calculation for Limbo
+        let speedBonus = 0;
+        speedBonus += (parseFloat(rightGlove) || 0);
+        speedBonus += leftSpeedBonus;
+        speedBonus += forbiddenSpeedBonus;
+        
+        let speedM = 1 + (speedBonus / 100);
+        
+        const days = parseFloat(document.getElementById('days').value) || 0;
+        const totalSeconds = 86400 * days;
+        const totalRolls = totalSeconds * speedM;
+        
+        const targetInput = document.getElementById('targetP');
+        let targetVal = (parseFloat(targetInput.value) || 0) / 100;
+        if (targetVal >= 1) targetVal = 0.9999;
+        
+        if (targetVal > 0 && pPerRoll > 0 && pPerRoll < 1) {
+            const rollsNeeded = Math.log(1 - targetVal) / Math.log(1 - pPerRoll);
+            const timeNeeded = rollsNeeded / speedM;
+            const daysNeeded = timeNeeded / 86400;
+            document.getElementById('outputChance').innerText = daysNeeded > 1000 ? daysNeeded.toExponential(2) + " Days" : daysNeeded.toFixed(2) + " Days";
+            document.getElementById('totalRolls').innerText = Math.ceil(rollsNeeded).toLocaleString() + " rolls needed";
+        } else {
+            document.getElementById('outputChance').innerText = (targetVal <= 0) ? "Enter target %" : "Impossible";
+            document.getElementById('totalRolls').innerText = "0 rolls needed";
+        }
+        
+        const P = (totalRolls > 0 && pPerRoll > 0) ? 1 - Math.pow((1 - pPerRoll), totalRolls) : 0;
+        document.getElementById('outputTime').innerText = (P >= 0.9999999) ? "99.99%+" : (P * 100).toFixed(2) + "%";
+        document.getElementById('rollsNeeded').innerText = Math.floor(totalRolls).toLocaleString() + " total rolls";
+        
+        updateVisuals('chance', targetVal, targetVal > 0);
+        updateVisuals('time', P, (days > 0));
     }
 
     function updateVisuals(id, prob, hasData) {
         const b = document.getElementById(id + 'Box');
         const l = document.getElementById(id + 'Label');
         b.classList.remove('status-low', 'status-mid', 'status-high');
-        if (!hasData) { l.innerText = "WAITING..."; return; }
+        if (!hasData) { 
+            return; 
+        }
         if (prob < 0.1) b.classList.add('status-low');
         else if (prob < 0.5) b.classList.add('status-mid');
         else b.classList.add('status-high');
-        l.innerText = prob < 0.1 ? "Longshot" : prob < 0.5 ? "Fair Odds" : "Safe Bet";
     }
+    
+    document.getElementById('infiniteSkips').addEventListener('change', function() {
+        const skipsInput = document.getElementById('rollSkips');
+        if (this.checked) {
+            skipsInput.disabled = true;
+            skipsInput.value = 0;
+        } else {
+            skipsInput.disabled = false;
+        }
+        calculate();
+    });
+    
+    // Add listener for resonance to enforce range
+    document.getElementById('resonance').addEventListener('input', function() {
+        let val = parseFloat(this.value);
+        if (isNaN(val)) val = 0;
+        val = Math.min(22, Math.max(0, val));
+        if (this.value != val) this.value = val;
+        calculate();
+    });
+    
     document.querySelectorAll('input, select').forEach(el => el.addEventListener('input', calculate));
+    
+    window.addEventListener('load', function() {
+        fullReset();
+    });
+    
     calculate();
 </script>
 </body>
