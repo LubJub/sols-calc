@@ -93,7 +93,7 @@
                 <label>Right Hand (Speed)</label>
                 <select id="rightGlove">
                     <option value="0">None</option>
-                    <option value="200" selected>Singularity Gauntlet (+200%)</option>
+                    <option value="200" selected>Singularity Gauntlet (+200% Speed, +2200% Luck)</option>
                     <option value="120">Heavenly Device (+120%)</option>
                     <option value="100">Genesis Drive (+100%)</option>
                     <option value="70">Neuralyzer (+70%)</option>
@@ -181,7 +181,7 @@
                     <div><label>Right Hand (Speed)</label>
                         <select id="limboRightGlove">
                             <option value="0">None</option>
-                            <option value="200" selected>Singularity Gauntlet (+200%)</option>
+                            <option value="200" selected>Singularity Gauntlet (+200% Speed, +2200% Luck)</option>
                             <option value="120">Heavenly Device (+120%)</option>
                             <option value="100">Genesis Drive (+100%)</option>
                             <option value="70">Neuralyzer (+70%)</option>
@@ -434,10 +434,10 @@
         const eventMulti = parseFloat(document.getElementById('eventMulti').value) || 1;
         totalLuck *= eventMulti;
         
-        // Right glove luck bonuses (Singularity adds +2200% = 22x multiplier to current luck)
+        // Right glove luck bonuses (Singularity Gauntlet adds +2200% = +22 luck)
         const rightGlove = document.getElementById('rightGlove').value;
         if (rightGlove === "200") {
-            totalLuck *= 23; // +2200% = 23x total
+            totalLuck += 22; // +2200% luck = add 22
         }
         
         // Calculate probability per roll
@@ -475,7 +475,12 @@
         // Speed calculation (percentage bonuses add together)
         let speedBonus = 0;
         speedBonus += resValue; // Resonance %
-        speedBonus += parseFloat(rightGlove) || 0;
+        // Speed from right glove (Singularity gives +200% speed)
+        if (rightGlove === "200") {
+            speedBonus += 200;
+        } else {
+            speedBonus += parseFloat(rightGlove) || 0;
+        }
         speedBonus += leftSpeedBonus;
         
         // Bank level
@@ -653,10 +658,10 @@
         }
         totalLuck *= forbiddenLuckMulti;
         
-        // Right glove (Singularity adds +2200% = 23x multiplier)
+        // Right glove (Singularity Gauntlet adds +2200% = +22 luck)
         const rightGlove = document.getElementById('limboRightGlove').value;
         if (rightGlove === "200") {
-            totalLuck *= 23;
+            totalLuck += 22; // +2200% luck = add 22
         }
         
         let pPerRoll = totalLuck / R;
@@ -664,7 +669,12 @@
         
         // Speed calculation for Limbo
         let speedBonus = 0;
-        speedBonus += parseFloat(rightGlove) || 0;
+        // Speed from right glove (Singularity gives +200% speed)
+        if (rightGlove === "200") {
+            speedBonus += 200;
+        } else {
+            speedBonus += parseFloat(rightGlove) || 0;
+        }
         speedBonus += leftSpeedBonus;
         speedBonus += forbiddenSpeedBonus;
         
