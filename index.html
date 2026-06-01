@@ -61,7 +61,7 @@
                 </div>
                 <div id="rainyContainer" style="display:none; margin-bottom: 10px;"><label class="check-row" style="color: #add8e6;"><input type="checkbox" id="isRainy"> Rainy Aura?</label></div>
                 <div class="grid-2">
-                    <div><label>Luck (without L hand glove)</label><input type="number" id="luck" value="30"></div>
+                    <div><label>Base Luck (without L hand glove)</label><input type="number" id="luck" value="0"></div>
                     <div><label>Left Hand (Luck)</label>
                         <select id="leftGlove" onchange="checkRainySupport()">
                             <option value="1">None</option>
@@ -332,6 +332,7 @@
         document.getElementById('rollSkips').disabled = false;
         document.getElementById('rollSkips').value = "0";
         document.getElementById('resonance').value = "0";
+        document.getElementById('luck').value = "0";
         
         document.getElementById('limboLeftGlove').value = "thing";
         document.getElementById('limboRightGlove').value = "200";
@@ -365,7 +366,6 @@
     
     function calculateOverworld() {
         let rarityInput = document.getElementById('rarity');
-        let resInput = document.getElementById('resonance');
 
         if (rarityInput.value !== "") {
             let val = Math.floor(parseFloat(rarityInput.value));
@@ -373,76 +373,74 @@
             if (rarityInput.value != val) rarityInput.value = val;
         }
 
-        let resValue = parseFloat(resInput.value);
+        let resValue = parseFloat(document.getElementById('resonance').value);
         if (isNaN(resValue)) resValue = 0;
         resValue = Math.min(22, Math.max(0, resValue));
-        if (resInput.value != resValue) resInput.value = resValue;
 
         const R = parseFloat(rarityInput.value) || 1;
-        const baseLuck = 1;
-        const luckInput = parseFloat(document.getElementById('luck').value) || 0;
+        
+        // Base luck starts at 1
+        let totalLuck = 1;
+        
+        // Add luck from input field
+        totalLuck += parseFloat(document.getElementById('luck').value) || 0;
+        
+        // Left glove bonuses
         const left = document.getElementById('leftGlove').value;
         const rainy = document.getElementById('isRainy').checked;
-        const skipCountRaw = parseFloat(document.getElementById('rollSkips').value) || 0;
-        const infiniteSkips = document.getElementById('infiniteSkips').checked;
-        
-        const skipCount = infiniteSkips ? 1e15 : skipCountRaw;
-
-        let leftLuckBonus = 0;
-        let leftSpeedBonus = 0;
         let leftMultiplier = 1;
+        let leftAdditiveLuck = 0;
+        let leftSpeedBonus = 0;
         
         if (left === "thing") {
             leftMultiplier = 2.0;
-        } else if (left === "pole") { 
-            leftLuckBonus = 5; 
-            leftSpeedBonus = 0.133; 
-            leftMultiplier = 1.1; 
-        } else if (left === "jackpot") { 
-            leftLuckBonus = 0.77; 
-            leftSpeedBonus = 0.07; 
-            leftMultiplier = 1; 
-        } else if (left === "grav") { 
-            leftLuckBonus = 0; 
-            leftMultiplier = 1.5; 
-        } else if (left === "gemstone") { 
-            leftLuckBonus = 0.075; 
-            leftSpeedBonus = 0.0125; 
-            leftMultiplier = 1; 
-        } else if (left === "xmas") { 
-            leftLuckBonus = 0; 
-            leftMultiplier = 1.5; 
-        } else if (left === "present") { 
-            leftLuckBonus = 0; 
-            leftMultiplier = 1.36; 
-        } else if (left === "1.35") { 
-            leftLuckBonus = 0; 
-            leftMultiplier = 1.35; 
-        } else if (left === "blessed" || left === "tide") { 
-            leftLuckBonus = 0; 
-            leftMultiplier = 1; 
-        } else { 
-            leftMultiplier = parseFloat(left) || 1; 
+        } else if (left === "pole") {
+            leftAdditiveLuck = 5;
+            leftMultiplier = 1.1;
+            leftSpeedBonus = 13.3; // +13.3% speed from Pole Light
+        } else if (left === "jackpot") {
+            leftAdditiveLuck = 0.77;
+            leftSpeedBonus = 7;
+        } else if (left === "grav") {
+            leftMultiplier = 1.5;
+        } else if (left === "gemstone") {
+            leftAdditiveLuck = 0.075;
+            leftSpeedBonus = 1.25;
+        } else if (left === "xmas") {
+            leftMultiplier = 1.5;
+        } else if (left === "present") {
+            leftMultiplier = 1.36;
+        } else if (left === "1.35") {
+            leftMultiplier = 1.35;
+        } else if (left === "blessed" || left === "tide") {
+            // Special cases handled separately
+            leftMultiplier = 1;
+        } else {
+            leftMultiplier = parseFloat(left) || 1;
         }
         
-        let luckBuffs = baseLuck + luckInput + leftLuckBonus;
-        let luckAfterMulti = luckBuffs * leftMultiplier;
+        // Apply left glove additive luck and multiplier
+        totalLuck = (totalLuck + leftAdditiveLuck) * leftMultiplier;
         
+        // VIP multiplier
         const vip = document.getElementById('vip').checked;
         const vipPlus = document.getElementById('vipPlus').checked;
         let vipMulti = 1;
         if (vip && vipPlus) vipMulti = 1.3;
         else if (vip || vipPlus) vipMulti = 1.2;
+        totalLuck *= vipMulti;
         
+        // Event multiplier
         const eventMulti = parseFloat(document.getElementById('eventMulti').value) || 1;
+        totalLuck *= eventMulti;
         
-        let totalLuck = luckAfterMulti * vipMulti * eventMulti;
-        
+        // Right glove luck bonuses (Singularity adds +2200% = 22x multiplier to current luck)
         const rightGlove = document.getElementById('rightGlove').value;
         if (rightGlove === "200") {
-            totalLuck *= 23;
+            totalLuck *= 23; // +2200% = 23x total
         }
         
+        // Calculate probability per roll
         let pPerRoll;
         
         if (left === "blessed") {
@@ -474,40 +472,48 @@
         
         pPerRoll = Math.min(pPerRoll, 1);
         
+        // Speed calculation (percentage bonuses add together)
         let speedBonus = 0;
-        speedBonus += resValue;
-        speedBonus += (parseFloat(rightGlove) || 0);
-        
-        const bankLevel = parseInt(document.getElementById('bankLevel').value) || 0;
-        const bankBonuses = {0:0, 1:7, 2:14, 3:21, 4:28, 5:35, 6:42, 7:50};
-        speedBonus += bankBonuses[bankLevel] || 0;
-        
-        speedBonus += (parseFloat(document.getElementById('buffBasic').value) || 0);
-        speedBonus += (parseFloat(document.getElementById('buffHaste').value) || 0);
-        speedBonus += (parseFloat(document.getElementById('buffGod').value) || 0);
-        speedBonus += (parseFloat(document.getElementById('buffKnowledge').value) || 0);
-        speedBonus += (parseFloat(document.getElementById('buffEventPot').value) || 0);
-        speedBonus += (parseFloat(document.getElementById('buffCombat').value) || 0);
+        speedBonus += resValue; // Resonance %
+        speedBonus += parseFloat(rightGlove) || 0;
         speedBonus += leftSpeedBonus;
         
-        let speedM = 1 + (speedBonus / 100);
-        const skipSpeedM = 11;
+        // Bank level
+        const bankLevel = parseInt(document.getElementById('bankLevel').value) || 0;
+        const bankBonuses = {0:0, 1:7, 2:14, 3:21, 4:28, 5:35, 6:42, 7:50};
+        speedBonus += bankBonuses[bankLevel];
+        
+        // Potions
+        speedBonus += parseFloat(document.getElementById('buffBasic').value) || 0;
+        speedBonus += parseFloat(document.getElementById('buffHaste').value) || 0;
+        speedBonus += parseFloat(document.getElementById('buffGod').value) || 0;
+        speedBonus += parseFloat(document.getElementById('buffKnowledge').value) || 0;
+        speedBonus += parseFloat(document.getElementById('buffEventPot').value) || 0;
+        speedBonus += parseFloat(document.getElementById('buffCombat').value) || 0;
+        
+        // Base rolls per second = 1
+        let rollsPerSecond = 1 + (speedBonus / 100);
+        
+        // Roll skips are 1000% faster = 11x base
+        const skipRollsPerSecond = 11;
+        const skipCount = parseFloat(document.getElementById('rollSkips').value) || 0;
+        const infiniteSkips = document.getElementById('infiniteSkips').checked;
         
         const days = parseFloat(document.getElementById('days').value) || 0;
         const totalSeconds = 86400 * days;
         
         let totalRolls;
-        
         if (infiniteSkips) {
-            totalRolls = totalSeconds * skipSpeedM;
+            totalRolls = totalSeconds * skipRollsPerSecond;
         } else {
-            const skipTime = Math.min(skipCount / skipSpeedM, totalSeconds);
-            const skipRolls = skipTime * skipSpeedM;
+            const skipTime = Math.min(skipCount / skipRollsPerSecond, totalSeconds);
+            const skipRolls = skipTime * skipRollsPerSecond;
             const normalTime = totalSeconds - skipTime;
-            const normalRolls = normalTime * speedM;
+            const normalRolls = normalTime * rollsPerSecond;
             totalRolls = skipRolls + normalRolls;
         }
         
+        // TIME REQ mode (first tab)
         const targetInput = document.getElementById('targetP');
         let targetVal = (parseFloat(targetInput.value) || 0) / 100;
         if (targetVal >= 1) targetVal = 0.9999;
@@ -517,19 +523,18 @@
             
             let timeNeeded;
             if (infiniteSkips) {
-                timeNeeded = rollsNeeded / skipSpeedM;
+                timeNeeded = rollsNeeded / skipRollsPerSecond;
             } else if (skipCount > 0) {
-                const skipRollsAvailable = skipCount;
-                if (skipRollsAvailable >= rollsNeeded) {
-                    timeNeeded = rollsNeeded / skipSpeedM;
+                if (skipCount >= rollsNeeded) {
+                    timeNeeded = rollsNeeded / skipRollsPerSecond;
                 } else {
-                    const skipTimeNeeded = skipCount / skipSpeedM;
+                    const skipTimeNeeded = skipCount / skipRollsPerSecond;
                     const remainingRolls = rollsNeeded - skipCount;
-                    const normalTimeNeeded = remainingRolls / speedM;
+                    const normalTimeNeeded = remainingRolls / rollsPerSecond;
                     timeNeeded = skipTimeNeeded + normalTimeNeeded;
                 }
             } else {
-                timeNeeded = rollsNeeded / speedM;
+                timeNeeded = rollsNeeded / rollsPerSecond;
             }
             
             const daysNeeded = timeNeeded / 86400;
@@ -540,12 +545,28 @@
             document.getElementById('totalRolls').innerText = "0 rolls needed";
         }
         
+        // CHANCE % mode (second tab)
         const P = (totalRolls > 0 && pPerRoll > 0) ? 1 - Math.pow((1 - pPerRoll), totalRolls) : 0;
-        document.getElementById('outputTime').innerText = (P >= 0.9999999) ? "99.99%+" : (P * 100).toFixed(2) + "%";
+        document.getElementById('outputTime').innerText = (P >= 0.9999999) ? "99.99%+" : (P * 100).toFixed(4) + "%";
         document.getElementById('rollsNeeded').innerText = Math.floor(totalRolls).toLocaleString() + " total rolls";
         
-        updateVisuals('chance', targetVal, targetVal > 0);
-        updateVisuals('time', P, (days > 0 || skipCount > 0));
+        // Update visual status
+        const chanceBox = document.getElementById('chanceBox');
+        const timeBox = document.getElementById('timeBox');
+        chanceBox.classList.remove('status-low', 'status-mid', 'status-high');
+        timeBox.classList.remove('status-low', 'status-mid', 'status-high');
+        
+        if (targetVal > 0) {
+            if (targetVal < 0.1) chanceBox.classList.add('status-low');
+            else if (targetVal < 0.5) chanceBox.classList.add('status-mid');
+            else chanceBox.classList.add('status-high');
+        }
+        
+        if (P > 0 && days > 0) {
+            if (P < 0.1) timeBox.classList.add('status-low');
+            else if (P < 0.5) timeBox.classList.add('status-mid');
+            else timeBox.classList.add('status-high');
+        }
     }
     
     function calculateLimbo() {
@@ -558,54 +579,57 @@
         }
 
         const R = parseFloat(rarityInput.value) || 1;
-        const baseLuck = 1;
         
+        // Base luck starts at 1
+        let totalLuck = 1;
+        
+        // Left glove bonuses
         const left = document.getElementById('limboLeftGlove').value;
-        let leftLuckBonus = 0;
-        let leftSpeedBonus = 0;
         let leftMultiplier = 1;
+        let leftAdditiveLuck = 0;
+        let leftSpeedBonus = 0;
         
         if (left === "thing") {
             leftMultiplier = 2.0;
-        } else if (left === "pole") { 
-            leftLuckBonus = 5; 
-            leftSpeedBonus = 0.133; 
-            leftMultiplier = 1.1; 
-        } else if (left === "jackpot") { 
-            leftLuckBonus = 0.77; 
-            leftSpeedBonus = 0.07; 
-            leftMultiplier = 1; 
-        } else if (left === "grav") { 
-            leftLuckBonus = 0; 
-            leftMultiplier = 1.5; 
-        } else if (left === "gemstone") { 
-            leftLuckBonus = 0.075; 
-            leftSpeedBonus = 0.0125; 
-            leftMultiplier = 1; 
-        } else if (left === "xmas") { 
-            leftLuckBonus = 0; 
-            leftMultiplier = 1.5; 
-        } else if (left === "present") { 
-            leftLuckBonus = 0; 
-            leftMultiplier = 1.36; 
-        } else if (left === "1.35") { 
-            leftLuckBonus = 0; 
-            leftMultiplier = 1.35; 
-        } else { 
-            leftMultiplier = parseFloat(left) || 1; 
+        } else if (left === "pole") {
+            leftAdditiveLuck = 5;
+            leftMultiplier = 1.1;
+            leftSpeedBonus = 13.3;
+        } else if (left === "jackpot") {
+            leftAdditiveLuck = 0.77;
+            leftSpeedBonus = 7;
+        } else if (left === "grav") {
+            leftMultiplier = 1.5;
+        } else if (left === "gemstone") {
+            leftAdditiveLuck = 0.075;
+            leftSpeedBonus = 1.25;
+        } else if (left === "xmas") {
+            leftMultiplier = 1.5;
+        } else if (left === "present") {
+            leftMultiplier = 1.36;
+        } else if (left === "1.35") {
+            leftMultiplier = 1.35;
+        } else {
+            leftMultiplier = parseFloat(left) || 1;
         }
         
-        let luckBuffs = baseLuck + leftLuckBonus;
-        let luckAfterMulti = luckBuffs * leftMultiplier;
+        totalLuck = (totalLuck + leftAdditiveLuck) * leftMultiplier;
         
+        // VIP multiplier
         const vip = document.getElementById('limboVip').checked;
         const vipPlus = document.getElementById('limboVipPlus').checked;
         let vipMulti = 1;
         if (vip && vipPlus) vipMulti = 1.3;
         else if (vip || vipPlus) vipMulti = 1.2;
+        totalLuck *= vipMulti;
         
+        // Event multiplier
         const eventMulti = parseFloat(document.getElementById('limboEventMulti').value) || 1;
+        totalLuck *= eventMulti;
+        
+        // Dave's Hope
         const davesHope = parseFloat(document.getElementById('davesHope').value) || 1;
+        totalLuck *= davesHope;
         
         // Stackable Forbidden Potions
         const forbidden1 = document.getElementById('forbidden1').checked;
@@ -616,20 +640,20 @@
         let forbiddenSpeedBonus = 0;
         
         if (forbidden1) {
-            forbiddenLuckMulti *= 1.7;  // +70%
-            forbiddenSpeedBonus += 10;   // +10%
+            forbiddenLuckMulti *= 1.7;
+            forbiddenSpeedBonus += 10;
         }
         if (forbidden2) {
-            forbiddenLuckMulti *= 4.25;  // +325%
-            forbiddenSpeedBonus += 25;    // +25%
+            forbiddenLuckMulti *= 4.25;
+            forbiddenSpeedBonus += 25;
         }
         if (forbidden3) {
-            forbiddenLuckMulti *= 14.5;  // +1350%
-            forbiddenSpeedBonus += 75;    // +75%
+            forbiddenLuckMulti *= 14.5;
+            forbiddenSpeedBonus += 75;
         }
+        totalLuck *= forbiddenLuckMulti;
         
-        let totalLuck = luckAfterMulti * vipMulti * eventMulti * davesHope * forbiddenLuckMulti;
-        
+        // Right glove (Singularity adds +2200% = 23x multiplier)
         const rightGlove = document.getElementById('limboRightGlove').value;
         if (rightGlove === "200") {
             totalLuck *= 23;
@@ -640,23 +664,24 @@
         
         // Speed calculation for Limbo
         let speedBonus = 0;
-        speedBonus += (parseFloat(rightGlove) || 0);
+        speedBonus += parseFloat(rightGlove) || 0;
         speedBonus += leftSpeedBonus;
         speedBonus += forbiddenSpeedBonus;
         
-        let speedM = 1 + (speedBonus / 100);
+        let rollsPerSecond = 1 + (speedBonus / 100);
         
         const days = parseFloat(document.getElementById('days').value) || 0;
         const totalSeconds = 86400 * days;
-        const totalRolls = totalSeconds * speedM;
+        const totalRolls = totalSeconds * rollsPerSecond;
         
+        // TIME REQ mode
         const targetInput = document.getElementById('targetP');
         let targetVal = (parseFloat(targetInput.value) || 0) / 100;
         if (targetVal >= 1) targetVal = 0.9999;
         
         if (targetVal > 0 && pPerRoll > 0 && pPerRoll < 1) {
             const rollsNeeded = Math.log(1 - targetVal) / Math.log(1 - pPerRoll);
-            const timeNeeded = rollsNeeded / speedM;
+            const timeNeeded = rollsNeeded / rollsPerSecond;
             const daysNeeded = timeNeeded / 86400;
             document.getElementById('outputChance').innerText = daysNeeded > 1000 ? daysNeeded.toExponential(2) + " Days" : daysNeeded.toFixed(2) + " Days";
             document.getElementById('totalRolls').innerText = Math.ceil(rollsNeeded).toLocaleString() + " rolls needed";
@@ -665,24 +690,28 @@
             document.getElementById('totalRolls').innerText = "0 rolls needed";
         }
         
+        // CHANCE % mode
         const P = (totalRolls > 0 && pPerRoll > 0) ? 1 - Math.pow((1 - pPerRoll), totalRolls) : 0;
-        document.getElementById('outputTime').innerText = (P >= 0.9999999) ? "99.99%+" : (P * 100).toFixed(2) + "%";
+        document.getElementById('outputTime').innerText = (P >= 0.9999999) ? "99.99%+" : (P * 100).toFixed(4) + "%";
         document.getElementById('rollsNeeded').innerText = Math.floor(totalRolls).toLocaleString() + " total rolls";
         
-        updateVisuals('chance', targetVal, targetVal > 0);
-        updateVisuals('time', P, (days > 0));
-    }
-
-    function updateVisuals(id, prob, hasData) {
-        const b = document.getElementById(id + 'Box');
-        const l = document.getElementById(id + 'Label');
-        b.classList.remove('status-low', 'status-mid', 'status-high');
-        if (!hasData) { 
-            return; 
+        // Update visual status
+        const chanceBox = document.getElementById('chanceBox');
+        const timeBox = document.getElementById('timeBox');
+        chanceBox.classList.remove('status-low', 'status-mid', 'status-high');
+        timeBox.classList.remove('status-low', 'status-mid', 'status-high');
+        
+        if (targetVal > 0) {
+            if (targetVal < 0.1) chanceBox.classList.add('status-low');
+            else if (targetVal < 0.5) chanceBox.classList.add('status-mid');
+            else chanceBox.classList.add('status-high');
         }
-        if (prob < 0.1) b.classList.add('status-low');
-        else if (prob < 0.5) b.classList.add('status-mid');
-        else b.classList.add('status-high');
+        
+        if (P > 0 && days > 0) {
+            if (P < 0.1) timeBox.classList.add('status-low');
+            else if (P < 0.5) timeBox.classList.add('status-mid');
+            else timeBox.classList.add('status-high');
+        }
     }
     
     document.getElementById('infiniteSkips').addEventListener('change', function() {
@@ -696,7 +725,6 @@
         calculate();
     });
     
-    // Add listener for resonance to enforce range
     document.getElementById('resonance').addEventListener('input', function() {
         let val = parseFloat(this.value);
         if (isNaN(val)) val = 0;
