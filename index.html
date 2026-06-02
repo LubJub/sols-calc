@@ -47,7 +47,7 @@
         .multi-row { display: flex; gap: 15px; align-items: center; margin: 10px 0; flex-wrap: wrap; }
         .biome-section { background: #0a2e1a; border: 1px solid #59b69b; border-radius: 8px; padding: 10px; margin-top: 10px; }
         .biome-section label { color: #9bd3c3; }
-        .radio-group { display: flex; gap: 15px; margin: 8px 0; align-items: center; }
+        .radio-group { display: flex; gap: 15px; margin: 8px 0; align-items: center; flex-wrap: wrap; }
         .radio-group label { margin: 0; display: flex; align-items: center; gap: 5px; }
     </style>
 </head>
@@ -117,7 +117,7 @@
                             <option value="20,1.0">Exo Gauntlet</option>
                             <option value="15,0.5">Eclipse</option>
                             <option value="15.1,0">Lunar Device</option>
-                            <option value="0,0.6">Shining Star</option>
+                            <option value="0,0.5758">Shining Star</option>
                             <option value="0,0.5">Solar</option>
                             <option value="0,0.4">Desire Glove</option>
                             <option value="0,0.25">Luck Glove</option>
@@ -131,12 +131,14 @@
                 
                 <!-- Biome Section -->
                 <div class="biome-section">
-                    <label style="color: #59b69b; font-weight: bold;">What biome is this aura from</label>
+                    <label style="color: #59b69b; font-weight: bold;">What biome or time is this aura from</label>
                     <div class="grid-2">
                         <div>
-                            <label>Biome</label>
+                            <label>Biome / Time</label>
                             <select id="biome" onchange="updateBiomeOptions()">
                                 <option value="none">None (Normal)</option>
+                                <option value="day">Day</option>
+                                <option value="night">Night</option>
                                 <option value="windy">Windy</option>
                                 <option value="snowy">Snowy</option>
                                 <option value="rainy">Rainy</option>
@@ -146,6 +148,7 @@
                                 <option value="heaven">Heaven</option>
                                 <option value="corruption">Corruption</option>
                                 <option value="null">Null</option>
+                                <option value="singularity">Singularity</option>
                                 <option value="dreamspace">Dreamspace</option>
                                 <option value="glitch">Glitch</option>
                                 <option value="cyberspace">Cyberspace</option>
@@ -158,12 +161,12 @@
                     </div>
                     <div id="biomeOptionsDiv">
                         <div class="radio-group">
-                            <label><input type="radio" name="biomeType" value="native" checked> Native to this biome</label>
-                            <label><input type="radio" name="biomeType" value="exclusive"> Exclusive to this biome</label>
+                            <label><input type="radio" name="biomeType" value="native" checked> Native to this biome/time</label>
+                            <label><input type="radio" name="biomeType" value="exclusive"> Exclusive to this biome/time</label>
                         </div>
                     </div>
-                    <div class="disclaimer" style="color: #9bd3c3; font-size: 0.65rem;">Native = boosted during biome, spawns anywhere</div>
-                    <div class="disclaimer" style="color: #9bd3c3; font-size: 0.65rem;">Exclusive = only rollable in this biome</div>
+                    <div class="disclaimer" style="color: #9bd3c3; font-size: 0.65rem;">Native = boosted during biome/time, spawns anywhere</div>
+                    <div class="disclaimer" style="color: #9bd3c3; font-size: 0.65rem;">Exclusive = only rollable in this biome/time</div>
                 </div>
                 
                 <div class="multi-row">
@@ -277,7 +280,7 @@
                             <option value="20,1.0">Exo Gauntlet</option>
                             <option value="15,0.5">Eclipse</option>
                             <option value="15.1,0">Lunar Device</option>
-                            <option value="0,0.6">Shining Star</option>
+                            <option value="0,0.5758">Shining Star</option>
                             <option value="0,0.5">Solar</option>
                             <option value="0,0.4">Desire Glove</option>
                             <option value="0,0.25">Luck Glove</option>
@@ -393,44 +396,29 @@
     let currentMode = 'chance';
     let currentArea = 'overworld';
     
-    // Biome data with updated averages for Ragnaröker and Shining Star
-    // Ragnaröker: normally 4.55 luck, during Hell biome (4.74% uptime) gets +0.45 luck
-    // Average = 4.55 + (0.0474 * 0.45) = 4.57133
-    // Shining Star: normally 0.5 luck, during Starfall biome (3.79% uptime) gets 2.5 luck
-    // Average = (0.9621 * 0.5) + (0.0379 * 2.5) = 0.48105 + 0.09475 = 0.5758
-    
+    // Biome data including Day and Night
     const biomeData = {
-        none: { uptime: 1.0, boost: 1, exclusiveOnly: false, cyberspace: false },
-        windy: { uptime: 0.1138, boost: 3, exclusiveOnly: false, cyberspace: false },
-        snowy: { uptime: 0.0948, boost: 3, exclusiveOnly: false, cyberspace: false },
-        rainy: { uptime: 0.0759, boost: 4, exclusiveOnly: false, cyberspace: false },
-        sandstorm: { uptime: 0.1027, boost: 4, exclusiveOnly: false, cyberspace: false },
-        hell: { uptime: 0.0474, boost: 6, exclusiveOnly: false, cyberspace: false },
-        starfall: { uptime: 0.0379, boost: 5, exclusiveOnly: false, cyberspace: false },
-        heaven: { uptime: 0.0147, boost: 5, exclusiveOnly: false, cyberspace: false },
-        corruption: { uptime: 0.0342, boost: 5, exclusiveOnly: false, cyberspace: false },
-        null: { uptime: 0.0046, boost: 1000, exclusiveOnly: false, cyberspace: false },
-        dreamspace: { uptime: 0.000026, boost: 1, exclusiveOnly: true, cyberspace: false },
-        glitch: { uptime: 0.0000175, boost: 1, exclusiveOnly: true, cyberspace: false },
+        none: { uptime: 0.390, boost: 1, exclusiveOnly: false, cyberspace: false },
+        day: { uptime: 0.50, boost: 1, exclusiveOnly: false, cyberspace: false },
+        night: { uptime: 0.50, boost: 10, exclusiveOnly: false, cyberspace: false },
+        windy: { uptime: 0.0936, boost: 3, exclusiveOnly: false, cyberspace: false },
+        snowy: { uptime: 0.0780, boost: 3, exclusiveOnly: false, cyberspace: false },
+        rainy: { uptime: 0.0624, boost: 4, exclusiveOnly: false, cyberspace: false },
+        sandstorm: { uptime: 0.0844, boost: 4, exclusiveOnly: false, cyberspace: false },
+        hell: { uptime: 0.0390, boost: 6, exclusiveOnly: false, cyberspace: false },
+        starfall: { uptime: 0.0312, boost: 5, exclusiveOnly: false, cyberspace: false },
+        heaven: { uptime: 0.0121, boost: 5, exclusiveOnly: false, cyberspace: false },
+        corruption: { uptime: 0.0282, boost: 5, exclusiveOnly: false, cyberspace: false },
+        null: { uptime: 0.0038, boost: 1000, exclusiveOnly: false, cyberspace: false },
+        singularity: { uptime: 0.1774, boost: 5, exclusiveOnly: false, cyberspace: false },
+        dreamspace: { uptime: 0.000021, boost: 1, exclusiveOnly: true, cyberspace: false },
+        glitch: { uptime: 0.0000068, boost: 1, exclusiveOnly: true, cyberspace: false },
         cyberspace: { uptime: 1.0, boost: 1, exclusiveOnly: true, cyberspace: true }
     };
-    
-    // Update Ragnaröker average in the right glove dropdown
-    function updateRightGloveAverages() {
-        const ragnaOption = document.querySelector('#rightGlove option[value="40,4.55"]');
-        if (ragnaOption) {
-            ragnaOption.value = "40,4.57133";
-        }
-        const limboRagnaOption = document.querySelector('#limboRightGlove option[value="40,4.55"]');
-        if (limboRagnaOption) {
-            limboRagnaOption.value = "40,4.57133";
-        }
-    }
     
     function updateBiomeOptions() {
         const biome = document.getElementById('biome').value;
         const optionsDiv = document.getElementById('biomeOptionsDiv');
-        const radioButtons = document.querySelectorAll('input[name="biomeType"]');
         
         if (biome === 'cyberspace' || biome === 'dreamspace' || biome === 'glitch') {
             optionsDiv.style.opacity = '0.5';
@@ -641,7 +629,7 @@
             const biomeDisplay = document.getElementById('biome').options[document.getElementById('biome').selectedIndex]?.text || biomeName;
             const perpetualText = isPerpetual ? ' (perpetual)' : '';
             const typeText = isNative ? 'native' : 'exclusive';
-            biomeText = ` in ${biomeDisplay} biome${perpetualText} (${typeText})`;
+            biomeText = ` in ${biomeDisplay}${perpetualText} (${typeText})`;
         }
         
         if (currentMode === 'chance') {
@@ -676,7 +664,7 @@
         return { speedBonus: speed || 0, luckBonus: luck || 0 };
     }
     
-    function getBiomeMultiplier(biomeId, isPerpetual, isNative, baseLuck, R) {
+    function getBiomeMultiplier(biomeId, isPerpetual, isNative) {
         const biome = biomeData[biomeId];
         if (!biome || biomeId === 'none') return 1;
         
@@ -707,7 +695,7 @@
         
         // Get biome settings
         const biomeId = document.getElementById('biome').value;
-        const isPerpetual = document.getElementById('perpetualBiome').checked;
+        const isPerpetualBiome = document.getElementById('perpetualBiome').checked;
         const isNative = document.querySelector('input[name="biomeType"]:checked')?.value === 'native';
         const isCyberspace = biomeId === 'cyberspace';
         
@@ -773,7 +761,8 @@
             
             let baseP = totalLuck / R;
             
-            const biomeMulti = getBiomeMultiplier(biomeId, isPerpetual, isNative, totalLuck, R);
+            // Apply biome multiplier
+            const biomeMulti = getBiomeMultiplier(biomeId, isPerpetualBiome, isNative);
             
             if (biomeMulti === 0) {
                 pPerRoll = baseP;
@@ -887,7 +876,7 @@
         document.getElementById('outputTime').innerText = (P >= 0.9999999) ? "99.99%+" : chancePercent.toFixed(4) + "%";
         document.getElementById('rollsNeeded').innerText = Math.floor(totalRolls).toLocaleString() + " total rolls";
         
-        updateSummaryText(pPerRoll, timeNeeded, chancePercent, days, targetVal, auraCount, isMultiAura, biomeId, isPerpetual, isNative);
+        updateSummaryText(pPerRoll, timeNeeded, chancePercent, days, targetVal, auraCount, isMultiAura, biomeId, isPerpetualBiome, isNative);
         
         const chanceBox = document.getElementById('chanceBox');
         const timeBox = document.getElementById('timeBox');
