@@ -44,6 +44,7 @@
         .preset-label { font-size: 0.65rem; color: #888; margin-right: 5px; }
         .summary-text { background: #000; padding: 10px; border-radius: 6px; margin-top: 10px; text-align: center; font-size: 0.8rem; color: #add8e6; border: 1px solid #2a3545; }
         .glove-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        .multi-row { display: flex; gap: 15px; align-items: center; margin: 10px 0; flex-wrap: wrap; }
     </style>
 </head>
 <body>
@@ -125,6 +126,14 @@
                 </div>
                 
                 <div id="rainyContainer" style="display:none; margin-bottom: 10px;"><label class="check-row" style="color: #add8e6;"><input type="checkbox" id="isRainy"> Rainy Aura?</label></div>
+                
+                <div class="multi-row">
+                    <label class="check-row"><input type="checkbox" id="multiAura" onchange="calculate()"> Multiple Auras Mode</label>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <label>Amount Needed:</label>
+                        <input type="number" id="auraCount" value="2" min="1" step="1" style="width: 80px;" oninput="calculate()">
+                    </div>
+                </div>
                 
                 <div class="check-grid">
                     <label class="check-row"><input type="checkbox" id="vip" checked> VIP</label>
@@ -241,6 +250,14 @@
                     </div>
                 </div>
                 
+                <div class="multi-row">
+                    <label class="check-row"><input type="checkbox" id="limboMultiAura" onchange="calculate()"> Multiple Auras Mode</label>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <label>Amount Needed:</label>
+                        <input type="number" id="limboAuraCount" value="2" min="1" step="1" style="width: 80px;" oninput="calculate()">
+                    </div>
+                </div>
+                
                 <div class="check-grid">
                     <label class="check-row"><input type="checkbox" id="limboVip" checked> VIP</label>
                     <label class="check-row"><input type="checkbox" id="limboVipPlus" checked> VIP+</label>
@@ -337,6 +354,80 @@
     let currentMode = 'chance';
     let currentArea = 'overworld';
     
+    // Helper function for binomial coefficient (log scale for large numbers)
+    function logChoose(n, k) {
+        if (k < 0 || k > n) return -Infinity;
+        if (k === 0 || k === n) return 0;
+        let logSum = 0;
+        for (let i = 1; i <= k; i++) {
+            logSum += Math.log(n - k + i) - Math.log(i);
+        }
+        return logSum;
+    }
+    
+    // Calculate probability of getting at least N successes in M rolls
+    function probabilityAtLeastNRolls(p, rolls, n) {
+        if (n <= 1) {
+            // Standard case: at least 1 success
+            return 1 - Math.pow(1 - p, rolls);
+        }
+        
+        // For n > 1, calculate P(less than n successes) and subtract from 1
+        // P(less than n) = sum_{k=0}^{n-1} C(rolls, k) * p^k * (1-p)^(rolls-k)
+        
+        let log1MinusP = Math.log(1 - p);
+        let logP = Math.log(p);
+        
+        let logProbLessThanN = -Infinity;
+        
+        for (let k = 0; k < n; k++) {
+            let logTerm = logChoose(rolls, k) + k * logP + (rolls - k) * log1MinusP;
+            logProbLessThanN = logSumExp(logProbLessThanN, logTerm);
+        }
+        
+        return 1 - Math.exp(logProbLessThanN);
+    }
+    
+    // Helper for log-sum-exp to avoid underflow
+    function logSumExp(logA, logB) {
+        if (logA === -Infinity) return logB;
+        if (logB === -Infinity) return logA;
+        if (logA > logB) {
+            return logA + Math.log(1 + Math.exp(logB - logA));
+        }
+        return logB + Math.log(1 + Math.exp(logA - logB));
+    }
+    
+    // Find rolls needed for at least N successes with target probability
+    function findRollsForTarget(p, targetProb, n, maxRolls = 1e12) {
+        if (n <= 1) {
+            // Standard case
+            let rollsNeeded = Math.log(1 - targetProb) / Math.log(1 - p);
+            return Math.ceil(rollsNeeded);
+        }
+        
+        // Binary search for the number of rolls needed
+        let low = n; // At least n rolls needed
+        let high = maxRolls;
+        let bestRolls = maxRolls;
+        
+        for (let iter = 0; iter < 100; iter++) {
+            let mid = Math.floor((low + high) / 2);
+            let prob = probabilityAtLeastNRolls(p, mid, n);
+            
+            if (prob >= targetProb) {
+                bestRolls = mid;
+                high = mid;
+            } else {
+                low = mid + 1;
+            }
+            
+            if (low >= high) break;
+        }
+        
+        return bestRolls;
+    }
+    
     function setTargetPreset(percent) {
         document.getElementById('targetP').value = percent;
         calculate();
@@ -417,6 +508,8 @@
         document.getElementById('quickRoll').checked = true;
         document.getElementById('vip').checked = true;
         document.getElementById('vipPlus').checked = true;
+        document.getElementById('multiAura').checked = false;
+        document.getElementById('auraCount').value = "2";
         
         document.getElementById('limboLeftGlove').value = "thing,0,0";
         document.getElementById('limboRightGlove').value = "200,22.0";
@@ -428,6 +521,8 @@
         document.getElementById('forbidden1').checked = false;
         document.getElementById('forbidden2').checked = false;
         document.getElementById('forbidden3').checked = false;
+        document.getElementById('limboMultiAura').checked = false;
+        document.getElementById('limboAuraCount').value = "2";
         
         document.getElementById('rarity').value = "2,500,000,000";
         document.getElementById('limboRarity').value = "2,500,000,000";
@@ -449,13 +544,14 @@
         }
     }
     
-    function updateSummaryText(pPerRoll, timeNeeded, chancePercent, days, targetVal) {
+    function updateSummaryText(pPerRoll, timeNeeded, chancePercent, days, targetVal, auraCount, isMultiAura) {
         const summaryDiv = document.getElementById('summaryText');
+        const countText = isMultiAura ? ` ${auraCount} of this aura` : ' this aura';
         
         if (currentMode === 'chance') {
             if (targetVal > 0 && pPerRoll > 0 && pPerRoll < 1) {
                 const daysNeeded = timeNeeded / 86400;
-                summaryDiv.innerHTML = `🎯 To have a ${(targetVal * 100).toFixed(2)}% chance of getting this aura, you need to AFK for approximately <strong>${daysNeeded > 1000 ? daysNeeded.toExponential(2) : daysNeeded.toFixed(2)} days</strong>.`;
+                summaryDiv.innerHTML = `🎯 To have a ${(targetVal * 100).toFixed(2)}% chance of getting${countText}, you need to AFK for approximately <strong>${daysNeeded > 1000 ? daysNeeded.toExponential(2) : daysNeeded.toFixed(2)} days</strong>.`;
             } else if (targetVal <= 0) {
                 summaryDiv.innerHTML = `📝 Enter a desired success rate (%) above to see how many days you need to AFK.`;
             } else {
@@ -463,9 +559,9 @@
             }
         } else {
             if (days > 0 && pPerRoll > 0) {
-                summaryDiv.innerHTML = `📊 After AFKing for <strong>${days} day${days !== 1 ? 's' : ''}</strong>, you have approximately a <strong>${chancePercent >= 99.99 ? '99.99%+' : chancePercent.toFixed(2) + '%'}</strong> chance of having rolled this aura at least once.`;
+                summaryDiv.innerHTML = `📊 After AFKing for <strong>${days} day${days !== 1 ? 's' : ''}</strong>, you have approximately a <strong>${chancePercent >= 99.99 ? '99.99%+' : chancePercent.toFixed(2) + '%'}</strong> chance of having rolled${countText} at least once.`;
             } else if (days <= 0) {
-                summaryDiv.innerHTML = `📝 Enter how many days you plan to AFK above to see your chance of getting this aura.`;
+                summaryDiv.innerHTML = `📝 Enter how many days you plan to AFK above to see your chance of getting${countText}.`;
             } else {
                 summaryDiv.innerHTML = `⚠️ With your current luck stat, this aura may be impossible to calculate. Try increasing your luck buffs.`;
             }
@@ -618,13 +714,22 @@
             totalRolls = skipRolls + normalRolls;
         }
         
+        // Check if multiple auras mode is enabled
+        const isMultiAura = document.getElementById('multiAura').checked;
+        const auraCount = parseInt(document.getElementById('auraCount').value) || 1;
+        
         const targetInput = document.getElementById('targetP');
         let targetVal = (parseFloat(targetInput.value) || 0) / 100;
         if (targetVal >= 1) targetVal = 0.9999;
         
         let timeNeeded = 0;
         if (targetVal > 0 && pPerRoll > 0 && pPerRoll < 1) {
-            const rollsNeeded = Math.log(1 - targetVal) / Math.log(1 - pPerRoll);
+            let rollsNeeded;
+            if (isMultiAura && auraCount > 1) {
+                rollsNeeded = findRollsForTarget(pPerRoll, targetVal, auraCount);
+            } else {
+                rollsNeeded = Math.log(1 - targetVal) / Math.log(1 - pPerRoll);
+            }
             
             if (infiniteSkips) {
                 timeNeeded = rollsNeeded / skipRollsPerSecond;
@@ -649,12 +754,17 @@
             document.getElementById('totalRolls').innerText = "0 rolls needed";
         }
         
-        const P = (totalRolls > 0 && pPerRoll > 0) ? 1 - Math.pow((1 - pPerRoll), totalRolls) : 0;
+        let P;
+        if (isMultiAura && auraCount > 1 && totalRolls > 0 && pPerRoll > 0 && pPerRoll < 1) {
+            P = probabilityAtLeastNRolls(pPerRoll, totalRolls, auraCount);
+        } else {
+            P = (totalRolls > 0 && pPerRoll > 0) ? 1 - Math.pow((1 - pPerRoll), totalRolls) : 0;
+        }
         const chancePercent = P * 100;
         document.getElementById('outputTime').innerText = (P >= 0.9999999) ? "99.99%+" : chancePercent.toFixed(4) + "%";
         document.getElementById('rollsNeeded').innerText = Math.floor(totalRolls).toLocaleString() + " total rolls";
         
-        updateSummaryText(pPerRoll, timeNeeded, chancePercent, days, targetVal);
+        updateSummaryText(pPerRoll, timeNeeded, chancePercent, days, targetVal, auraCount, isMultiAura);
         
         const chanceBox = document.getElementById('chanceBox');
         const timeBox = document.getElementById('timeBox');
@@ -786,13 +896,22 @@
         const totalSeconds = 86400 * days;
         const totalRolls = totalSeconds * rollsPerSecond;
         
+        // Check if multiple auras mode is enabled
+        const isMultiAura = document.getElementById('limboMultiAura').checked;
+        const auraCount = parseInt(document.getElementById('limboAuraCount').value) || 1;
+        
         const targetInput = document.getElementById('targetP');
         let targetVal = (parseFloat(targetInput.value) || 0) / 100;
         if (targetVal >= 1) targetVal = 0.9999;
         
         let timeNeeded = 0;
         if (targetVal > 0 && pPerRoll > 0 && pPerRoll < 1) {
-            const rollsNeeded = Math.log(1 - targetVal) / Math.log(1 - pPerRoll);
+            let rollsNeeded;
+            if (isMultiAura && auraCount > 1) {
+                rollsNeeded = findRollsForTarget(pPerRoll, targetVal, auraCount);
+            } else {
+                rollsNeeded = Math.log(1 - targetVal) / Math.log(1 - pPerRoll);
+            }
             timeNeeded = rollsNeeded / rollsPerSecond;
             const daysNeeded = timeNeeded / 86400;
             document.getElementById('outputChance').innerText = daysNeeded > 1000 ? daysNeeded.toExponential(2) + " Days" : daysNeeded.toFixed(2) + " Days";
@@ -802,12 +921,17 @@
             document.getElementById('totalRolls').innerText = "0 rolls needed";
         }
         
-        const P = (totalRolls > 0 && pPerRoll > 0) ? 1 - Math.pow((1 - pPerRoll), totalRolls) : 0;
+        let P;
+        if (isMultiAura && auraCount > 1 && totalRolls > 0 && pPerRoll > 0 && pPerRoll < 1) {
+            P = probabilityAtLeastNRolls(pPerRoll, totalRolls, auraCount);
+        } else {
+            P = (totalRolls > 0 && pPerRoll > 0) ? 1 - Math.pow((1 - pPerRoll), totalRolls) : 0;
+        }
         const chancePercent = P * 100;
         document.getElementById('outputTime').innerText = (P >= 0.9999999) ? "99.99%+" : chancePercent.toFixed(4) + "%";
         document.getElementById('rollsNeeded').innerText = Math.floor(totalRolls).toLocaleString() + " total rolls";
         
-        updateSummaryText(pPerRoll, timeNeeded, chancePercent, days, targetVal);
+        updateSummaryText(pPerRoll, timeNeeded, chancePercent, days, targetVal, auraCount, isMultiAura);
         
         const chanceBox = document.getElementById('chanceBox');
         const timeBox = document.getElementById('timeBox');
