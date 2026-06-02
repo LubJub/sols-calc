@@ -45,6 +45,10 @@
         .summary-text { background: #000; padding: 10px; border-radius: 6px; margin-top: 10px; text-align: center; font-size: 0.8rem; color: #add8e6; border: 1px solid #2a3545; }
         .glove-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
         .multi-row { display: flex; gap: 15px; align-items: center; margin: 10px 0; flex-wrap: wrap; }
+        .biome-section { background: #0a2e1a; border: 1px solid #59b69b; border-radius: 8px; padding: 10px; margin-top: 10px; }
+        .biome-section label { color: #9bd3c3; }
+        .radio-group { display: flex; gap: 15px; margin: 8px 0; align-items: center; }
+        .radio-group label { margin: 0; display: flex; align-items: center; gap: 5px; }
     </style>
 </head>
 <body>
@@ -125,7 +129,42 @@
                     </div>
                 </div>
                 
-                <div id="rainyContainer" style="display:none; margin-bottom: 10px;"><label class="check-row" style="color: #add8e6;"><input type="checkbox" id="isRainy"> Rainy Aura?</label></div>
+                <!-- Biome Section -->
+                <div class="biome-section">
+                    <label style="color: #59b69b; font-weight: bold;">What biome is this aura from</label>
+                    <div class="grid-2">
+                        <div>
+                            <label>Biome</label>
+                            <select id="biome" onchange="updateBiomeOptions()">
+                                <option value="none">None (Normal)</option>
+                                <option value="windy">Windy</option>
+                                <option value="snowy">Snowy</option>
+                                <option value="rainy">Rainy</option>
+                                <option value="sandstorm">Sandstorm</option>
+                                <option value="hell">Hell</option>
+                                <option value="starfall">Starfall</option>
+                                <option value="heaven">Heaven</option>
+                                <option value="corruption">Corruption</option>
+                                <option value="null">Null</option>
+                                <option value="dreamspace">Dreamspace</option>
+                                <option value="glitch">Glitch</option>
+                                <option value="cyberspace">Cyberspace</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label>&nbsp;</label>
+                            <label class="check-row"><input type="checkbox" id="perpetualBiome" onchange="updateBiomeOptions()"> Perpetually in this biome</label>
+                        </div>
+                    </div>
+                    <div id="biomeOptionsDiv">
+                        <div class="radio-group">
+                            <label><input type="radio" name="biomeType" value="native" checked> Native to this biome</label>
+                            <label><input type="radio" name="biomeType" value="exclusive"> Exclusive to this biome</label>
+                        </div>
+                    </div>
+                    <div class="disclaimer" style="color: #9bd3c3; font-size: 0.65rem;">Native = boosted during biome, spawns anywhere</div>
+                    <div class="disclaimer" style="color: #9bd3c3; font-size: 0.65rem;">Exclusive = only rollable in this biome</div>
+                </div>
                 
                 <div class="multi-row">
                     <label class="check-row"><input type="checkbox" id="multiAura" onchange="calculate()"> Multiple Auras Mode</label>
@@ -340,8 +379,8 @@
             <label class="check-row" style="color: #00d4ff; font-weight: bold;"><input type="checkbox" id="showEventGlobal" onchange="toggleEvents()"> Show Event Gear</label>
         </div>
 
-        <div class="disclaimer">⚠️ Disclaimer: 100% is impossible because RNG is never guaranteed. 99.99% is effectively guaranteed but mathematically never 100%.</div>
-        <div class="disclaimer">📊 These calculations represent statistical averages. Due to the random nature of the game, your actual experience may vary.</div>
+        <div class="disclaimer">Disclaimer: 100% is impossible because RNG is never guaranteed. 99.99% is effectively guaranteed but mathematically never 100%.</div>
+        <div class="disclaimer">These calculations represent statistical averages. Due to the random nature of the game, your actual experience may vary.</div>
 
         <div class="footer">
             <div><a href="https://discord.gg/yTreH64JBC" class="discord-link" target="_blank">Join the Discord!</a><div style="font-size:0.6rem; color:#666;">By @LubJub</div></div>
@@ -353,6 +392,59 @@
 <script>
     let currentMode = 'chance';
     let currentArea = 'overworld';
+    
+    // Biome data with updated averages for Ragnaröker and Shining Star
+    // Ragnaröker: normally 4.55 luck, during Hell biome (4.74% uptime) gets +0.45 luck
+    // Average = 4.55 + (0.0474 * 0.45) = 4.57133
+    // Shining Star: normally 0.5 luck, during Starfall biome (3.79% uptime) gets 2.5 luck
+    // Average = (0.9621 * 0.5) + (0.0379 * 2.5) = 0.48105 + 0.09475 = 0.5758
+    
+    const biomeData = {
+        none: { uptime: 1.0, boost: 1, exclusiveOnly: false, cyberspace: false },
+        windy: { uptime: 0.1138, boost: 3, exclusiveOnly: false, cyberspace: false },
+        snowy: { uptime: 0.0948, boost: 3, exclusiveOnly: false, cyberspace: false },
+        rainy: { uptime: 0.0759, boost: 4, exclusiveOnly: false, cyberspace: false },
+        sandstorm: { uptime: 0.1027, boost: 4, exclusiveOnly: false, cyberspace: false },
+        hell: { uptime: 0.0474, boost: 6, exclusiveOnly: false, cyberspace: false },
+        starfall: { uptime: 0.0379, boost: 5, exclusiveOnly: false, cyberspace: false },
+        heaven: { uptime: 0.0147, boost: 5, exclusiveOnly: false, cyberspace: false },
+        corruption: { uptime: 0.0342, boost: 5, exclusiveOnly: false, cyberspace: false },
+        null: { uptime: 0.0046, boost: 1000, exclusiveOnly: false, cyberspace: false },
+        dreamspace: { uptime: 0.000026, boost: 1, exclusiveOnly: true, cyberspace: false },
+        glitch: { uptime: 0.0000175, boost: 1, exclusiveOnly: true, cyberspace: false },
+        cyberspace: { uptime: 1.0, boost: 1, exclusiveOnly: true, cyberspace: true }
+    };
+    
+    // Update Ragnaröker average in the right glove dropdown
+    function updateRightGloveAverages() {
+        const ragnaOption = document.querySelector('#rightGlove option[value="40,4.55"]');
+        if (ragnaOption) {
+            ragnaOption.value = "40,4.57133";
+        }
+        const limboRagnaOption = document.querySelector('#limboRightGlove option[value="40,4.55"]');
+        if (limboRagnaOption) {
+            limboRagnaOption.value = "40,4.57133";
+        }
+    }
+    
+    function updateBiomeOptions() {
+        const biome = document.getElementById('biome').value;
+        const optionsDiv = document.getElementById('biomeOptionsDiv');
+        const radioButtons = document.querySelectorAll('input[name="biomeType"]');
+        
+        if (biome === 'cyberspace' || biome === 'dreamspace' || biome === 'glitch') {
+            optionsDiv.style.opacity = '0.5';
+            document.querySelector('input[name="biomeType"][value="exclusive"]').checked = true;
+            document.querySelector('input[name="biomeType"][value="native"]').disabled = true;
+            document.querySelector('input[name="biomeType"][value="exclusive"]').disabled = false;
+        } else {
+            optionsDiv.style.opacity = '1';
+            document.querySelector('input[name="biomeType"][value="native"]').disabled = false;
+            document.querySelector('input[name="biomeType"][value="exclusive"]').disabled = false;
+        }
+        
+        calculate();
+    }
     
     // Helper function for binomial coefficient (log scale for large numbers)
     function logChoose(n, k) {
@@ -368,12 +460,8 @@
     // Calculate probability of getting at least N successes in M rolls
     function probabilityAtLeastNRolls(p, rolls, n) {
         if (n <= 1) {
-            // Standard case: at least 1 success
             return 1 - Math.pow(1 - p, rolls);
         }
-        
-        // For n > 1, calculate P(less than n successes) and subtract from 1
-        // P(less than n) = sum_{k=0}^{n-1} C(rolls, k) * p^k * (1-p)^(rolls-k)
         
         let log1MinusP = Math.log(1 - p);
         let logP = Math.log(p);
@@ -388,7 +476,6 @@
         return 1 - Math.exp(logProbLessThanN);
     }
     
-    // Helper for log-sum-exp to avoid underflow
     function logSumExp(logA, logB) {
         if (logA === -Infinity) return logB;
         if (logB === -Infinity) return logA;
@@ -398,16 +485,13 @@
         return logB + Math.log(1 + Math.exp(logA - logB));
     }
     
-    // Find rolls needed for at least N successes with target probability
     function findRollsForTarget(p, targetProb, n, maxRolls = 1e12) {
         if (n <= 1) {
-            // Standard case
             let rollsNeeded = Math.log(1 - targetProb) / Math.log(1 - p);
             return Math.ceil(rollsNeeded);
         }
         
-        // Binary search for the number of rolls needed
-        let low = n; // At least n rolls needed
+        let low = n;
         let high = maxRolls;
         let bestRolls = maxRolls;
         
@@ -510,6 +594,9 @@
         document.getElementById('vipPlus').checked = true;
         document.getElementById('multiAura').checked = false;
         document.getElementById('auraCount').value = "2";
+        document.getElementById('biome').value = "none";
+        document.getElementById('perpetualBiome').checked = false;
+        document.querySelector('input[name="biomeType"][value="native"]').checked = true;
         
         document.getElementById('limboLeftGlove').value = "thing,0,0";
         document.getElementById('limboRightGlove').value = "200,22.0";
@@ -529,6 +616,7 @@
         document.getElementById('targetP').value = "";
         document.getElementById('days').value = "";
         
+        updateBiomeOptions();
         toggleEvents(); 
         checkRainySupport(); 
         setArea('overworld');
@@ -544,26 +632,34 @@
         }
     }
     
-    function updateSummaryText(pPerRoll, timeNeeded, chancePercent, days, targetVal, auraCount, isMultiAura) {
+    function updateSummaryText(pPerRoll, timeNeeded, chancePercent, days, targetVal, auraCount, isMultiAura, biomeName, isPerpetual, isNative) {
         const summaryDiv = document.getElementById('summaryText');
         const countText = isMultiAura ? ` ${auraCount} of this aura` : ' this aura';
+        let biomeText = '';
+        
+        if (biomeName !== 'none') {
+            const biomeDisplay = document.getElementById('biome').options[document.getElementById('biome').selectedIndex]?.text || biomeName;
+            const perpetualText = isPerpetual ? ' (perpetual)' : '';
+            const typeText = isNative ? 'native' : 'exclusive';
+            biomeText = ` in ${biomeDisplay} biome${perpetualText} (${typeText})`;
+        }
         
         if (currentMode === 'chance') {
             if (targetVal > 0 && pPerRoll > 0 && pPerRoll < 1) {
                 const daysNeeded = timeNeeded / 86400;
-                summaryDiv.innerHTML = `🎯 To have a ${(targetVal * 100).toFixed(2)}% chance of getting${countText}, you need to AFK for approximately <strong>${daysNeeded > 1000 ? daysNeeded.toExponential(2) : daysNeeded.toFixed(2)} days</strong>.`;
+                summaryDiv.innerHTML = `To have a ${(targetVal * 100).toFixed(2)}% chance of getting${countText}${biomeText}, you need to AFK for approximately <strong>${daysNeeded > 1000 ? daysNeeded.toExponential(2) : daysNeeded.toFixed(2)} days</strong>.`;
             } else if (targetVal <= 0) {
-                summaryDiv.innerHTML = `📝 Enter a desired success rate (%) above to see how many days you need to AFK.`;
+                summaryDiv.innerHTML = `Enter a desired success rate (%) above to see how many days you need to AFK.`;
             } else {
-                summaryDiv.innerHTML = `⚠️ With your current luck stat, this aura may be impossible to calculate. Try increasing your luck buffs.`;
+                summaryDiv.innerHTML = `With your current luck stat, this aura may be impossible to calculate. Try increasing your luck buffs.`;
             }
         } else {
             if (days > 0 && pPerRoll > 0) {
-                summaryDiv.innerHTML = `📊 After AFKing for <strong>${days} day${days !== 1 ? 's' : ''}</strong>, you have approximately a <strong>${chancePercent >= 99.99 ? '99.99%+' : chancePercent.toFixed(2) + '%'}</strong> chance of having rolled${countText} at least once.`;
+                summaryDiv.innerHTML = `After AFKing for <strong>${days} day${days !== 1 ? 's' : ''}</strong>, you have approximately a <strong>${chancePercent >= 99.99 ? '99.99%+' : chancePercent.toFixed(2) + '%'}</strong> chance of having rolled${countText}${biomeText} at least once.`;
             } else if (days <= 0) {
-                summaryDiv.innerHTML = `📝 Enter how many days you plan to AFK above to see your chance of getting${countText}.`;
+                summaryDiv.innerHTML = `Enter how many days you plan to AFK above to see your chance of getting${countText}${biomeText}.`;
             } else {
-                summaryDiv.innerHTML = `⚠️ With your current luck stat, this aura may be impossible to calculate. Try increasing your luck buffs.`;
+                summaryDiv.innerHTML = `With your current luck stat, this aura may be impossible to calculate. Try increasing your luck buffs.`;
             }
         }
     }
@@ -580,6 +676,27 @@
         return { speedBonus: speed || 0, luckBonus: luck || 0 };
     }
     
+    function getBiomeMultiplier(biomeId, isPerpetual, isNative, baseLuck, R) {
+        const biome = biomeData[biomeId];
+        if (!biome || biomeId === 'none') return 1;
+        
+        if (biome.cyberspace) return 0;
+        
+        if (isPerpetual) {
+            if (isNative) {
+                return biome.boost;
+            } else {
+                return 1;
+            }
+        } else {
+            if (isNative) {
+                return (biome.uptime * biome.boost) + (1 - biome.uptime);
+            } else {
+                return biome.uptime;
+            }
+        }
+    }
+    
     function calculateOverworld() {
         let rarityInput = document.getElementById('rarity');
         let rawRarity = rarityInput.value.replace(/,/g, '');
@@ -587,92 +704,89 @@
         if (R < 1 || isNaN(R)) R = 1;
         
         rarityInput.value = formatWithCommas(R);
-
-        let resValue = parseFloat(document.getElementById('resonance').value);
-        if (isNaN(resValue)) resValue = 0;
-        resValue = Math.min(22, Math.max(0, resValue));
-
-        let displayedLuck = parseFloat(document.getElementById('luck').value) || 1;
         
-        let tempLuck = displayedLuck;
-        
-        const eventMulti = parseFloat(document.getElementById('eventMulti').value) || 1;
-        tempLuck /= eventMulti;
-        
-        const vip = document.getElementById('vip').checked;
-        const vipPlus = document.getElementById('vipPlus').checked;
-        let vipMulti = 1;
-        if (vip && vipPlus) vipMulti = 1.3;
-        else if (vip || vipPlus) vipMulti = 1.2;
-        tempLuck /= vipMulti;
-        
-        const left = document.getElementById('leftGlove').value;
-        const rainy = document.getElementById('isRainy').checked;
-        let leftMultiplier = 1;
-        let leftAdditiveLuck = 0;
-        let leftSpeedBonus = 0;
-        
-        if (left === "thing") {
-            leftMultiplier = 2.0;
-        } else if (left === "pole") {
-            leftAdditiveLuck = 5;
-            leftMultiplier = 1.1;
-            leftSpeedBonus = 13.3;
-        } else if (left === "jackpot") {
-            leftAdditiveLuck = 0.77;
-            leftSpeedBonus = 7;
-        } else if (left === "grav") {
-            leftMultiplier = 1.5;
-        } else if (left === "gemstone") {
-            leftAdditiveLuck = 0.075;
-            leftSpeedBonus = 1.25;
-        } else if (left === "xmas") {
-            leftMultiplier = 1.5;
-        } else if (left === "present") {
-            leftMultiplier = 1.36;
-        } else if (left === "1.35") {
-            leftMultiplier = 1.35;
-        } else if (left === "blessed" || left === "tide") {
-            leftMultiplier = 1;
-        } else {
-            leftMultiplier = parseFloat(left) || 1;
-        }
-        
-        let totalLuck = (tempLuck + leftAdditiveLuck) * leftMultiplier;
-        
-        totalLuck *= vipMulti;
-        totalLuck *= eventMulti;
+        // Get biome settings
+        const biomeId = document.getElementById('biome').value;
+        const isPerpetual = document.getElementById('perpetualBiome').checked;
+        const isNative = document.querySelector('input[name="biomeType"]:checked')?.value === 'native';
+        const isCyberspace = biomeId === 'cyberspace';
         
         let pPerRoll;
         
-        if (left === "blessed") {
-            if (rainy) {
-                let normalP = totalLuck / R;
-                let specialP = (totalLuck * 3) / (R / 4);
-                pPerRoll = (5 * normalP + 1 * specialP) / 6;
+        if (isCyberspace) {
+            pPerRoll = 1 / R;
+            pPerRoll = Math.min(pPerRoll, 1);
+        } else {
+            let resValue = parseFloat(document.getElementById('resonance').value);
+            if (isNaN(resValue)) resValue = 0;
+            resValue = Math.min(22, Math.max(0, resValue));
+            
+            let displayedLuck = parseFloat(document.getElementById('luck').value) || 1;
+            
+            let tempLuck = displayedLuck;
+            
+            const eventMulti = parseFloat(document.getElementById('eventMulti').value) || 1;
+            tempLuck /= eventMulti;
+            
+            const vip = document.getElementById('vip').checked;
+            const vipPlus = document.getElementById('vipPlus').checked;
+            let vipMulti = 1;
+            if (vip && vipPlus) vipMulti = 1.3;
+            else if (vip || vipPlus) vipMulti = 1.2;
+            tempLuck /= vipMulti;
+            
+            const left = document.getElementById('leftGlove').value;
+            let leftMultiplier = 1;
+            let leftAdditiveLuck = 0;
+            let leftSpeedBonus = 0;
+            
+            if (left === "thing") {
+                leftMultiplier = 2.0;
+            } else if (left === "pole") {
+                leftAdditiveLuck = 5;
+                leftMultiplier = 1.1;
+                leftSpeedBonus = 13.3;
+            } else if (left === "jackpot") {
+                leftAdditiveLuck = 0.77;
+                leftSpeedBonus = 7;
+            } else if (left === "grav") {
+                leftMultiplier = 1.5;
+            } else if (left === "gemstone") {
+                leftAdditiveLuck = 0.075;
+                leftSpeedBonus = 1.25;
+            } else if (left === "xmas") {
+                leftMultiplier = 1.5;
+            } else if (left === "present") {
+                leftMultiplier = 1.36;
+            } else if (left === "1.35") {
+                leftMultiplier = 1.35;
+            } else if (left === "blessed" || left === "tide") {
+                leftMultiplier = 1;
             } else {
-                let normalP = totalLuck / R;
-                let specialP = (totalLuck * 3) / R;
-                pPerRoll = (5 * normalP + 1 * specialP) / 6;
+                leftMultiplier = parseFloat(left) || 1;
             }
-        } 
-        else if (left === "tide") {
-            let tideLuck = totalLuck + 0.5;
-            if (rainy) {
-                let normalP = tideLuck / R;
-                let specialP = (tideLuck * 2) / (R / 4);
-                pPerRoll = (9 * normalP + 1 * specialP) / 10;
+            
+            let totalLuck = (tempLuck + leftAdditiveLuck) * leftMultiplier;
+            
+            totalLuck *= vipMulti;
+            totalLuck *= eventMulti;
+            
+            let baseP = totalLuck / R;
+            
+            const biomeMulti = getBiomeMultiplier(biomeId, isPerpetual, isNative, totalLuck, R);
+            
+            if (biomeMulti === 0) {
+                pPerRoll = baseP;
             } else {
-                let normalP = tideLuck / R;
-                let specialP = (tideLuck * 2) / R;
-                pPerRoll = (9 * normalP + 1 * specialP) / 10;
+                pPerRoll = baseP * biomeMulti;
             }
-        }
-        else {
-            pPerRoll = totalLuck / R;
+            
+            pPerRoll = Math.min(pPerRoll, 1);
         }
         
-        pPerRoll = Math.min(pPerRoll, 1);
+        let resValue = parseFloat(document.getElementById('resonance').value);
+        if (isNaN(resValue)) resValue = 0;
+        resValue = Math.min(22, Math.max(0, resValue));
         
         let speedBonus = 0;
         speedBonus += resValue;
@@ -680,6 +794,16 @@
         const rightGloveValue = document.getElementById('rightGlove').value;
         const rightGloveData = parseRightGloveValue(rightGloveValue);
         speedBonus += rightGloveData.speedBonus;
+        
+        const left = document.getElementById('leftGlove').value;
+        let leftSpeedBonus = 0;
+        if (left === "pole") {
+            leftSpeedBonus = 13.3;
+        } else if (left === "jackpot") {
+            leftSpeedBonus = 7;
+        } else if (left === "gemstone") {
+            leftSpeedBonus = 1.25;
+        }
         speedBonus += leftSpeedBonus;
         
         const bankLevel = parseInt(document.getElementById('bankLevel').value) || 0;
@@ -714,7 +838,6 @@
             totalRolls = skipRolls + normalRolls;
         }
         
-        // Check if multiple auras mode is enabled
         const isMultiAura = document.getElementById('multiAura').checked;
         const auraCount = parseInt(document.getElementById('auraCount').value) || 1;
         
@@ -764,7 +887,7 @@
         document.getElementById('outputTime').innerText = (P >= 0.9999999) ? "99.99%+" : chancePercent.toFixed(4) + "%";
         document.getElementById('rollsNeeded').innerText = Math.floor(totalRolls).toLocaleString() + " total rolls";
         
-        updateSummaryText(pPerRoll, timeNeeded, chancePercent, days, targetVal, auraCount, isMultiAura);
+        updateSummaryText(pPerRoll, timeNeeded, chancePercent, days, targetVal, auraCount, isMultiAura, biomeId, isPerpetual, isNative);
         
         const chanceBox = document.getElementById('chanceBox');
         const timeBox = document.getElementById('timeBox');
@@ -792,41 +915,36 @@
         
         rarityInput.value = formatWithCommas(R);
         
-        // Start with base luck = 1
         let totalLuck = 1;
         
-        // Add Forbidden Potions (additive to base)
         const forbidden1 = document.getElementById('forbidden1').checked;
         const forbidden2 = document.getElementById('forbidden2').checked;
         const forbidden3 = document.getElementById('forbidden3').checked;
         let forbiddenSpeedBonus = 0;
         
         if (forbidden1) {
-            totalLuck += 0.7;   // +70% = add 0.7
+            totalLuck += 0.7;
             forbiddenSpeedBonus += 10;
         }
         if (forbidden2) {
-            totalLuck += 3.25;  // +325% = add 3.25
+            totalLuck += 3.25;
             forbiddenSpeedBonus += 25;
         }
         if (forbidden3) {
-            totalLuck += 13.5;  // +1350% = add 13.5
+            totalLuck += 13.5;
             forbiddenSpeedBonus += 75;
         }
         
-        // Add right hand luck
         const rightGloveValue = document.getElementById('limboRightGlove').value;
         const rightGloveData = parseRightGloveValue(rightGloveValue);
         totalLuck += rightGloveData.luckBonus;
         
-        // Parse left glove value (handles special names like "thing", "pole", etc.)
         const leftGloveValue = document.getElementById('limboLeftGlove').value;
         const leftParts = leftGloveValue.split(',');
         let leftMultiplier = 1;
         let leftAdditiveLuck = 0;
         let leftSpeedBonus = 0;
         
-        // Check if first part is a special named glove
         const gloveName = leftParts[0];
         if (gloveName === "thing") {
             leftMultiplier = 2.0;
@@ -853,18 +971,14 @@
         } else if (gloveName === "1.35") {
             leftMultiplier = 1.35;
         } else {
-            // Normal numeric value
             leftMultiplier = parseFloat(gloveName) || 1;
             leftAdditiveLuck = leftParts.length > 1 ? parseFloat(leftParts[1]) : 0;
             leftSpeedBonus = leftParts.length > 2 ? parseFloat(leftParts[2]) : 0;
         }
         
         totalLuck += leftAdditiveLuck;
-        
-        // Apply left hand multiplier
         totalLuck *= leftMultiplier;
         
-        // Apply VIP
         const vip = document.getElementById('limboVip').checked;
         const vipPlus = document.getElementById('limboVipPlus').checked;
         let vipMulti = 1;
@@ -872,18 +986,15 @@
         else if (vip || vipPlus) vipMulti = 1.2;
         totalLuck *= vipMulti;
         
-        // Apply Dave's Hope
         const davesHope = parseFloat(document.getElementById('davesHope').value) || 1;
         totalLuck *= davesHope;
         
-        // Apply event multiplier
         const eventMulti = parseFloat(document.getElementById('limboEventMulti').value) || 1;
         totalLuck *= eventMulti;
         
         let pPerRoll = totalLuck / R;
         pPerRoll = Math.min(pPerRoll, 1);
         
-        // Speed calculation for Limbo
         let speedBonus = 0;
         speedBonus += rightGloveData.speedBonus;
         speedBonus += leftSpeedBonus;
@@ -896,7 +1007,6 @@
         const totalSeconds = 86400 * days;
         const totalRolls = totalSeconds * rollsPerSecond;
         
-        // Check if multiple auras mode is enabled
         const isMultiAura = document.getElementById('limboMultiAura').checked;
         const auraCount = parseInt(document.getElementById('limboAuraCount').value) || 1;
         
@@ -931,7 +1041,7 @@
         document.getElementById('outputTime').innerText = (P >= 0.9999999) ? "99.99%+" : chancePercent.toFixed(4) + "%";
         document.getElementById('rollsNeeded').innerText = Math.floor(totalRolls).toLocaleString() + " total rolls";
         
-        updateSummaryText(pPerRoll, timeNeeded, chancePercent, days, targetVal, auraCount, isMultiAura);
+        updateSummaryText(pPerRoll, timeNeeded, chancePercent, days, targetVal, auraCount, isMultiAura, 'none', false, true);
         
         const chanceBox = document.getElementById('chanceBox');
         const timeBox = document.getElementById('timeBox');
