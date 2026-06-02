@@ -261,11 +261,11 @@
                                 <option value="2">2.0x</option>
                             </select>
                         </div>
-                        <div><label>Forbidden Potions (Stackable)</label>
+                        <div><label>Forbidden Potions (Stackable - Additive)</label>
                             <div class="potion-stack">
-                                <label class="check-row"><input type="checkbox" id="forbidden1"> Forbidden I</label>
-                                <label class="check-row"><input type="checkbox" id="forbidden2"> Forbidden II</label>
-                                <label class="check-row"><input type="checkbox" id="forbidden3"> Forbidden III</label>
+                                <label class="check-row"><input type="checkbox" id="forbidden1"> Forbidden I (+70% Luck, +10% Speed)</label>
+                                <label class="check-row"><input type="checkbox" id="forbidden2"> Forbidden II (+325% Luck, +25% Speed)</label>
+                                <label class="check-row"><input type="checkbox" id="forbidden3"> Forbidden III (+1350% Luck, +75% Speed)</label>
                             </div>
                         </div>
                     </div>
@@ -709,30 +709,34 @@
         const davesHope = parseFloat(document.getElementById('davesHope').value) || 1;
         totalLuck *= davesHope;
         
+        // Forbidden Potions - ADDITIVE (they add together, not multiply)
         const forbidden1 = document.getElementById('forbidden1').checked;
         const forbidden2 = document.getElementById('forbidden2').checked;
         const forbidden3 = document.getElementById('forbidden3').checked;
         
-        let forbiddenLuckMulti = 1;
+        let forbiddenLuckPercent = 0;
         let forbiddenSpeedBonus = 0;
         
         if (forbidden1) {
-            forbiddenLuckMulti *= 1.7;
+            forbiddenLuckPercent += 70;   // +70%
             forbiddenSpeedBonus += 10;
         }
         if (forbidden2) {
-            forbiddenLuckMulti *= 4.25;
+            forbiddenLuckPercent += 325;  // +325%
             forbiddenSpeedBonus += 25;
         }
         if (forbidden3) {
-            forbiddenLuckMulti *= 14.5;
+            forbiddenLuckPercent += 1350; // +1350%
             forbiddenSpeedBonus += 75;
         }
-        totalLuck *= forbiddenLuckMulti;
+        
+        // Convert percentage to multiplier (e.g., 1745% = 18.45x)
+        totalLuck *= (1 + (forbiddenLuckPercent / 100));
         
         let pPerRoll = totalLuck / R;
         pPerRoll = Math.min(pPerRoll, 1);
         
+        // Speed calculation for Limbo (Forbidden speed bonuses are also additive)
         let speedBonus = 0;
         speedBonus += rightGloveData.speedBonus;
         speedBonus += leftSpeedBonus;
