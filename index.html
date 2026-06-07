@@ -19,7 +19,7 @@
         .check-row { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.75rem; color: #888; }
         .check-row input { width: 16px; height: 16px; margin: 0; cursor: pointer; }
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .result-box { padding: 20px; border-radius: 8px; text-align: center; margin-top: 10px; border: 2px solid #add8e6; background: rgba(173, 216, 230, 0.05); transition: border-color 0.3s; position: relative; }
+        .result-box { padding: 20px; border-radius: 8px; text-align: center; margin-top: 10px; border: 2px solid #add8e6; background: rgba(173, 216, 230, 0.05); transition: border-color 0.3s; }
         .result-val { font-size: 2.1rem; font-weight: bold; color: #add8e6; margin: 5px 0; }
         .luck-status { font-size: 0.8rem; font-weight: bold; text-transform: uppercase; color: #add8e6; display: block; height: 1rem; }
         .stat-subtext { font-size: 0.7rem; color: #888; margin-top: 5px; display: block; }
@@ -54,6 +54,9 @@
         .redmoon-group, .exclusive-group { margin: 10px 0; padding: 8px; background: #1a0a2a; border-radius: 6px; }
         .redmoon-group label, .exclusive-group label { color: #e8d5f5; }
         .potions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin: 8px 0; }
+        .afk-submode-switch { display: flex; background: #000; border-radius: 10px; padding: 6px; margin: 15px 0 10px 0; border: 2px solid #444; }
+        .afk-submode-btn { flex: 1; padding: 8px; border: none; background: none; color: #888; cursor: pointer; font-weight: 900; font-size: 0.7rem; border-radius: 7px; text-transform: uppercase; transition: 0.2s; }
+        .afk-submode-btn.active { background: #00d4ff; color: #000; }
     </style>
 </head>
 <body>
@@ -62,7 +65,7 @@
     <form id="calcForm" onsubmit="return false;">
         <h2>Sols Rng Calculator</h2>
 
-        <!-- Mode Selection (3 tabs) -->
+        <!-- Global Mode Selection (3 tabs) -->
         <div class="mode-switch">
             <button type="button" id="btnAfkOverworld" class="mode-btn active" onclick="setGlobalMode('afkOverworld')">AFK OVERWORLD</button>
             <button type="button" id="btnAfkLimbo" class="mode-btn" onclick="setGlobalMode('afkLimbo')">AFK LIMBO</button>
@@ -179,10 +182,10 @@
                 </div>
                 
                 <div class="multi-row">
-                    <label class="check-row"><input type="checkbox" id="multiAura" onchange="calculate()"> Multiple Auras Mode</label>
+                    <label class="check-row"><input type="checkbox" id="multiAura" onchange="calculateAfkOverworld()"> Multiple Auras Mode</label>
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <label>Amount Needed:</label>
-                        <input type="number" id="auraCount" value="2" min="1" step="1" style="width: 80px;" oninput="calculate()">
+                        <input type="number" id="auraCount" value="2" min="1" step="1" style="width: 80px;" oninput="calculateAfkOverworld()">
                     </div>
                 </div>
                 
@@ -231,6 +234,36 @@
                 <div class="skip-container">
                     <input type="number" id="rollSkips" value="0" placeholder="Number of skips" step="1" min="0">
                     <label class="check-row"><input type="checkbox" id="infiniteSkips"> Infinite Skips</label>
+                </div>
+            </div>
+            
+            <!-- AFK Overworld Sub-mode Switch -->
+            <div class="afk-submode-switch">
+                <button type="button" id="afkTimeReq" class="afk-submode-btn active" onclick="setAfkSubMode('time')">TIME REQ.</button>
+                <button type="button" id="afkChance" class="afk-submode-btn" onclick="setAfkSubMode('chance')">CHANCE %</button>
+            </div>
+            
+            <div id="afkTimeReqSection">
+                <label>Desired Success Rate (%)</label>
+                <input type="number" id="targetP" placeholder="Max 99.99" step="0.01" max="99.99" oninput="if(this.value>=100)this.value=99.99">
+                <div class="preset-buttons">
+                    <span class="preset-label">Presets:</span>
+                    <button type="button" class="preset-btn" onclick="setTargetPreset(25)">25%</button>
+                    <button type="button" class="preset-btn" onclick="setTargetPreset(50)">50%</button>
+                    <button type="button" class="preset-btn" onclick="setTargetPreset(75)">75%</button>
+                    <button type="button" class="preset-btn" onclick="setTargetPreset(99)">99%</button>
+                </div>
+            </div>
+            
+            <div id="afkChanceSection" style="display:none;">
+                <label>Rolling Duration (Days)</label>
+                <input type="number" id="days" placeholder="Days AFK">
+                <div class="preset-buttons">
+                    <span class="preset-label">Presets:</span>
+                    <button type="button" class="preset-btn" onclick="setDaysPreset(1)">1 Day</button>
+                    <button type="button" class="preset-btn" onclick="setDaysPreset(7)">7 Days</button>
+                    <button type="button" class="preset-btn" onclick="setDaysPreset(100)">100 Days</button>
+                    <button type="button" class="preset-btn" onclick="setDaysPreset(365)">365 Days</button>
                 </div>
             </div>
         </div>
@@ -303,10 +336,10 @@
                 </div>
                 
                 <div class="multi-row">
-                    <label class="check-row"><input type="checkbox" id="limboMultiAura" onchange="calculate()"> Multiple Auras Mode</label>
+                    <label class="check-row"><input type="checkbox" id="limboMultiAura" onchange="calculateAfkLimbo()"> Multiple Auras Mode</label>
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <label>Amount Needed:</label>
-                        <input type="number" id="limboAuraCount" value="2" min="1" step="1" style="width: 80px;" oninput="calculate()">
+                        <input type="number" id="limboAuraCount" value="2" min="1" step="1" style="width: 80px;" oninput="calculateAfkLimbo()">
                     </div>
                 </div>
                 
@@ -338,6 +371,36 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+            
+            <!-- AFK Limbo Sub-mode Switch -->
+            <div class="afk-submode-switch">
+                <button type="button" id="limboTimeReq" class="afk-submode-btn active" onclick="setLimboSubMode('time')">TIME REQ.</button>
+                <button type="button" id="limboChance" class="afk-submode-btn" onclick="setLimboSubMode('chance')">CHANCE %</button>
+            </div>
+            
+            <div id="limboTimeReqSection">
+                <label>Desired Success Rate (%)</label>
+                <input type="number" id="limboTargetP" placeholder="Max 99.99" step="0.01" max="99.99" oninput="if(this.value>=100)this.value=99.99">
+                <div class="preset-buttons">
+                    <span class="preset-label">Presets:</span>
+                    <button type="button" class="preset-btn" onclick="setLimboTargetPreset(25)">25%</button>
+                    <button type="button" class="preset-btn" onclick="setLimboTargetPreset(50)">50%</button>
+                    <button type="button" class="preset-btn" onclick="setLimboTargetPreset(75)">75%</button>
+                    <button type="button" class="preset-btn" onclick="setLimboTargetPreset(99)">99%</button>
+                </div>
+            </div>
+            
+            <div id="limboChanceSection" style="display:none;">
+                <label>Rolling Duration (Days)</label>
+                <input type="number" id="limboDays" placeholder="Days AFK">
+                <div class="preset-buttons">
+                    <span class="preset-label">Presets:</span>
+                    <button type="button" class="preset-btn" onclick="setLimboDaysPreset(1)">1 Day</button>
+                    <button type="button" class="preset-btn" onclick="setLimboDaysPreset(7)">7 Days</button>
+                    <button type="button" class="preset-btn" onclick="setLimboDaysPreset(100)">100 Days</button>
+                    <button type="button" class="preset-btn" onclick="setLimboDaysPreset(365)">365 Days</button>
                 </div>
             </div>
         </div>
@@ -391,10 +454,10 @@
                 </div>
                 
                 <div class="multi-row">
-                    <label class="check-row"><input type="checkbox" id="potionMultiAura" onchange="calculate()"> Multiple Auras Mode</label>
+                    <label class="check-row"><input type="checkbox" id="potionMultiAura" onchange="calculatePotionMode()"> Multiple Auras Mode</label>
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <label>Amount Needed:</label>
-                        <input type="number" id="potionAuraCount" value="2" min="1" step="1" style="width: 80px;" oninput="calculate()">
+                        <input type="number" id="potionAuraCount" value="2" min="1" step="1" style="width: 80px;" oninput="calculatePotionMode()">
                     </div>
                 </div>
                 
@@ -404,22 +467,16 @@
                     <label class="check-row">Event Multiplier: <input type="number" id="potionEventMulti" value="1" step="0.1" min="0.1" style="width: 60px; margin-left: 5px;"></label>
                 </div>
             </div>
-        </div>
-
-        <hr style="border: 0; border-top: 1px solid #333; margin: 20px 0;">
-
-        <!-- Result Display Area (same for all modes) -->
-        <div id="resultArea">
-            <div class="result-box" id="resultBox">
-                <div class="result-val" id="outputResult">0.00%</div>
-                <span class="luck-status" id="resultLabel">WAITING...</span>
-                <span class="stat-subtext" id="resultDetail">0 rolls</span>
+            
+            <!-- Potion Mode Result Display -->
+            <div class="result-box" id="potionResultBox">
+                <div class="result-val" id="potionResult">0.00%</div>
+                <span class="luck-status" id="potionLabel">POTION CHANCE</span>
+                <span class="stat-subtext" id="potionDetail">0 potions</span>
             </div>
-        </div>
-
-        <!-- Summary Text -->
-        <div class="summary-text" id="summaryText">
-            Enter values above to see results
+            <div class="summary-text" id="potionSummaryText">
+                Enter values above to see results
+            </div>
         </div>
 
         <div class="event-toggle-container">
@@ -438,6 +495,8 @@
 
 <script>
     let currentGlobalMode = 'afkOverworld';
+    let currentAfkSubMode = 'time';
+    let currentLimboSubMode = 'time';
     
     // Biome data
     const biomeData = {
@@ -469,7 +528,47 @@
         document.getElementById('btnAfkLimbo').classList.toggle('active', mode === 'afkLimbo');
         document.getElementById('btnPotion').classList.toggle('active', mode === 'potion');
         
-        calculate();
+        if (mode === 'afkOverworld') calculateAfkOverworld();
+        else if (mode === 'afkLimbo') calculateAfkLimbo();
+        else calculatePotionMode();
+    }
+    
+    function setAfkSubMode(mode) {
+        currentAfkSubMode = mode;
+        document.getElementById('afkTimeReqSection').style.display = (mode === 'time') ? 'block' : 'none';
+        document.getElementById('afkChanceSection').style.display = (mode === 'chance') ? 'block' : 'none';
+        document.getElementById('afkTimeReq').classList.toggle('active', mode === 'time');
+        document.getElementById('afkChance').classList.toggle('active', mode === 'chance');
+        calculateAfkOverworld();
+    }
+    
+    function setLimboSubMode(mode) {
+        currentLimboSubMode = mode;
+        document.getElementById('limboTimeReqSection').style.display = (mode === 'time') ? 'block' : 'none';
+        document.getElementById('limboChanceSection').style.display = (mode === 'chance') ? 'block' : 'none';
+        document.getElementById('limboTimeReq').classList.toggle('active', mode === 'time');
+        document.getElementById('limboChance').classList.toggle('active', mode === 'chance');
+        calculateAfkLimbo();
+    }
+    
+    function setTargetPreset(percent) {
+        document.getElementById('targetP').value = percent;
+        calculateAfkOverworld();
+    }
+    
+    function setDaysPreset(days) {
+        document.getElementById('days').value = days;
+        calculateAfkOverworld();
+    }
+    
+    function setLimboTargetPreset(percent) {
+        document.getElementById('limboTargetP').value = percent;
+        calculateAfkLimbo();
+    }
+    
+    function setLimboDaysPreset(days) {
+        document.getElementById('limboDays').value = days;
+        calculateAfkLimbo();
     }
     
     function updateBiomeOptions() {
@@ -487,7 +586,7 @@
             document.querySelector('input[name="biomeType"][value="exclusive"]').disabled = false;
         }
         
-        calculate();
+        calculateAfkOverworld();
     }
     
     // Helper functions
@@ -547,7 +646,9 @@
             if (!isNaN(num)) {
                 this.value = formatWithCommas(Math.floor(num));
             }
-            calculate();
+            if (currentGlobalMode === 'afkOverworld') calculateAfkOverworld();
+            else if (currentGlobalMode === 'afkLimbo') calculateAfkLimbo();
+            else calculatePotionMode();
         });
     }
     
@@ -572,7 +673,6 @@
         const stackableIds = ['potionHeavenly', 'potionGodlike', 'potionBound', 'potionWishStar', 'potionPopping', 'potionDune'];
         const redmoonRadios = document.querySelectorAll('input[name="redmoon"]');
         
-        // When exclusive is selected, clear all stackable and red moon
         exclusiveRadios.forEach(radio => {
             radio.addEventListener('change', function() {
                 if (this.value !== 'none' && this.checked) {
@@ -582,11 +682,10 @@
                     });
                     document.querySelector('input[name="redmoon"][value="none"]').checked = true;
                 }
-                calculate();
+                calculatePotionMode();
             });
         });
         
-        // When any stackable is checked, clear exclusive
         stackableIds.forEach(id => {
             const cb = document.getElementById(id);
             if (cb) {
@@ -594,18 +693,17 @@
                     if (this.checked) {
                         document.querySelector('input[name="exclusive"][value="none"]').checked = true;
                     }
-                    calculate();
+                    calculatePotionMode();
                 });
             }
         });
         
-        // When red moon is selected (not none), clear exclusive
         redmoonRadios.forEach(radio => {
             radio.addEventListener('change', function() {
                 if (this.value !== 'none' && this.checked) {
                     document.querySelector('input[name="exclusive"][value="none"]').checked = true;
                 }
-                calculate();
+                calculatePotionMode();
             });
         });
     }
@@ -631,22 +729,18 @@
         const left = document.getElementById('leftGlove').value;
         let leftMultiplier = 1;
         let leftAdditiveLuck = 0;
-        let leftSpeedBonus = 0;
         
         if (left === "thing") {
             leftMultiplier = 2.0;
         } else if (left === "pole") {
             leftAdditiveLuck = 5;
             leftMultiplier = 1.1;
-            leftSpeedBonus = 13.3;
         } else if (left === "jackpot") {
             leftAdditiveLuck = 0.77;
-            leftSpeedBonus = 7;
         } else if (left === "grav") {
             leftMultiplier = 1.5;
         } else if (left === "gemstone") {
             leftAdditiveLuck = 0.075;
-            leftSpeedBonus = 1.25;
         } else if (left === "xmas") {
             leftMultiplier = 1.5;
         } else if (left === "present") {
@@ -729,10 +823,8 @@
     }
     
     function calculatePotionLuck() {
-        // Check if exclusive is selected first
         const exclusive = document.querySelector('input[name="exclusive"]:checked')?.value;
         
-        // If exclusive is selected, ignore all other potions
         if (exclusive !== 'none') {
             let exclusiveLuck = 1;
             if (exclusive === 'oblivion') exclusiveLuck += 600000;
@@ -752,7 +844,6 @@
             return exclusiveLuck;
         }
         
-        // No exclusive selected - calculate stackable + red moon
         let totalLuck = 1;
         
         if (document.getElementById('potionHeavenly')?.checked) totalLuck += 150000;
@@ -777,16 +868,6 @@
         totalLuck *= eventMulti;
         
         return totalLuck;
-    }
-    
-    function calculate() {
-        if (currentGlobalMode === 'afkOverworld') {
-            calculateAfkOverworld();
-        } else if (currentGlobalMode === 'afkLimbo') {
-            calculateAfkLimbo();
-        } else {
-            calculatePotionMode();
-        }
     }
     
     function calculateAfkOverworld() {
@@ -851,61 +932,121 @@
         const skipCount = parseFloat(document.getElementById('rollSkips').value) || 0;
         const infiniteSkips = document.getElementById('infiniteSkips').checked;
         
-        const days = parseFloat(document.getElementById('days').value) || 0;
-        const totalSeconds = 86400 * days;
-        
-        let totalRolls;
-        if (infiniteSkips) {
-            totalRolls = totalSeconds * skipRollsPerSecond;
-        } else {
-            const skipTime = Math.min(skipCount / skipRollsPerSecond, totalSeconds);
-            const skipRolls = skipTime * skipRollsPerSecond;
-            const normalTime = totalSeconds - skipTime;
-            const normalRolls = normalTime * rollsPerSecond;
-            totalRolls = skipRolls + normalRolls;
-        }
-        
         const isMultiAura = document.getElementById('multiAura').checked;
         const auraCount = parseInt(document.getElementById('auraCount').value) || 1;
         
-        let P;
-        if (isMultiAura && auraCount > 1 && totalRolls > 0 && pPerRoll > 0 && pPerRoll < 1) {
-            P = probabilityAtLeastNRolls(pPerRoll, totalRolls, auraCount);
-        } else {
-            P = (totalRolls > 0 && pPerRoll > 0) ? 1 - Math.pow((1 - pPerRoll), totalRolls) : 0;
-        }
+        let resultElement, detailElement, summaryElement;
         
-        const chancePercent = P * 100;
-        document.getElementById('outputResult').innerText = (P >= 0.9999999) ? "99.99%+" : chancePercent.toFixed(4) + "%";
-        
-        let resultText = '';
-        if (isMultiAura && auraCount > 1) {
-            resultText = `${Math.floor(totalRolls).toLocaleString()} total rolls, chance for ${auraCount} auras`;
-        } else {
-            resultText = `${Math.floor(totalRolls).toLocaleString()} total rolls`;
-        }
-        document.getElementById('resultDetail').innerText = resultText;
-        
-        const resultBox = document.getElementById('resultBox');
-        resultBox.classList.remove('status-low', 'status-mid', 'status-high');
-        if (P > 0) {
-            if (P < 0.1) resultBox.classList.add('status-low');
-            else if (P < 0.5) resultBox.classList.add('status-mid');
-            else resultBox.classList.add('status-high');
-        }
-        
-        const summaryDiv = document.getElementById('summaryText');
-        if (days > 0 && pPerRoll > 0) {
-            if (isMultiAura && auraCount > 1) {
-                summaryDiv.innerHTML = `After AFKing for ${days} day${days !== 1 ? 's' : ''}, you have a ${chancePercent.toFixed(2)}% chance of getting ${auraCount} of this aura.`;
+        if (currentAfkSubMode === 'time') {
+            const targetInput = document.getElementById('targetP');
+            let targetVal = (parseFloat(targetInput.value) || 0) / 100;
+            if (targetVal >= 1) targetVal = 0.9999;
+            
+            let timeNeeded = 0;
+            if (targetVal > 0 && pPerRoll > 0 && pPerRoll < 1) {
+                let rollsNeeded;
+                if (isMultiAura && auraCount > 1) {
+                    rollsNeeded = findRollsForTarget(pPerRoll, targetVal, auraCount);
+                } else {
+                    rollsNeeded = Math.log(1 - targetVal) / Math.log(1 - pPerRoll);
+                }
+                
+                if (infiniteSkips) {
+                    timeNeeded = rollsNeeded / skipRollsPerSecond;
+                } else if (skipCount > 0) {
+                    if (skipCount >= rollsNeeded) {
+                        timeNeeded = rollsNeeded / skipRollsPerSecond;
+                    } else {
+                        const skipTimeNeeded = skipCount / skipRollsPerSecond;
+                        const remainingRolls = rollsNeeded - skipCount;
+                        const normalTimeNeeded = remainingRolls / rollsPerSecond;
+                        timeNeeded = skipTimeNeeded + normalTimeNeeded;
+                    }
+                } else {
+                    timeNeeded = rollsNeeded / rollsPerSecond;
+                }
+                
+                const daysNeeded = timeNeeded / 86400;
+                resultElement = document.getElementById('targetPResult');
+                if (!resultElement) {
+                    const resultBox = document.createElement('div');
+                    resultBox.id = 'targetPResult';
+                    resultBox.className = 'result-box';
+                    document.getElementById('afkTimeReqSection').appendChild(resultBox);
+                    resultElement = document.getElementById('targetPResult');
+                }
+                resultElement.innerHTML = `<div class="result-val">${daysNeeded > 1000 ? daysNeeded.toExponential(2) + " Days" : daysNeeded.toFixed(2) + " Days"}</div><span class="stat-subtext">${Math.ceil(rollsNeeded).toLocaleString()} rolls needed</span>`;
             } else {
-                summaryDiv.innerHTML = `After AFKing for ${days} day${days !== 1 ? 's' : ''}, you have a ${chancePercent.toFixed(2)}% chance of getting this aura.`;
+                resultElement = document.getElementById('targetPResult');
+                if (!resultElement) {
+                    const resultBox = document.createElement('div');
+                    resultBox.id = 'targetPResult';
+                    resultBox.className = 'result-box';
+                    document.getElementById('afkTimeReqSection').appendChild(resultBox);
+                    resultElement = document.getElementById('targetPResult');
+                }
+                resultElement.innerHTML = `<div class="result-val">${(targetVal <= 0) ? "Enter target %" : "Impossible"}</div><span class="stat-subtext">0 rolls needed</span>`;
             }
-        } else if (days <= 0) {
-            summaryDiv.innerHTML = `Enter how many days you plan to AFK above to see your chance.`;
         } else {
-            summaryDiv.innerHTML = `With your current luck stat, this aura may be impossible to calculate. Try increasing your luck buffs.`;
+            const days = parseFloat(document.getElementById('days').value) || 0;
+            const totalSeconds = 86400 * days;
+            
+            let totalRolls;
+            if (infiniteSkips) {
+                totalRolls = totalSeconds * skipRollsPerSecond;
+            } else {
+                const skipTime = Math.min(skipCount / skipRollsPerSecond, totalSeconds);
+                const skipRolls = skipTime * skipRollsPerSecond;
+                const normalTime = totalSeconds - skipTime;
+                const normalRolls = normalTime * rollsPerSecond;
+                totalRolls = skipRolls + normalRolls;
+            }
+            
+            let P;
+            if (isMultiAura && auraCount > 1 && totalRolls > 0 && pPerRoll > 0 && pPerRoll < 1) {
+                P = probabilityAtLeastNRolls(pPerRoll, totalRolls, auraCount);
+            } else {
+                P = (totalRolls > 0 && pPerRoll > 0) ? 1 - Math.pow((1 - pPerRoll), totalRolls) : 0;
+            }
+            
+            const chancePercent = P * 100;
+            resultElement = document.getElementById('daysResult');
+            if (!resultElement) {
+                const resultBox = document.createElement('div');
+                resultBox.id = 'daysResult';
+                resultBox.className = 'result-box';
+                document.getElementById('afkChanceSection').appendChild(resultBox);
+                resultElement = document.getElementById('daysResult');
+            }
+            resultElement.innerHTML = `<div class="result-val">${(P >= 0.9999999) ? "99.99%+" : chancePercent.toFixed(4) + "%"}</div><span class="stat-subtext">${Math.floor(totalRolls).toLocaleString()} total rolls</span>`;
         }
+    }
+    
+    function findRollsForTarget(p, targetProb, n, maxRolls = 1e12) {
+        if (n <= 1) {
+            let rollsNeeded = Math.log(1 - targetProb) / Math.log(1 - p);
+            return Math.ceil(rollsNeeded);
+        }
+        
+        let low = n;
+        let high = maxRolls;
+        let bestRolls = maxRolls;
+        
+        for (let iter = 0; iter < 100; iter++) {
+            let mid = Math.floor((low + high) / 2);
+            let prob = probabilityAtLeastNRolls(p, mid, n);
+            
+            if (prob >= targetProb) {
+                bestRolls = mid;
+                high = mid;
+            } else {
+                low = mid + 1;
+            }
+            
+            if (low >= high) break;
+        }
+        
+        return bestRolls;
     }
     
     function calculateAfkLimbo() {
@@ -938,50 +1079,67 @@
         const baseRollSpeed = document.getElementById('limboQuickRoll').checked ? 1 : 0.5;
         let rollsPerSecond = baseRollSpeed * (1 + (speedBonus / 100));
         
-        const days = parseFloat(document.getElementById('days').value) || 0;
-        const totalSeconds = 86400 * days;
-        const totalRolls = totalSeconds * rollsPerSecond;
-        
         const isMultiAura = document.getElementById('limboMultiAura').checked;
         const auraCount = parseInt(document.getElementById('limboAuraCount').value) || 1;
         
-        let P;
-        if (isMultiAura && auraCount > 1 && totalRolls > 0 && pPerRoll > 0 && pPerRoll < 1) {
-            P = probabilityAtLeastNRolls(pPerRoll, totalRolls, auraCount);
-        } else {
-            P = (totalRolls > 0 && pPerRoll > 0) ? 1 - Math.pow((1 - pPerRoll), totalRolls) : 0;
-        }
-        
-        const chancePercent = P * 100;
-        document.getElementById('outputResult').innerText = (P >= 0.9999999) ? "99.99%+" : chancePercent.toFixed(4) + "%";
-        
-        let resultText = '';
-        if (isMultiAura && auraCount > 1) {
-            resultText = `${Math.floor(totalRolls).toLocaleString()} total rolls, chance for ${auraCount} auras`;
-        } else {
-            resultText = `${Math.floor(totalRolls).toLocaleString()} total rolls`;
-        }
-        document.getElementById('resultDetail').innerText = resultText;
-        
-        const resultBox = document.getElementById('resultBox');
-        resultBox.classList.remove('status-low', 'status-mid', 'status-high');
-        if (P > 0) {
-            if (P < 0.1) resultBox.classList.add('status-low');
-            else if (P < 0.5) resultBox.classList.add('status-mid');
-            else resultBox.classList.add('status-high');
-        }
-        
-        const summaryDiv = document.getElementById('summaryText');
-        if (days > 0 && pPerRoll > 0) {
-            if (isMultiAura && auraCount > 1) {
-                summaryDiv.innerHTML = `After AFKing for ${days} day${days !== 1 ? 's' : ''} in Limbo, you have a ${chancePercent.toFixed(2)}% chance of getting ${auraCount} of this aura.`;
+        if (currentLimboSubMode === 'time') {
+            const targetInput = document.getElementById('limboTargetP');
+            let targetVal = (parseFloat(targetInput.value) || 0) / 100;
+            if (targetVal >= 1) targetVal = 0.9999;
+            
+            let timeNeeded = 0;
+            if (targetVal > 0 && pPerRoll > 0 && pPerRoll < 1) {
+                let rollsNeeded;
+                if (isMultiAura && auraCount > 1) {
+                    rollsNeeded = findRollsForTarget(pPerRoll, targetVal, auraCount);
+                } else {
+                    rollsNeeded = Math.log(1 - targetVal) / Math.log(1 - pPerRoll);
+                }
+                timeNeeded = rollsNeeded / rollsPerSecond;
+                const daysNeeded = timeNeeded / 86400;
+                
+                let resultElement = document.getElementById('limboTargetPResult');
+                if (!resultElement) {
+                    const resultBox = document.createElement('div');
+                    resultBox.id = 'limboTargetPResult';
+                    resultBox.className = 'result-box';
+                    document.getElementById('limboTimeReqSection').appendChild(resultBox);
+                    resultElement = document.getElementById('limboTargetPResult');
+                }
+                resultElement.innerHTML = `<div class="result-val">${daysNeeded > 1000 ? daysNeeded.toExponential(2) + " Days" : daysNeeded.toFixed(2) + " Days"}</div><span class="stat-subtext">${Math.ceil(rollsNeeded).toLocaleString()} rolls needed</span>`;
             } else {
-                summaryDiv.innerHTML = `After AFKing for ${days} day${days !== 1 ? 's' : ''} in Limbo, you have a ${chancePercent.toFixed(2)}% chance of getting this aura.`;
+                let resultElement = document.getElementById('limboTargetPResult');
+                if (!resultElement) {
+                    const resultBox = document.createElement('div');
+                    resultBox.id = 'limboTargetPResult';
+                    resultBox.className = 'result-box';
+                    document.getElementById('limboTimeReqSection').appendChild(resultBox);
+                    resultElement = document.getElementById('limboTargetPResult');
+                }
+                resultElement.innerHTML = `<div class="result-val">${(targetVal <= 0) ? "Enter target %" : "Impossible"}</div><span class="stat-subtext">0 rolls needed</span>`;
             }
-        } else if (days <= 0) {
-            summaryDiv.innerHTML = `Enter how many days you plan to AFK in Limbo above to see your chance.`;
         } else {
-            summaryDiv.innerHTML = `With your current luck stat, this aura may be impossible to calculate. Try increasing your luck buffs.`;
+            const days = parseFloat(document.getElementById('limboDays').value) || 0;
+            const totalSeconds = 86400 * days;
+            const totalRolls = totalSeconds * rollsPerSecond;
+            
+            let P;
+            if (isMultiAura && auraCount > 1 && totalRolls > 0 && pPerRoll > 0 && pPerRoll < 1) {
+                P = probabilityAtLeastNRolls(pPerRoll, totalRolls, auraCount);
+            } else {
+                P = (totalRolls > 0 && pPerRoll > 0) ? 1 - Math.pow((1 - pPerRoll), totalRolls) : 0;
+            }
+            
+            const chancePercent = P * 100;
+            let resultElement = document.getElementById('limboDaysResult');
+            if (!resultElement) {
+                const resultBox = document.createElement('div');
+                resultBox.id = 'limboDaysResult';
+                resultBox.className = 'result-box';
+                document.getElementById('limboChanceSection').appendChild(resultBox);
+                resultElement = document.getElementById('limboDaysResult');
+            }
+            resultElement.innerHTML = `<div class="result-val">${(P >= 0.9999999) ? "99.99%+" : chancePercent.toFixed(4) + "%"}</div><span class="stat-subtext">${Math.floor(totalRolls).toLocaleString()} total rolls</span>`;
         }
     }
     
@@ -1008,7 +1166,7 @@
         }
         
         const chancePercent = P * 100;
-        document.getElementById('outputResult').innerText = (P >= 0.9999999) ? "99.99%+" : chancePercent.toFixed(4) + "%";
+        document.getElementById('potionResult').innerText = (P >= 0.9999999) ? "99.99%+" : chancePercent.toFixed(4) + "%";
         
         let resultText = '';
         if (isMultiAura && auraCount > 1) {
@@ -1016,17 +1174,9 @@
         } else {
             resultText = `${potionCount.toLocaleString()} potions`;
         }
-        document.getElementById('resultDetail').innerText = resultText;
+        document.getElementById('potionDetail').innerText = resultText;
         
-        const resultBox = document.getElementById('resultBox');
-        resultBox.classList.remove('status-low', 'status-mid', 'status-high');
-        if (P > 0) {
-            if (P < 0.1) resultBox.classList.add('status-low');
-            else if (P < 0.5) resultBox.classList.add('status-mid');
-            else resultBox.classList.add('status-high');
-        }
-        
-        const summaryDiv = document.getElementById('summaryText');
+        const summaryDiv = document.getElementById('potionSummaryText');
         if (potionCount > 0 && pPerRoll > 0) {
             if (isMultiAura && auraCount > 1) {
                 summaryDiv.innerHTML = `Using ${potionCount.toLocaleString()} potion${potionCount !== 1 ? 's' : ''}, you have a ${chancePercent.toFixed(2)}% chance of getting ${auraCount} of this aura.`;
@@ -1037,6 +1187,14 @@
             summaryDiv.innerHTML = `Enter how many potions you plan to use above to see your chance.`;
         } else {
             summaryDiv.innerHTML = `With your selected potions, this aura may be impossible to get. Try using stronger potions.`;
+        }
+        
+        const potionResultBox = document.getElementById('potionResultBox');
+        potionResultBox.classList.remove('status-low', 'status-mid', 'status-high');
+        if (P > 0) {
+            if (P < 0.1) potionResultBox.classList.add('status-low');
+            else if (P < 0.5) potionResultBox.classList.add('status-mid');
+            else potionResultBox.classList.add('status-high');
         }
     }
     
@@ -1059,6 +1217,8 @@
         document.getElementById('biome').value = "none";
         document.getElementById('perpetualBiome').checked = false;
         document.querySelector('input[name="biomeType"][value="native"]').checked = true;
+        document.getElementById('targetP').value = "";
+        document.getElementById('days').value = "";
         
         // Reset AFK Limbo
         document.getElementById('limboLeftGlove').value = "thing,0,0";
@@ -1073,6 +1233,8 @@
         document.getElementById('forbidden3').checked = false;
         document.getElementById('limboMultiAura').checked = false;
         document.getElementById('limboAuraCount').value = "2";
+        document.getElementById('limboTargetP').value = "";
+        document.getElementById('limboDays').value = "";
         
         // Reset Potion Mode
         document.getElementById('potionRarity').value = "2,500,000,000";
@@ -1093,11 +1255,11 @@
         
         document.getElementById('rarity').value = "2,500,000,000";
         document.getElementById('limboRarity').value = "2,500,000,000";
-        document.getElementById('days').value = "";
         
         updateBiomeOptions();
+        setAfkSubMode('time');
+        setLimboSubMode('time');
         setGlobalMode('afkOverworld');
-        calculate();
     }
     
     function toggleEvents() {
@@ -1119,13 +1281,13 @@
         }
 
         checkRainySupport();
-        calculate();
+        calculateAfkOverworld();
     }
     
     function checkRainySupport() {
         const v = document.getElementById('leftGlove').value;
         document.getElementById('rainyContainer').style.display = (v === "tide" || v === "blessed") ? "block" : "none";
-        calculate();
+        calculateAfkOverworld();
     }
     
     // Event listeners
@@ -1137,7 +1299,7 @@
         } else {
             skipsInput.disabled = false;
         }
-        calculate();
+        calculateAfkOverworld();
     });
     
     document.getElementById('resonance')?.addEventListener('input', function() {
@@ -1145,23 +1307,24 @@
         if (isNaN(val)) val = 0;
         val = Math.min(22, Math.max(0, val));
         if (this.value != val) this.value = val;
-        calculate();
+        calculateAfkOverworld();
     });
     
     setupRarityInput('rarity');
     setupRarityInput('limboRarity');
     setupRarityInput('potionRarity');
     
-    // Setup potion mode UI interactions
     setupPotionModeInteractions();
     
-    document.querySelectorAll('input, select').forEach(el => el.addEventListener('input', calculate));
+    document.querySelectorAll('#afkOverworldContent input, #afkOverworldContent select').forEach(el => el.addEventListener('input', calculateAfkOverworld));
+    document.querySelectorAll('#afkLimboContent input, #afkLimboContent select').forEach(el => el.addEventListener('input', calculateAfkLimbo));
+    document.querySelectorAll('#potionModeContent input, #potionModeContent select').forEach(el => el.addEventListener('input', calculatePotionMode));
     
     window.addEventListener('load', function() {
         fullReset();
     });
     
-    calculate();
+    calculateAfkOverworld();
 </script>
 </body>
 </html>
