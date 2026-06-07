@@ -7,7 +7,7 @@
         .calc-card { width: 100%; max-width: 440px; background: #0d141f; padding: 25px; border-radius: 12px; border: 2px solid #00d4ff; box-shadow: 0 0 20px rgba(0, 212, 255, 0.4); }
         h2 { text-align: center; text-transform: uppercase; margin-top: 0; margin-bottom: 20px; letter-spacing: 2px; }
         .mode-switch { display: flex; background: #000; border-radius: 10px; padding: 6px; margin-bottom: 20px; border: 2px solid #444; }
-        .mode-btn { flex: 1; padding: 12px; border: none; background: none; color: #888; cursor: pointer; font-weight: 900; font-size: 0.8rem; border-radius: 7px; text-transform: uppercase; transition: 0.2s; }
+        .mode-btn { flex: 1; padding: 12px; border: none; background: none; color: #888; cursor: pointer; font-weight: 900; font-size: 0.65rem; border-radius: 7px; text-transform: uppercase; transition: 0.2s; }
         .mode-btn.active { background: #add8e6; color: #000; }
         .section { margin-bottom: 15px; padding: 12px; background: #161c26; border-radius: 8px; border: 1px solid #2a3545; }
         .rarity-container { display: flex; align-items: center; background: #000; border: 1px solid #444; border-radius: 5px; padding: 0 10px; margin: 8px 0; }
@@ -49,6 +49,11 @@
         .biome-section label { color: #9bd3c3; }
         .radio-group { display: flex; gap: 15px; margin: 8px 0; align-items: center; flex-wrap: wrap; }
         .radio-group label { margin: 0; display: flex; align-items: center; gap: 5px; }
+        .potion-mode-section { background: #2a1a3a; border: 1px solid #9b59b6; border-radius: 8px; padding: 10px; margin-top: 10px; }
+        .potion-mode-section label { color: #c39bd3; }
+        .redmoon-group, .exclusive-group { margin: 10px 0; padding: 8px; background: #1a0a2a; border-radius: 6px; }
+        .redmoon-group label, .exclusive-group label { color: #e8d5f5; }
+        .potions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin: 8px 0; }
     </style>
 </head>
 <body>
@@ -57,13 +62,15 @@
     <form id="calcForm" onsubmit="return false;">
         <h2>Sols Rng Calculator</h2>
 
-        <!-- Area Selection -->
-        <div class="area-switch">
-            <button type="button" id="btnOverworld" class="area-btn active" onclick="setArea('overworld')">OVERWORLD</button>
-            <button type="button" id="btnLimbo" class="area-btn" onclick="setArea('limbo')">LIMBO</button>
+        <!-- Mode Selection (3 tabs) -->
+        <div class="mode-switch">
+            <button type="button" id="btnAfkOverworld" class="mode-btn active" onclick="setGlobalMode('afkOverworld')">AFK OVERWORLD</button>
+            <button type="button" id="btnAfkLimbo" class="mode-btn" onclick="setGlobalMode('afkLimbo')">AFK LIMBO</button>
+            <button type="button" id="btnPotion" class="mode-btn" onclick="setGlobalMode('potion')">POTION MODE</button>
         </div>
 
-        <div id="overworldContent">
+        <!-- AFK Overworld Content -->
+        <div id="afkOverworldContent">
             <div class="section">
                 <div class="grid-2">
                     <div>
@@ -128,6 +135,8 @@
                         </select>
                     </div>
                 </div>
+                
+                <div id="rainyContainer" style="display:none; margin-bottom: 10px;"><label class="check-row" style="color: #add8e6;"><input type="checkbox" id="isRainy"> Rainy Aura?</label></div>
                 
                 <!-- Biome Section -->
                 <div class="biome-section">
@@ -226,7 +235,8 @@
             </div>
         </div>
 
-        <div id="limboContent" style="display:none;">
+        <!-- AFK Limbo Content -->
+        <div id="afkLimboContent" style="display:none;">
             <div class="section">
                 <div class="grid-2">
                     <div>
@@ -332,44 +342,78 @@
             </div>
         </div>
 
+        <!-- Potion Mode Content -->
+        <div id="potionModeContent" style="display:none;">
+            <div class="section">
+                <div class="grid-2">
+                    <div>
+                        <label>Rarity of Aura</label>
+                        <div class="rarity-container">
+                            <span class="prefix">1/</span>
+                            <input type="text" id="potionRarity" class="rarity-input comma-input" value="2,500,000,000">
+                        </div>
+                    </div>
+                    <div>
+                        <label>Number of Potions</label>
+                        <input type="number" id="potionCount" value="100" min="1" step="1">
+                    </div>
+                </div>
+                
+                <div class="potion-mode-section">
+                    <label style="color: #c39bd3; font-weight: bold;">Stackable Potions (use all)</label>
+                    <div class="potions-grid">
+                        <label class="check-row"><input type="checkbox" id="potionHeavenly"> Heavenly Potion (+150,000)</label>
+                        <label class="check-row"><input type="checkbox" id="potionGodlike"> Godlike Potion (+400,000)</label>
+                        <label class="check-row"><input type="checkbox" id="potionBound"> Potion of Bound (+50,000)</label>
+                        <label class="check-row"><input type="checkbox" id="potionWishStar"> Wish Star (+50,000)</label>
+                        <label class="check-row"><input type="checkbox" id="potionPopping"> Popping Potion (+10,000)</label>
+                        <label class="check-row"><input type="checkbox" id="potionDune"> Potion of the Dune (+10,000)</label>
+                    </div>
+                    
+                    <div class="redmoon-group">
+                        <label style="color: #e8d5f5; font-weight: bold;">Red Moon (choose one)</label>
+                        <div class="radio-group">
+                            <label><input type="radio" name="redmoon" value="none" checked> None</label>
+                            <label><input type="radio" name="redmoon" value="I"> Red Moon I (+10,000)</label>
+                            <label><input type="radio" name="redmoon" value="II"> Red Moon II (+200,000)</label>
+                        </div>
+                    </div>
+                    
+                    <div class="exclusive-group">
+                        <label style="color: #e8d5f5; font-weight: bold;">Exclusive Potions (choose one, cannot stack with anything)</label>
+                        <div class="radio-group">
+                            <label><input type="radio" name="exclusive" value="none" checked> None</label>
+                            <label><input type="radio" name="exclusive" value="oblivion"> Oblivion Potion (+600,000)</label>
+                            <label><input type="radio" name="exclusive" value="pumpking"> Pumpking's Blood (+700,000)</label>
+                            <label><input type="radio" name="exclusive" value="voidheart"> Void Heart (+300,000)</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="multi-row">
+                    <label class="check-row"><input type="checkbox" id="potionMultiAura" onchange="calculate()"> Multiple Auras Mode</label>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <label>Amount Needed:</label>
+                        <input type="number" id="potionAuraCount" value="2" min="1" step="1" style="width: 80px;" oninput="calculate()">
+                    </div>
+                </div>
+                
+                <div class="check-grid">
+                    <label class="check-row"><input type="checkbox" id="potionVip" checked> VIP</label>
+                    <label class="check-row"><input type="checkbox" id="potionVipPlus" checked> VIP+</label>
+                    <label class="check-row">Event Multiplier: <input type="number" id="potionEventMulti" value="1" step="0.1" min="0.1" style="width: 60px; margin-left: 5px;"></label>
+                </div>
+            </div>
+        </div>
+
         <hr style="border: 0; border-top: 1px solid #333; margin: 20px 0;">
 
-        <div class="mode-switch">
-            <button type="button" id="btnChance" class="mode-btn active" onclick="setMode('chance')">TIME REQ.</button>
-            <button type="button" id="btnTime" class="mode-btn" onclick="setMode('time')">CHANCE %</button>
-        </div>
-
-        <div id="sectionChance" class="section">
-            <label>Desired Success Rate (%)</label>
-            <input type="number" id="targetP" placeholder="Max 99.99" step="0.01" max="99.99" oninput="if(this.value>=100)this.value=99.99">
-            <div class="preset-buttons">
-                <span class="preset-label">Presets:</span>
-                <button type="button" class="preset-btn" onclick="setTargetPreset(25)">25%</button>
-                <button type="button" class="preset-btn" onclick="setTargetPreset(50)">50%</button>
-                <button type="button" class="preset-btn" onclick="setTargetPreset(75)">75%</button>
-                <button type="button" class="preset-btn" onclick="setTargetPreset(99)">99%</button>
-            </div>
-            <div class="result-box" id="chanceBox">
-                <div class="result-val" id="outputChance">-- Days</div>
-                <span class="luck-status" id="chanceLabel">AFK TIME</span>
-                <span class="stat-subtext" id="totalRolls">0 rolls needed</span>
-            </div>
-        </div>
-
-        <div id="sectionTime" class="section" style="display:none;">
-            <label>Rolling Duration (Days)</label>
-            <input type="number" id="days" placeholder="Days AFK">
-            <div class="preset-buttons">
-                <span class="preset-label">Presets:</span>
-                <button type="button" class="preset-btn" onclick="setDaysPreset(1)">1 Day</button>
-                <button type="button" class="preset-btn" onclick="setDaysPreset(7)">7 Days</button>
-                <button type="button" class="preset-btn" onclick="setDaysPreset(100)">100 Days</button>
-                <button type="button" class="preset-btn" onclick="setDaysPreset(365)">365 Days</button>
-            </div>
-            <div class="result-box" id="timeBox">
-                <div class="result-val" id="outputTime">0.00%</div>
-                <span class="luck-status" id="timeLabel">WAITING...</span>
-                <span class="stat-subtext" id="rollsNeeded">0 total rolls</span>
+        <!-- Result Display Area (same for all modes) -->
+        <div id="resultArea">
+            <div class="result-box" id="resultBox">
+                <div class="result-val" id="outputResult">0.00%</div>
+                <span class="luck-status" id="resultLabel">WAITING...</span>
+                <span class="stat-subtext" id="resultDetail">0 rolls</span>
             </div>
         </div>
 
@@ -393,10 +437,9 @@
 </div>
 
 <script>
-    let currentMode = 'chance';
-    let currentArea = 'overworld';
+    let currentGlobalMode = 'afkOverworld';
     
-    // Biome data including Day and Night
+    // Biome data
     const biomeData = {
         none: { uptime: 0.390, boost: 1, exclusiveOnly: false, cyberspace: false },
         day: { uptime: 0.50, boost: 1, exclusiveOnly: false, cyberspace: false },
@@ -410,11 +453,24 @@
         heaven: { uptime: 0.0121, boost: 5, exclusiveOnly: false, cyberspace: false },
         corruption: { uptime: 0.0282, boost: 5, exclusiveOnly: false, cyberspace: false },
         null: { uptime: 0.0038, boost: 1000, exclusiveOnly: false, cyberspace: false },
-        singularity: { uptime: 0.1774, boost: 5, exclusiveOnly: false, cyberspace: false },
-        dreamspace: { uptime: 0.000021, boost: 1, exclusiveOnly: true, cyberspace: false },
+        singularity: { uptime: 0.00076, boost: 5, exclusiveOnly: false, cyberspace: false },
+        dreamspace: { uptime: 0.000026, boost: 1, exclusiveOnly: true, cyberspace: false },
         glitch: { uptime: 0.0000068, boost: 1, exclusiveOnly: true, cyberspace: false },
         cyberspace: { uptime: 1.0, boost: 1, exclusiveOnly: true, cyberspace: true }
     };
+    
+    function setGlobalMode(mode) {
+        currentGlobalMode = mode;
+        document.getElementById('afkOverworldContent').style.display = (mode === 'afkOverworld') ? 'block' : 'none';
+        document.getElementById('afkLimboContent').style.display = (mode === 'afkLimbo') ? 'block' : 'none';
+        document.getElementById('potionModeContent').style.display = (mode === 'potion') ? 'block' : 'none';
+        
+        document.getElementById('btnAfkOverworld').classList.toggle('active', mode === 'afkOverworld');
+        document.getElementById('btnAfkLimbo').classList.toggle('active', mode === 'afkLimbo');
+        document.getElementById('btnPotion').classList.toggle('active', mode === 'potion');
+        
+        calculate();
+    }
     
     function updateBiomeOptions() {
         const biome = document.getElementById('biome').value;
@@ -434,7 +490,7 @@
         calculate();
     }
     
-    // Helper function for binomial coefficient (log scale for large numbers)
+    // Helper functions
     function logChoose(n, k) {
         if (k < 0 || k > n) return -Infinity;
         if (k === 0 || k === n) return 0;
@@ -445,7 +501,6 @@
         return logSum;
     }
     
-    // Calculate probability of getting at least N successes in M rolls
     function probabilityAtLeastNRolls(p, rolls, n) {
         if (n <= 1) {
             return 1 - Math.pow(1 - p, rolls);
@@ -453,7 +508,6 @@
         
         let log1MinusP = Math.log(1 - p);
         let logP = Math.log(p);
-        
         let logProbLessThanN = -Infinity;
         
         for (let k = 0; k < n; k++) {
@@ -473,41 +527,8 @@
         return logB + Math.log(1 + Math.exp(logA - logB));
     }
     
-    function findRollsForTarget(p, targetProb, n, maxRolls = 1e12) {
-        if (n <= 1) {
-            let rollsNeeded = Math.log(1 - targetProb) / Math.log(1 - p);
-            return Math.ceil(rollsNeeded);
-        }
-        
-        let low = n;
-        let high = maxRolls;
-        let bestRolls = maxRolls;
-        
-        for (let iter = 0; iter < 100; iter++) {
-            let mid = Math.floor((low + high) / 2);
-            let prob = probabilityAtLeastNRolls(p, mid, n);
-            
-            if (prob >= targetProb) {
-                bestRolls = mid;
-                high = mid;
-            } else {
-                low = mid + 1;
-            }
-            
-            if (low >= high) break;
-        }
-        
-        return bestRolls;
-    }
-    
-    function setTargetPreset(percent) {
-        document.getElementById('targetP').value = percent;
-        calculate();
-    }
-    
-    function setDaysPreset(days) {
-        document.getElementById('days').value = days;
-        calculate();
+    function formatWithCommas(num) {
+        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     }
     
     function parseRarityValue(inputElement) {
@@ -517,25 +538,565 @@
         return val;
     }
     
-    function formatWithCommas(num) {
-        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    function setupRarityInput(inputId) {
+        const input = document.getElementById(inputId);
+        if (!input) return;
+        input.addEventListener('input', function() {
+            let raw = this.value.replace(/,/g, '');
+            let num = parseFloat(raw);
+            if (!isNaN(num)) {
+                this.value = formatWithCommas(Math.floor(num));
+            }
+            calculate();
+        });
     }
     
-    function setArea(area) {
-        currentArea = area;
-        document.getElementById('overworldContent').style.display = (area === 'overworld') ? 'block' : 'none';
-        document.getElementById('limboContent').style.display = (area === 'limbo') ? 'block' : 'none';
-        document.getElementById('btnOverworld').classList.toggle('active', area === 'overworld');
-        document.getElementById('btnLimbo').classList.toggle('active', area === 'limbo');
-        calculate();
+    function getBiomeMultiplier(biomeId, isPerpetual, isNative) {
+        const biome = biomeData[biomeId];
+        if (!biome || biomeId === 'none') return 1;
+        if (biome.cyberspace) return 0;
+        
+        if (isPerpetual) {
+            return isNative ? biome.boost : 1;
+        } else {
+            if (isNative) {
+                return (biome.uptime * biome.boost) + (1 - biome.uptime);
+            } else {
+                return biome.uptime;
+            }
+        }
     }
     
-    function setMode(mode) {
-        currentMode = mode;
-        document.getElementById('sectionChance').style.display = (mode === 'chance') ? 'block' : 'none';
-        document.getElementById('sectionTime').style.display = (mode === 'time') ? 'block' : 'none';
-        document.getElementById('btnChance').classList.toggle('active', mode === 'chance');
-        document.getElementById('btnTime').classList.toggle('active', mode === 'time');
+    function setupPotionModeInteractions() {
+        const exclusiveRadios = document.querySelectorAll('input[name="exclusive"]');
+        const stackableIds = ['potionHeavenly', 'potionGodlike', 'potionBound', 'potionWishStar', 'potionPopping', 'potionDune'];
+        const redmoonRadios = document.querySelectorAll('input[name="redmoon"]');
+        
+        // When exclusive is selected, clear all stackable and red moon
+        exclusiveRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                if (this.value !== 'none' && this.checked) {
+                    stackableIds.forEach(id => {
+                        const cb = document.getElementById(id);
+                        if (cb) cb.checked = false;
+                    });
+                    document.querySelector('input[name="redmoon"][value="none"]').checked = true;
+                }
+                calculate();
+            });
+        });
+        
+        // When any stackable is checked, clear exclusive
+        stackableIds.forEach(id => {
+            const cb = document.getElementById(id);
+            if (cb) {
+                cb.addEventListener('change', function() {
+                    if (this.checked) {
+                        document.querySelector('input[name="exclusive"][value="none"]').checked = true;
+                    }
+                    calculate();
+                });
+            }
+        });
+        
+        // When red moon is selected (not none), clear exclusive
+        redmoonRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                if (this.value !== 'none' && this.checked) {
+                    document.querySelector('input[name="exclusive"][value="none"]').checked = true;
+                }
+                calculate();
+            });
+        });
+    }
+    
+    function calculateOverworldLuck() {
+        let resValue = parseFloat(document.getElementById('resonance').value);
+        if (isNaN(resValue)) resValue = 0;
+        resValue = Math.min(22, Math.max(0, resValue));
+        
+        let displayedLuck = parseFloat(document.getElementById('luck').value) || 1;
+        let tempLuck = displayedLuck;
+        
+        const eventMulti = parseFloat(document.getElementById('eventMulti').value) || 1;
+        tempLuck /= eventMulti;
+        
+        const vip = document.getElementById('vip').checked;
+        const vipPlus = document.getElementById('vipPlus').checked;
+        let vipMulti = 1;
+        if (vip && vipPlus) vipMulti = 1.3;
+        else if (vip || vipPlus) vipMulti = 1.2;
+        tempLuck /= vipMulti;
+        
+        const left = document.getElementById('leftGlove').value;
+        let leftMultiplier = 1;
+        let leftAdditiveLuck = 0;
+        let leftSpeedBonus = 0;
+        
+        if (left === "thing") {
+            leftMultiplier = 2.0;
+        } else if (left === "pole") {
+            leftAdditiveLuck = 5;
+            leftMultiplier = 1.1;
+            leftSpeedBonus = 13.3;
+        } else if (left === "jackpot") {
+            leftAdditiveLuck = 0.77;
+            leftSpeedBonus = 7;
+        } else if (left === "grav") {
+            leftMultiplier = 1.5;
+        } else if (left === "gemstone") {
+            leftAdditiveLuck = 0.075;
+            leftSpeedBonus = 1.25;
+        } else if (left === "xmas") {
+            leftMultiplier = 1.5;
+        } else if (left === "present") {
+            leftMultiplier = 1.36;
+        } else if (left === "1.35") {
+            leftMultiplier = 1.35;
+        } else if (left === "blessed" || left === "tide") {
+            leftMultiplier = 1;
+        } else {
+            leftMultiplier = parseFloat(left) || 1;
+        }
+        
+        let totalLuck = (tempLuck + leftAdditiveLuck) * leftMultiplier;
+        totalLuck *= vipMulti;
+        totalLuck *= eventMulti;
+        
+        return totalLuck;
+    }
+    
+    function calculateLimboLuck() {
+        let totalLuck = 1;
+        
+        const forbidden1 = document.getElementById('forbidden1').checked;
+        const forbidden2 = document.getElementById('forbidden2').checked;
+        const forbidden3 = document.getElementById('forbidden3').checked;
+        
+        if (forbidden1) totalLuck += 0.7;
+        if (forbidden2) totalLuck += 3.25;
+        if (forbidden3) totalLuck += 13.5;
+        
+        const rightGloveValue = document.getElementById('limboRightGlove').value;
+        const [speed, luck] = rightGloveValue.split(',').map(Number);
+        totalLuck += luck || 0;
+        
+        const leftGloveValue = document.getElementById('limboLeftGlove').value;
+        const leftParts = leftGloveValue.split(',');
+        const gloveName = leftParts[0];
+        let leftMultiplier = 1;
+        let leftAdditiveLuck = 0;
+        
+        if (gloveName === "thing") {
+            leftMultiplier = 2.0;
+        } else if (gloveName === "pole") {
+            leftAdditiveLuck = 5;
+            leftMultiplier = 1.1;
+        } else if (gloveName === "jackpot") {
+            leftAdditiveLuck = 0.77;
+        } else if (gloveName === "grav") {
+            leftMultiplier = 1.5;
+        } else if (gloveName === "gemstone") {
+            leftAdditiveLuck = 0.075;
+        } else if (gloveName === "xmas") {
+            leftMultiplier = 1.5;
+        } else if (gloveName === "present") {
+            leftMultiplier = 1.36;
+        } else if (gloveName === "1.35") {
+            leftMultiplier = 1.35;
+        } else {
+            leftMultiplier = parseFloat(gloveName) || 1;
+            leftAdditiveLuck = leftParts.length > 1 ? parseFloat(leftParts[1]) : 0;
+        }
+        
+        totalLuck += leftAdditiveLuck;
+        totalLuck *= leftMultiplier;
+        
+        const vip = document.getElementById('limboVip').checked;
+        const vipPlus = document.getElementById('limboVipPlus').checked;
+        let vipMulti = 1;
+        if (vip && vipPlus) vipMulti = 1.3;
+        else if (vip || vipPlus) vipMulti = 1.2;
+        totalLuck *= vipMulti;
+        
+        const davesHope = parseFloat(document.getElementById('davesHope').value) || 1;
+        totalLuck *= davesHope;
+        
+        const eventMulti = parseFloat(document.getElementById('limboEventMulti').value) || 1;
+        totalLuck *= eventMulti;
+        
+        return totalLuck;
+    }
+    
+    function calculatePotionLuck() {
+        // Check if exclusive is selected first
+        const exclusive = document.querySelector('input[name="exclusive"]:checked')?.value;
+        
+        // If exclusive is selected, ignore all other potions
+        if (exclusive !== 'none') {
+            let exclusiveLuck = 1;
+            if (exclusive === 'oblivion') exclusiveLuck += 600000;
+            if (exclusive === 'pumpking') exclusiveLuck += 700000;
+            if (exclusive === 'voidheart') exclusiveLuck += 300000;
+            
+            const vip = document.getElementById('potionVip')?.checked;
+            const vipPlus = document.getElementById('potionVipPlus')?.checked;
+            let vipMulti = 1;
+            if (vip && vipPlus) vipMulti = 1.3;
+            else if (vip || vipPlus) vipMulti = 1.2;
+            exclusiveLuck *= vipMulti;
+            
+            const eventMulti = parseFloat(document.getElementById('potionEventMulti')?.value) || 1;
+            exclusiveLuck *= eventMulti;
+            
+            return exclusiveLuck;
+        }
+        
+        // No exclusive selected - calculate stackable + red moon
+        let totalLuck = 1;
+        
+        if (document.getElementById('potionHeavenly')?.checked) totalLuck += 150000;
+        if (document.getElementById('potionGodlike')?.checked) totalLuck += 400000;
+        if (document.getElementById('potionBound')?.checked) totalLuck += 50000;
+        if (document.getElementById('potionWishStar')?.checked) totalLuck += 50000;
+        if (document.getElementById('potionPopping')?.checked) totalLuck += 10000;
+        if (document.getElementById('potionDune')?.checked) totalLuck += 10000;
+        
+        const redmoon = document.querySelector('input[name="redmoon"]:checked')?.value;
+        if (redmoon === 'I') totalLuck += 10000;
+        if (redmoon === 'II') totalLuck += 200000;
+        
+        const vip = document.getElementById('potionVip')?.checked;
+        const vipPlus = document.getElementById('potionVipPlus')?.checked;
+        let vipMulti = 1;
+        if (vip && vipPlus) vipMulti = 1.3;
+        else if (vip || vipPlus) vipMulti = 1.2;
+        totalLuck *= vipMulti;
+        
+        const eventMulti = parseFloat(document.getElementById('potionEventMulti')?.value) || 1;
+        totalLuck *= eventMulti;
+        
+        return totalLuck;
+    }
+    
+    function calculate() {
+        if (currentGlobalMode === 'afkOverworld') {
+            calculateAfkOverworld();
+        } else if (currentGlobalMode === 'afkLimbo') {
+            calculateAfkLimbo();
+        } else {
+            calculatePotionMode();
+        }
+    }
+    
+    function calculateAfkOverworld() {
+        let rarityInput = document.getElementById('rarity');
+        let rawRarity = rarityInput.value.replace(/,/g, '');
+        let R = Math.floor(parseFloat(rawRarity));
+        if (R < 1 || isNaN(R)) R = 1;
+        rarityInput.value = formatWithCommas(R);
+        
+        const biomeId = document.getElementById('biome').value;
+        const isPerpetual = document.getElementById('perpetualBiome').checked;
+        const isNative = document.querySelector('input[name="biomeType"]:checked')?.value === 'native';
+        const isCyberspace = biomeId === 'cyberspace';
+        
+        let totalLuck;
+        if (isCyberspace) {
+            totalLuck = 0;
+        } else {
+            totalLuck = calculateOverworldLuck();
+        }
+        
+        const biomeMulti = getBiomeMultiplier(biomeId, isPerpetual, isNative);
+        let pPerRoll;
+        if (isCyberspace) {
+            pPerRoll = 1 / R;
+        } else {
+            pPerRoll = (totalLuck / R) * biomeMulti;
+        }
+        pPerRoll = Math.min(pPerRoll, 1);
+        
+        let resValue = parseFloat(document.getElementById('resonance').value);
+        if (isNaN(resValue)) resValue = 0;
+        resValue = Math.min(22, Math.max(0, resValue));
+        
+        let speedBonus = 0;
+        speedBonus += resValue;
+        
+        const rightGloveValue = document.getElementById('rightGlove').value;
+        const [rightSpeed, rightLuck] = rightGloveValue.split(',').map(Number);
+        speedBonus += rightSpeed || 0;
+        
+        const left = document.getElementById('leftGlove').value;
+        if (left === "pole") speedBonus += 13.3;
+        else if (left === "jackpot") speedBonus += 7;
+        else if (left === "gemstone") speedBonus += 1.25;
+        
+        const bankLevel = parseInt(document.getElementById('bankLevel').value) || 0;
+        const bankBonuses = {0:0, 1:7, 2:14, 3:21, 4:28, 5:35, 6:42, 7:50};
+        speedBonus += bankBonuses[bankLevel];
+        
+        speedBonus += parseFloat(document.getElementById('buffBasic').value) || 0;
+        speedBonus += parseFloat(document.getElementById('buffHaste').value) || 0;
+        speedBonus += parseFloat(document.getElementById('buffGod').value) || 0;
+        speedBonus += parseFloat(document.getElementById('buffKnowledge').value) || 0;
+        speedBonus += parseFloat(document.getElementById('buffEventPot').value) || 0;
+        speedBonus += parseFloat(document.getElementById('buffCombat').value) || 0;
+        
+        const baseRollSpeed = document.getElementById('quickRoll').checked ? 1 : 0.5;
+        let rollsPerSecond = baseRollSpeed * (1 + (speedBonus / 100));
+        
+        const skipRollsPerSecond = 11 * baseRollSpeed;
+        const skipCount = parseFloat(document.getElementById('rollSkips').value) || 0;
+        const infiniteSkips = document.getElementById('infiniteSkips').checked;
+        
+        const days = parseFloat(document.getElementById('days').value) || 0;
+        const totalSeconds = 86400 * days;
+        
+        let totalRolls;
+        if (infiniteSkips) {
+            totalRolls = totalSeconds * skipRollsPerSecond;
+        } else {
+            const skipTime = Math.min(skipCount / skipRollsPerSecond, totalSeconds);
+            const skipRolls = skipTime * skipRollsPerSecond;
+            const normalTime = totalSeconds - skipTime;
+            const normalRolls = normalTime * rollsPerSecond;
+            totalRolls = skipRolls + normalRolls;
+        }
+        
+        const isMultiAura = document.getElementById('multiAura').checked;
+        const auraCount = parseInt(document.getElementById('auraCount').value) || 1;
+        
+        let P;
+        if (isMultiAura && auraCount > 1 && totalRolls > 0 && pPerRoll > 0 && pPerRoll < 1) {
+            P = probabilityAtLeastNRolls(pPerRoll, totalRolls, auraCount);
+        } else {
+            P = (totalRolls > 0 && pPerRoll > 0) ? 1 - Math.pow((1 - pPerRoll), totalRolls) : 0;
+        }
+        
+        const chancePercent = P * 100;
+        document.getElementById('outputResult').innerText = (P >= 0.9999999) ? "99.99%+" : chancePercent.toFixed(4) + "%";
+        
+        let resultText = '';
+        if (isMultiAura && auraCount > 1) {
+            resultText = `${Math.floor(totalRolls).toLocaleString()} total rolls, chance for ${auraCount} auras`;
+        } else {
+            resultText = `${Math.floor(totalRolls).toLocaleString()} total rolls`;
+        }
+        document.getElementById('resultDetail').innerText = resultText;
+        
+        const resultBox = document.getElementById('resultBox');
+        resultBox.classList.remove('status-low', 'status-mid', 'status-high');
+        if (P > 0) {
+            if (P < 0.1) resultBox.classList.add('status-low');
+            else if (P < 0.5) resultBox.classList.add('status-mid');
+            else resultBox.classList.add('status-high');
+        }
+        
+        const summaryDiv = document.getElementById('summaryText');
+        if (days > 0 && pPerRoll > 0) {
+            if (isMultiAura && auraCount > 1) {
+                summaryDiv.innerHTML = `After AFKing for ${days} day${days !== 1 ? 's' : ''}, you have a ${chancePercent.toFixed(2)}% chance of getting ${auraCount} of this aura.`;
+            } else {
+                summaryDiv.innerHTML = `After AFKing for ${days} day${days !== 1 ? 's' : ''}, you have a ${chancePercent.toFixed(2)}% chance of getting this aura.`;
+            }
+        } else if (days <= 0) {
+            summaryDiv.innerHTML = `Enter how many days you plan to AFK above to see your chance.`;
+        } else {
+            summaryDiv.innerHTML = `With your current luck stat, this aura may be impossible to calculate. Try increasing your luck buffs.`;
+        }
+    }
+    
+    function calculateAfkLimbo() {
+        let rarityInput = document.getElementById('limboRarity');
+        let rawRarity = rarityInput.value.replace(/,/g, '');
+        let R = Math.floor(parseFloat(rawRarity));
+        if (R < 1 || isNaN(R)) R = 1;
+        rarityInput.value = formatWithCommas(R);
+        
+        let totalLuck = calculateLimboLuck();
+        let pPerRoll = totalLuck / R;
+        pPerRoll = Math.min(pPerRoll, 1);
+        
+        let speedBonus = 0;
+        const rightGloveValue = document.getElementById('limboRightGlove').value;
+        const [rightSpeed, rightLuck] = rightGloveValue.split(',').map(Number);
+        speedBonus += rightSpeed || 0;
+        
+        const leftGloveValue = document.getElementById('limboLeftGlove').value;
+        const leftParts = leftGloveValue.split(',');
+        const gloveName = leftParts[0];
+        if (gloveName === "pole") speedBonus += 13.3;
+        else if (gloveName === "jackpot") speedBonus += 7;
+        else if (gloveName === "gemstone") speedBonus += 1.25;
+        
+        if (document.getElementById('forbidden1').checked) speedBonus += 10;
+        if (document.getElementById('forbidden2').checked) speedBonus += 25;
+        if (document.getElementById('forbidden3').checked) speedBonus += 75;
+        
+        const baseRollSpeed = document.getElementById('limboQuickRoll').checked ? 1 : 0.5;
+        let rollsPerSecond = baseRollSpeed * (1 + (speedBonus / 100));
+        
+        const days = parseFloat(document.getElementById('days').value) || 0;
+        const totalSeconds = 86400 * days;
+        const totalRolls = totalSeconds * rollsPerSecond;
+        
+        const isMultiAura = document.getElementById('limboMultiAura').checked;
+        const auraCount = parseInt(document.getElementById('limboAuraCount').value) || 1;
+        
+        let P;
+        if (isMultiAura && auraCount > 1 && totalRolls > 0 && pPerRoll > 0 && pPerRoll < 1) {
+            P = probabilityAtLeastNRolls(pPerRoll, totalRolls, auraCount);
+        } else {
+            P = (totalRolls > 0 && pPerRoll > 0) ? 1 - Math.pow((1 - pPerRoll), totalRolls) : 0;
+        }
+        
+        const chancePercent = P * 100;
+        document.getElementById('outputResult').innerText = (P >= 0.9999999) ? "99.99%+" : chancePercent.toFixed(4) + "%";
+        
+        let resultText = '';
+        if (isMultiAura && auraCount > 1) {
+            resultText = `${Math.floor(totalRolls).toLocaleString()} total rolls, chance for ${auraCount} auras`;
+        } else {
+            resultText = `${Math.floor(totalRolls).toLocaleString()} total rolls`;
+        }
+        document.getElementById('resultDetail').innerText = resultText;
+        
+        const resultBox = document.getElementById('resultBox');
+        resultBox.classList.remove('status-low', 'status-mid', 'status-high');
+        if (P > 0) {
+            if (P < 0.1) resultBox.classList.add('status-low');
+            else if (P < 0.5) resultBox.classList.add('status-mid');
+            else resultBox.classList.add('status-high');
+        }
+        
+        const summaryDiv = document.getElementById('summaryText');
+        if (days > 0 && pPerRoll > 0) {
+            if (isMultiAura && auraCount > 1) {
+                summaryDiv.innerHTML = `After AFKing for ${days} day${days !== 1 ? 's' : ''} in Limbo, you have a ${chancePercent.toFixed(2)}% chance of getting ${auraCount} of this aura.`;
+            } else {
+                summaryDiv.innerHTML = `After AFKing for ${days} day${days !== 1 ? 's' : ''} in Limbo, you have a ${chancePercent.toFixed(2)}% chance of getting this aura.`;
+            }
+        } else if (days <= 0) {
+            summaryDiv.innerHTML = `Enter how many days you plan to AFK in Limbo above to see your chance.`;
+        } else {
+            summaryDiv.innerHTML = `With your current luck stat, this aura may be impossible to calculate. Try increasing your luck buffs.`;
+        }
+    }
+    
+    function calculatePotionMode() {
+        let rarityInput = document.getElementById('potionRarity');
+        let rawRarity = rarityInput.value.replace(/,/g, '');
+        let R = Math.floor(parseFloat(rawRarity));
+        if (R < 1 || isNaN(R)) R = 1;
+        rarityInput.value = formatWithCommas(R);
+        
+        let totalLuck = calculatePotionLuck();
+        let pPerRoll = totalLuck / R;
+        pPerRoll = Math.min(pPerRoll, 1);
+        
+        const potionCount = parseInt(document.getElementById('potionCount').value) || 1;
+        const isMultiAura = document.getElementById('potionMultiAura').checked;
+        const auraCount = parseInt(document.getElementById('potionAuraCount').value) || 1;
+        
+        let P;
+        if (isMultiAura && auraCount > 1 && potionCount > 0 && pPerRoll > 0 && pPerRoll < 1) {
+            P = probabilityAtLeastNRolls(pPerRoll, potionCount, auraCount);
+        } else {
+            P = (potionCount > 0 && pPerRoll > 0) ? 1 - Math.pow((1 - pPerRoll), potionCount) : 0;
+        }
+        
+        const chancePercent = P * 100;
+        document.getElementById('outputResult').innerText = (P >= 0.9999999) ? "99.99%+" : chancePercent.toFixed(4) + "%";
+        
+        let resultText = '';
+        if (isMultiAura && auraCount > 1) {
+            resultText = `${potionCount.toLocaleString()} potions, chance for ${auraCount} auras`;
+        } else {
+            resultText = `${potionCount.toLocaleString()} potions`;
+        }
+        document.getElementById('resultDetail').innerText = resultText;
+        
+        const resultBox = document.getElementById('resultBox');
+        resultBox.classList.remove('status-low', 'status-mid', 'status-high');
+        if (P > 0) {
+            if (P < 0.1) resultBox.classList.add('status-low');
+            else if (P < 0.5) resultBox.classList.add('status-mid');
+            else resultBox.classList.add('status-high');
+        }
+        
+        const summaryDiv = document.getElementById('summaryText');
+        if (potionCount > 0 && pPerRoll > 0) {
+            if (isMultiAura && auraCount > 1) {
+                summaryDiv.innerHTML = `Using ${potionCount.toLocaleString()} potion${potionCount !== 1 ? 's' : ''}, you have a ${chancePercent.toFixed(2)}% chance of getting ${auraCount} of this aura.`;
+            } else {
+                summaryDiv.innerHTML = `Using ${potionCount.toLocaleString()} potion${potionCount !== 1 ? 's' : ''}, you have a ${chancePercent.toFixed(2)}% chance of getting this aura.`;
+            }
+        } else if (potionCount <= 0) {
+            summaryDiv.innerHTML = `Enter how many potions you plan to use above to see your chance.`;
+        } else {
+            summaryDiv.innerHTML = `With your selected potions, this aura may be impossible to get. Try using stronger potions.`;
+        }
+    }
+    
+    function fullReset() {
+        // Reset AFK Overworld
+        document.getElementById('leftGlove').value = "thing";
+        document.getElementById('rightGlove').value = "200,22.0";
+        document.getElementById('bankLevel').value = "0";
+        document.getElementById('eventMulti').value = "1";
+        document.getElementById('infiniteSkips').checked = false;
+        document.getElementById('rollSkips').disabled = false;
+        document.getElementById('rollSkips').value = "0";
+        document.getElementById('resonance').value = "0";
+        document.getElementById('luck').value = "0";
+        document.getElementById('quickRoll').checked = true;
+        document.getElementById('vip').checked = true;
+        document.getElementById('vipPlus').checked = true;
+        document.getElementById('multiAura').checked = false;
+        document.getElementById('auraCount').value = "2";
+        document.getElementById('biome').value = "none";
+        document.getElementById('perpetualBiome').checked = false;
+        document.querySelector('input[name="biomeType"][value="native"]').checked = true;
+        
+        // Reset AFK Limbo
+        document.getElementById('limboLeftGlove').value = "thing,0,0";
+        document.getElementById('limboRightGlove').value = "200,22.0";
+        document.getElementById('limboEventMulti').value = "1";
+        document.getElementById('limboVip').checked = true;
+        document.getElementById('limboVipPlus').checked = true;
+        document.getElementById('limboQuickRoll').checked = true;
+        document.getElementById('davesHope').value = "1";
+        document.getElementById('forbidden1').checked = false;
+        document.getElementById('forbidden2').checked = false;
+        document.getElementById('forbidden3').checked = false;
+        document.getElementById('limboMultiAura').checked = false;
+        document.getElementById('limboAuraCount').value = "2";
+        
+        // Reset Potion Mode
+        document.getElementById('potionRarity').value = "2,500,000,000";
+        document.getElementById('potionCount').value = "100";
+        document.getElementById('potionHeavenly').checked = false;
+        document.getElementById('potionGodlike').checked = false;
+        document.getElementById('potionBound').checked = false;
+        document.getElementById('potionWishStar').checked = false;
+        document.getElementById('potionPopping').checked = false;
+        document.getElementById('potionDune').checked = false;
+        document.querySelector('input[name="redmoon"][value="none"]').checked = true;
+        document.querySelector('input[name="exclusive"][value="none"]').checked = true;
+        document.getElementById('potionMultiAura').checked = false;
+        document.getElementById('potionAuraCount').value = "2";
+        document.getElementById('potionVip').checked = true;
+        document.getElementById('potionVipPlus').checked = true;
+        document.getElementById('potionEventMulti').value = "1";
+        
+        document.getElementById('rarity').value = "2,500,000,000";
+        document.getElementById('limboRarity').value = "2,500,000,000";
+        document.getElementById('days').value = "";
+        
+        updateBiomeOptions();
+        setGlobalMode('afkOverworld');
         calculate();
     }
     
@@ -560,497 +1121,15 @@
         checkRainySupport();
         calculate();
     }
-
+    
     function checkRainySupport() {
         const v = document.getElementById('leftGlove').value;
         document.getElementById('rainyContainer').style.display = (v === "tide" || v === "blessed") ? "block" : "none";
         calculate();
     }
     
-    function fullReset() { 
-        document.getElementById('leftGlove').value = "thing";
-        document.getElementById('rightGlove').value = "200,22.0";
-        document.getElementById('bankLevel').value = "0";
-        document.getElementById('eventMulti').value = "1";
-        document.getElementById('infiniteSkips').checked = false;
-        document.getElementById('rollSkips').disabled = false;
-        document.getElementById('rollSkips').value = "0";
-        document.getElementById('resonance').value = "0";
-        document.getElementById('luck').value = "0";
-        document.getElementById('quickRoll').checked = true;
-        document.getElementById('vip').checked = true;
-        document.getElementById('vipPlus').checked = true;
-        document.getElementById('multiAura').checked = false;
-        document.getElementById('auraCount').value = "2";
-        document.getElementById('biome').value = "none";
-        document.getElementById('perpetualBiome').checked = false;
-        document.querySelector('input[name="biomeType"][value="native"]').checked = true;
-        
-        document.getElementById('limboLeftGlove').value = "thing,0,0";
-        document.getElementById('limboRightGlove').value = "200,22.0";
-        document.getElementById('limboEventMulti').value = "1";
-        document.getElementById('limboVip').checked = true;
-        document.getElementById('limboVipPlus').checked = true;
-        document.getElementById('limboQuickRoll').checked = true;
-        document.getElementById('davesHope').value = "1";
-        document.getElementById('forbidden1').checked = false;
-        document.getElementById('forbidden2').checked = false;
-        document.getElementById('forbidden3').checked = false;
-        document.getElementById('limboMultiAura').checked = false;
-        document.getElementById('limboAuraCount').value = "2";
-        
-        document.getElementById('rarity').value = "2,500,000,000";
-        document.getElementById('limboRarity').value = "2,500,000,000";
-        document.getElementById('targetP').value = "";
-        document.getElementById('days').value = "";
-        
-        updateBiomeOptions();
-        toggleEvents(); 
-        checkRainySupport(); 
-        setArea('overworld');
-        setMode('chance'); 
-        calculate();
-    }
-
-    function calculate() {
-        if (currentArea === 'overworld') {
-            calculateOverworld();
-        } else {
-            calculateLimbo();
-        }
-    }
-    
-    function updateSummaryText(pPerRoll, timeNeeded, chancePercent, days, targetVal, auraCount, isMultiAura, biomeName, isPerpetual, isNative) {
-        const summaryDiv = document.getElementById('summaryText');
-        const countText = isMultiAura ? ` ${auraCount} of this aura` : ' this aura';
-        let biomeText = '';
-        
-        if (biomeName !== 'none') {
-            const biomeDisplay = document.getElementById('biome').options[document.getElementById('biome').selectedIndex]?.text || biomeName;
-            const perpetualText = isPerpetual ? ' (perpetual)' : '';
-            const typeText = isNative ? 'native' : 'exclusive';
-            biomeText = ` in ${biomeDisplay}${perpetualText} (${typeText})`;
-        }
-        
-        if (currentMode === 'chance') {
-            if (targetVal > 0 && pPerRoll > 0 && pPerRoll < 1) {
-                const daysNeeded = timeNeeded / 86400;
-                summaryDiv.innerHTML = `To have a ${(targetVal * 100).toFixed(2)}% chance of getting${countText}${biomeText}, you need to AFK for approximately <strong>${daysNeeded > 1000 ? daysNeeded.toExponential(2) : daysNeeded.toFixed(2)} days</strong>.`;
-            } else if (targetVal <= 0) {
-                summaryDiv.innerHTML = `Enter a desired success rate (%) above to see how many days you need to AFK.`;
-            } else {
-                summaryDiv.innerHTML = `With your current luck stat, this aura may be impossible to calculate. Try increasing your luck buffs.`;
-            }
-        } else {
-            if (days > 0 && pPerRoll > 0) {
-                summaryDiv.innerHTML = `After AFKing for <strong>${days} day${days !== 1 ? 's' : ''}</strong>, you have approximately a <strong>${chancePercent >= 99.99 ? '99.99%+' : chancePercent.toFixed(2) + '%'}</strong> chance of having rolled${countText}${biomeText} at least once.`;
-            } else if (days <= 0) {
-                summaryDiv.innerHTML = `Enter how many days you plan to AFK above to see your chance of getting${countText}${biomeText}.`;
-            } else {
-                summaryDiv.innerHTML = `With your current luck stat, this aura may be impossible to calculate. Try increasing your luck buffs.`;
-            }
-        }
-    }
-    
-    function getBaseRollSpeed() {
-        const quickRoll = document.getElementById('quickRoll')?.checked || false;
-        const limboQuickRoll = document.getElementById('limboQuickRoll')?.checked || false;
-        const hasQuickRoll = currentArea === 'overworld' ? quickRoll : limboQuickRoll;
-        return hasQuickRoll ? 1 : 0.5;
-    }
-    
-    function parseRightGloveValue(value) {
-        const [speed, luck] = value.split(',').map(Number);
-        return { speedBonus: speed || 0, luckBonus: luck || 0 };
-    }
-    
-    function getBiomeMultiplier(biomeId, isPerpetual, isNative) {
-        const biome = biomeData[biomeId];
-        if (!biome || biomeId === 'none') return 1;
-        
-        if (biome.cyberspace) return 0;
-        
-        if (isPerpetual) {
-            if (isNative) {
-                return biome.boost;
-            } else {
-                return 1;
-            }
-        } else {
-            if (isNative) {
-                return (biome.uptime * biome.boost) + (1 - biome.uptime);
-            } else {
-                return biome.uptime;
-            }
-        }
-    }
-    
-    function calculateOverworld() {
-        let rarityInput = document.getElementById('rarity');
-        let rawRarity = rarityInput.value.replace(/,/g, '');
-        let R = Math.floor(parseFloat(rawRarity));
-        if (R < 1 || isNaN(R)) R = 1;
-        
-        rarityInput.value = formatWithCommas(R);
-        
-        // Get biome settings
-        const biomeId = document.getElementById('biome').value;
-        const isPerpetualBiome = document.getElementById('perpetualBiome').checked;
-        const isNative = document.querySelector('input[name="biomeType"]:checked')?.value === 'native';
-        const isCyberspace = biomeId === 'cyberspace';
-        
-        let pPerRoll;
-        
-        if (isCyberspace) {
-            pPerRoll = 1 / R;
-            pPerRoll = Math.min(pPerRoll, 1);
-        } else {
-            let resValue = parseFloat(document.getElementById('resonance').value);
-            if (isNaN(resValue)) resValue = 0;
-            resValue = Math.min(22, Math.max(0, resValue));
-            
-            let displayedLuck = parseFloat(document.getElementById('luck').value) || 1;
-            
-            let tempLuck = displayedLuck;
-            
-            const eventMulti = parseFloat(document.getElementById('eventMulti').value) || 1;
-            tempLuck /= eventMulti;
-            
-            const vip = document.getElementById('vip').checked;
-            const vipPlus = document.getElementById('vipPlus').checked;
-            let vipMulti = 1;
-            if (vip && vipPlus) vipMulti = 1.3;
-            else if (vip || vipPlus) vipMulti = 1.2;
-            tempLuck /= vipMulti;
-            
-            const left = document.getElementById('leftGlove').value;
-            let leftMultiplier = 1;
-            let leftAdditiveLuck = 0;
-            let leftSpeedBonus = 0;
-            
-            if (left === "thing") {
-                leftMultiplier = 2.0;
-            } else if (left === "pole") {
-                leftAdditiveLuck = 5;
-                leftMultiplier = 1.1;
-                leftSpeedBonus = 13.3;
-            } else if (left === "jackpot") {
-                leftAdditiveLuck = 0.77;
-                leftSpeedBonus = 7;
-            } else if (left === "grav") {
-                leftMultiplier = 1.5;
-            } else if (left === "gemstone") {
-                leftAdditiveLuck = 0.075;
-                leftSpeedBonus = 1.25;
-            } else if (left === "xmas") {
-                leftMultiplier = 1.5;
-            } else if (left === "present") {
-                leftMultiplier = 1.36;
-            } else if (left === "1.35") {
-                leftMultiplier = 1.35;
-            } else if (left === "blessed" || left === "tide") {
-                leftMultiplier = 1;
-            } else {
-                leftMultiplier = parseFloat(left) || 1;
-            }
-            
-            let totalLuck = (tempLuck + leftAdditiveLuck) * leftMultiplier;
-            
-            totalLuck *= vipMulti;
-            totalLuck *= eventMulti;
-            
-            let baseP = totalLuck / R;
-            
-            // Apply biome multiplier
-            const biomeMulti = getBiomeMultiplier(biomeId, isPerpetualBiome, isNative);
-            
-            if (biomeMulti === 0) {
-                pPerRoll = baseP;
-            } else {
-                pPerRoll = baseP * biomeMulti;
-            }
-            
-            pPerRoll = Math.min(pPerRoll, 1);
-        }
-        
-        let resValue = parseFloat(document.getElementById('resonance').value);
-        if (isNaN(resValue)) resValue = 0;
-        resValue = Math.min(22, Math.max(0, resValue));
-        
-        let speedBonus = 0;
-        speedBonus += resValue;
-        
-        const rightGloveValue = document.getElementById('rightGlove').value;
-        const rightGloveData = parseRightGloveValue(rightGloveValue);
-        speedBonus += rightGloveData.speedBonus;
-        
-        const left = document.getElementById('leftGlove').value;
-        let leftSpeedBonus = 0;
-        if (left === "pole") {
-            leftSpeedBonus = 13.3;
-        } else if (left === "jackpot") {
-            leftSpeedBonus = 7;
-        } else if (left === "gemstone") {
-            leftSpeedBonus = 1.25;
-        }
-        speedBonus += leftSpeedBonus;
-        
-        const bankLevel = parseInt(document.getElementById('bankLevel').value) || 0;
-        const bankBonuses = {0:0, 1:7, 2:14, 3:21, 4:28, 5:35, 6:42, 7:50};
-        speedBonus += bankBonuses[bankLevel];
-        
-        speedBonus += parseFloat(document.getElementById('buffBasic').value) || 0;
-        speedBonus += parseFloat(document.getElementById('buffHaste').value) || 0;
-        speedBonus += parseFloat(document.getElementById('buffGod').value) || 0;
-        speedBonus += parseFloat(document.getElementById('buffKnowledge').value) || 0;
-        speedBonus += parseFloat(document.getElementById('buffEventPot').value) || 0;
-        speedBonus += parseFloat(document.getElementById('buffCombat').value) || 0;
-        
-        let baseRollSpeed = getBaseRollSpeed();
-        let rollsPerSecond = baseRollSpeed * (1 + (speedBonus / 100));
-        
-        const skipRollsPerSecond = 11 * baseRollSpeed;
-        const skipCount = parseFloat(document.getElementById('rollSkips').value) || 0;
-        const infiniteSkips = document.getElementById('infiniteSkips').checked;
-        
-        const days = parseFloat(document.getElementById('days').value) || 0;
-        const totalSeconds = 86400 * days;
-        
-        let totalRolls;
-        if (infiniteSkips) {
-            totalRolls = totalSeconds * skipRollsPerSecond;
-        } else {
-            const skipTime = Math.min(skipCount / skipRollsPerSecond, totalSeconds);
-            const skipRolls = skipTime * skipRollsPerSecond;
-            const normalTime = totalSeconds - skipTime;
-            const normalRolls = normalTime * rollsPerSecond;
-            totalRolls = skipRolls + normalRolls;
-        }
-        
-        const isMultiAura = document.getElementById('multiAura').checked;
-        const auraCount = parseInt(document.getElementById('auraCount').value) || 1;
-        
-        const targetInput = document.getElementById('targetP');
-        let targetVal = (parseFloat(targetInput.value) || 0) / 100;
-        if (targetVal >= 1) targetVal = 0.9999;
-        
-        let timeNeeded = 0;
-        if (targetVal > 0 && pPerRoll > 0 && pPerRoll < 1) {
-            let rollsNeeded;
-            if (isMultiAura && auraCount > 1) {
-                rollsNeeded = findRollsForTarget(pPerRoll, targetVal, auraCount);
-            } else {
-                rollsNeeded = Math.log(1 - targetVal) / Math.log(1 - pPerRoll);
-            }
-            
-            if (infiniteSkips) {
-                timeNeeded = rollsNeeded / skipRollsPerSecond;
-            } else if (skipCount > 0) {
-                if (skipCount >= rollsNeeded) {
-                    timeNeeded = rollsNeeded / skipRollsPerSecond;
-                } else {
-                    const skipTimeNeeded = skipCount / skipRollsPerSecond;
-                    const remainingRolls = rollsNeeded - skipCount;
-                    const normalTimeNeeded = remainingRolls / rollsPerSecond;
-                    timeNeeded = skipTimeNeeded + normalTimeNeeded;
-                }
-            } else {
-                timeNeeded = rollsNeeded / rollsPerSecond;
-            }
-            
-            const daysNeeded = timeNeeded / 86400;
-            document.getElementById('outputChance').innerText = daysNeeded > 1000 ? daysNeeded.toExponential(2) + " Days" : daysNeeded.toFixed(2) + " Days";
-            document.getElementById('totalRolls').innerText = Math.ceil(rollsNeeded).toLocaleString() + " rolls needed";
-        } else {
-            document.getElementById('outputChance').innerText = (targetVal <= 0) ? "Enter target %" : "Impossible";
-            document.getElementById('totalRolls').innerText = "0 rolls needed";
-        }
-        
-        let P;
-        if (isMultiAura && auraCount > 1 && totalRolls > 0 && pPerRoll > 0 && pPerRoll < 1) {
-            P = probabilityAtLeastNRolls(pPerRoll, totalRolls, auraCount);
-        } else {
-            P = (totalRolls > 0 && pPerRoll > 0) ? 1 - Math.pow((1 - pPerRoll), totalRolls) : 0;
-        }
-        const chancePercent = P * 100;
-        document.getElementById('outputTime').innerText = (P >= 0.9999999) ? "99.99%+" : chancePercent.toFixed(4) + "%";
-        document.getElementById('rollsNeeded').innerText = Math.floor(totalRolls).toLocaleString() + " total rolls";
-        
-        updateSummaryText(pPerRoll, timeNeeded, chancePercent, days, targetVal, auraCount, isMultiAura, biomeId, isPerpetualBiome, isNative);
-        
-        const chanceBox = document.getElementById('chanceBox');
-        const timeBox = document.getElementById('timeBox');
-        chanceBox.classList.remove('status-low', 'status-mid', 'status-high');
-        timeBox.classList.remove('status-low', 'status-mid', 'status-high');
-        
-        if (targetVal > 0) {
-            if (targetVal < 0.1) chanceBox.classList.add('status-low');
-            else if (targetVal < 0.5) chanceBox.classList.add('status-mid');
-            else chanceBox.classList.add('status-high');
-        }
-        
-        if (P > 0 && days > 0) {
-            if (P < 0.1) timeBox.classList.add('status-low');
-            else if (P < 0.5) timeBox.classList.add('status-mid');
-            else timeBox.classList.add('status-high');
-        }
-    }
-    
-    function calculateLimbo() {
-        let rarityInput = document.getElementById('limboRarity');
-        let rawRarity = rarityInput.value.replace(/,/g, '');
-        let R = Math.floor(parseFloat(rawRarity));
-        if (R < 1 || isNaN(R)) R = 1;
-        
-        rarityInput.value = formatWithCommas(R);
-        
-        let totalLuck = 1;
-        
-        const forbidden1 = document.getElementById('forbidden1').checked;
-        const forbidden2 = document.getElementById('forbidden2').checked;
-        const forbidden3 = document.getElementById('forbidden3').checked;
-        let forbiddenSpeedBonus = 0;
-        
-        if (forbidden1) {
-            totalLuck += 0.7;
-            forbiddenSpeedBonus += 10;
-        }
-        if (forbidden2) {
-            totalLuck += 3.25;
-            forbiddenSpeedBonus += 25;
-        }
-        if (forbidden3) {
-            totalLuck += 13.5;
-            forbiddenSpeedBonus += 75;
-        }
-        
-        const rightGloveValue = document.getElementById('limboRightGlove').value;
-        const rightGloveData = parseRightGloveValue(rightGloveValue);
-        totalLuck += rightGloveData.luckBonus;
-        
-        const leftGloveValue = document.getElementById('limboLeftGlove').value;
-        const leftParts = leftGloveValue.split(',');
-        let leftMultiplier = 1;
-        let leftAdditiveLuck = 0;
-        let leftSpeedBonus = 0;
-        
-        const gloveName = leftParts[0];
-        if (gloveName === "thing") {
-            leftMultiplier = 2.0;
-        } else if (gloveName === "pole") {
-            leftAdditiveLuck = 5;
-            leftMultiplier = 1.1;
-            leftSpeedBonus = 13.3;
-        } else if (gloveName === "jackpot") {
-            leftAdditiveLuck = 0.77;
-            leftSpeedBonus = 7;
-        } else if (gloveName === "grav") {
-            leftMultiplier = 1.5;
-        } else if (gloveName === "gemstone") {
-            leftAdditiveLuck = 0.075;
-            leftSpeedBonus = 1.25;
-        } else if (gloveName === "xmas") {
-            leftMultiplier = 1.5;
-        } else if (gloveName === "present") {
-            leftMultiplier = 1.36;
-        } else if (gloveName === "blessed") {
-            leftMultiplier = 1;
-        } else if (gloveName === "tide") {
-            leftMultiplier = 1;
-        } else if (gloveName === "1.35") {
-            leftMultiplier = 1.35;
-        } else {
-            leftMultiplier = parseFloat(gloveName) || 1;
-            leftAdditiveLuck = leftParts.length > 1 ? parseFloat(leftParts[1]) : 0;
-            leftSpeedBonus = leftParts.length > 2 ? parseFloat(leftParts[2]) : 0;
-        }
-        
-        totalLuck += leftAdditiveLuck;
-        totalLuck *= leftMultiplier;
-        
-        const vip = document.getElementById('limboVip').checked;
-        const vipPlus = document.getElementById('limboVipPlus').checked;
-        let vipMulti = 1;
-        if (vip && vipPlus) vipMulti = 1.3;
-        else if (vip || vipPlus) vipMulti = 1.2;
-        totalLuck *= vipMulti;
-        
-        const davesHope = parseFloat(document.getElementById('davesHope').value) || 1;
-        totalLuck *= davesHope;
-        
-        const eventMulti = parseFloat(document.getElementById('limboEventMulti').value) || 1;
-        totalLuck *= eventMulti;
-        
-        let pPerRoll = totalLuck / R;
-        pPerRoll = Math.min(pPerRoll, 1);
-        
-        let speedBonus = 0;
-        speedBonus += rightGloveData.speedBonus;
-        speedBonus += leftSpeedBonus;
-        speedBonus += forbiddenSpeedBonus;
-        
-        let baseRollSpeed = getBaseRollSpeed();
-        let rollsPerSecond = baseRollSpeed * (1 + (speedBonus / 100));
-        
-        const days = parseFloat(document.getElementById('days').value) || 0;
-        const totalSeconds = 86400 * days;
-        const totalRolls = totalSeconds * rollsPerSecond;
-        
-        const isMultiAura = document.getElementById('limboMultiAura').checked;
-        const auraCount = parseInt(document.getElementById('limboAuraCount').value) || 1;
-        
-        const targetInput = document.getElementById('targetP');
-        let targetVal = (parseFloat(targetInput.value) || 0) / 100;
-        if (targetVal >= 1) targetVal = 0.9999;
-        
-        let timeNeeded = 0;
-        if (targetVal > 0 && pPerRoll > 0 && pPerRoll < 1) {
-            let rollsNeeded;
-            if (isMultiAura && auraCount > 1) {
-                rollsNeeded = findRollsForTarget(pPerRoll, targetVal, auraCount);
-            } else {
-                rollsNeeded = Math.log(1 - targetVal) / Math.log(1 - pPerRoll);
-            }
-            timeNeeded = rollsNeeded / rollsPerSecond;
-            const daysNeeded = timeNeeded / 86400;
-            document.getElementById('outputChance').innerText = daysNeeded > 1000 ? daysNeeded.toExponential(2) + " Days" : daysNeeded.toFixed(2) + " Days";
-            document.getElementById('totalRolls').innerText = Math.ceil(rollsNeeded).toLocaleString() + " rolls needed";
-        } else {
-            document.getElementById('outputChance').innerText = (targetVal <= 0) ? "Enter target %" : "Impossible";
-            document.getElementById('totalRolls').innerText = "0 rolls needed";
-        }
-        
-        let P;
-        if (isMultiAura && auraCount > 1 && totalRolls > 0 && pPerRoll > 0 && pPerRoll < 1) {
-            P = probabilityAtLeastNRolls(pPerRoll, totalRolls, auraCount);
-        } else {
-            P = (totalRolls > 0 && pPerRoll > 0) ? 1 - Math.pow((1 - pPerRoll), totalRolls) : 0;
-        }
-        const chancePercent = P * 100;
-        document.getElementById('outputTime').innerText = (P >= 0.9999999) ? "99.99%+" : chancePercent.toFixed(4) + "%";
-        document.getElementById('rollsNeeded').innerText = Math.floor(totalRolls).toLocaleString() + " total rolls";
-        
-        updateSummaryText(pPerRoll, timeNeeded, chancePercent, days, targetVal, auraCount, isMultiAura, 'none', false, true);
-        
-        const chanceBox = document.getElementById('chanceBox');
-        const timeBox = document.getElementById('timeBox');
-        chanceBox.classList.remove('status-low', 'status-mid', 'status-high');
-        timeBox.classList.remove('status-low', 'status-mid', 'status-high');
-        
-        if (targetVal > 0) {
-            if (targetVal < 0.1) chanceBox.classList.add('status-low');
-            else if (targetVal < 0.5) chanceBox.classList.add('status-mid');
-            else chanceBox.classList.add('status-high');
-        }
-        
-        if (P > 0 && days > 0) {
-            if (P < 0.1) timeBox.classList.add('status-low');
-            else if (P < 0.5) timeBox.classList.add('status-mid');
-            else timeBox.classList.add('status-high');
-        }
-    }
-    
-    document.getElementById('infiniteSkips').addEventListener('change', function() {
+    // Event listeners
+    document.getElementById('infiniteSkips')?.addEventListener('change', function() {
         const skipsInput = document.getElementById('rollSkips');
         if (this.checked) {
             skipsInput.disabled = true;
@@ -1061,7 +1140,7 @@
         calculate();
     });
     
-    document.getElementById('resonance').addEventListener('input', function() {
+    document.getElementById('resonance')?.addEventListener('input', function() {
         let val = parseFloat(this.value);
         if (isNaN(val)) val = 0;
         val = Math.min(22, Math.max(0, val));
@@ -1069,20 +1148,12 @@
         calculate();
     });
     
-    function setupRarityInput(inputId) {
-        const input = document.getElementById(inputId);
-        input.addEventListener('input', function() {
-            let raw = this.value.replace(/,/g, '');
-            let num = parseFloat(raw);
-            if (!isNaN(num)) {
-                this.value = formatWithCommas(Math.floor(num));
-            }
-            calculate();
-        });
-    }
-    
     setupRarityInput('rarity');
     setupRarityInput('limboRarity');
+    setupRarityInput('potionRarity');
+    
+    // Setup potion mode UI interactions
+    setupPotionModeInteractions();
     
     document.querySelectorAll('input, select').forEach(el => el.addEventListener('input', calculate));
     
