@@ -47,8 +47,8 @@
         .multi-row { display: flex; gap: 15px; align-items: center; margin: 10px 0; flex-wrap: wrap; }
         .biome-section { background: #0a2e1a; border: 1px solid #59b69b; border-radius: 8px; padding: 10px; margin-top: 10px; }
         .biome-section label { color: #9bd3c3; }
-        .radio-group { display: flex; gap: 15px; margin: 8px 0; align-items: center; flex-wrap: wrap; }
-        .radio-group label { margin: 0; display: flex; align-items: center; gap: 5px; }
+        .radio-group-horizontal { display: flex; gap: 20px; margin: 5px 0; align-items: center; }
+        .radio-group-horizontal label { margin: 0; display: flex; align-items: center; gap: 5px; font-size: 0.75rem; color: #9bd3c3; }
         .potion-mode-section { background: #2a1a3a; border: 1px solid #9b59b6; border-radius: 8px; padding: 10px; margin-top: 10px; }
         .potion-mode-section label { color: #c39bd3; }
         .redmoon-group, .exclusive-group { margin: 10px 0; padding: 8px; background: #1a0a2a; border-radius: 6px; }
@@ -57,6 +57,8 @@
         .afk-submode-switch { display: flex; background: #000; border-radius: 10px; padding: 6px; margin: 15px 0 10px 0; border: 2px solid #444; }
         .afk-submode-btn { flex: 1; padding: 8px; border: none; background: none; color: #888; cursor: pointer; font-weight: 900; font-size: 0.7rem; border-radius: 7px; text-transform: uppercase; transition: 0.2s; }
         .afk-submode-btn.active { background: #00d4ff; color: #000; }
+        .item-row { display: flex; gap: 15px; margin: 10px 0; flex-wrap: wrap; }
+        .lantern-row { margin: 10px 0; }
     </style>
 </head>
 <body>
@@ -171,10 +173,34 @@
                             <label class="check-row"><input type="checkbox" id="perpetualBiome" onchange="updateBiomeOptions()"> Perpetually in this biome</label>
                         </div>
                     </div>
+                    
+                    <!-- Lantern Dropdown -->
+                    <div class="lantern-row">
+                        <label>Equipped Lantern (2x spawn rate)</label>
+                        <select id="lantern" onchange="updateBiomeOptions()">
+                            <option value="none">None</option>
+                            <option value="windy">Wind Fairy</option>
+                            <option value="snowy">Frozen</option>
+                            <option value="rainy">Abyssal</option>
+                            <option value="sandstorm">Gilded Dust</option>
+                            <option value="hell">Eternal Flame</option>
+                            <option value="starfall">Starlight</option>
+                            <option value="heaven">Angel's Feather</option>
+                            <option value="corruption">Corruption Cell</option>
+                            <option value="null">Darklight</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Biome Item Usage -->
+                    <div class="item-row">
+                        <label class="check-row"><input type="checkbox" id="useStrangeController" onchange="updateBiomeOptions()"> Constantly using SC</label>
+                        <label class="check-row"><input type="checkbox" id="useBiomeRandomizer" onchange="updateBiomeOptions()"> Constantly using BR</label>
+                    </div>
+                    
                     <div id="biomeOptionsDiv">
-                        <div class="radio-group">
-                            <label><input type="radio" name="biomeType" value="native" checked> Native to this biome/time</label>
-                            <label><input type="radio" name="biomeType" value="exclusive"> Exclusive to this biome/time</label>
+                        <div class="radio-group-horizontal">
+                            <label><input type="radio" name="biomeType" value="native" checked> Native</label>
+                            <label><input type="radio" name="biomeType" value="exclusive"> Exclusive</label>
                         </div>
                     </div>
                     <div class="disclaimer" style="color: #9bd3c3; font-size: 0.65rem;">Native = boosted during biome/time, spawns anywhere</div>
@@ -237,33 +263,36 @@
                 </div>
             </div>
             
-            <!-- AFK Overworld Sub-mode Switch -->
+            <!-- AFK Overworld Sub-mode Switch (Chance % on left, Time Req on right) -->
             <div class="afk-submode-switch">
-                <button type="button" id="afkTimeReq" class="afk-submode-btn active" onclick="setAfkSubMode('time')">TIME REQ.</button>
-                <button type="button" id="afkChance" class="afk-submode-btn" onclick="setAfkSubMode('chance')">CHANCE %</button>
+                <button type="button" id="afkChance" class="afk-submode-btn active" onclick="setAfkSubMode('chance')">CHANCE %</button>
+                <button type="button" id="afkTimeReq" class="afk-submode-btn" onclick="setAfkSubMode('time')">TIME REQ.</button>
             </div>
             
-            <div id="afkTimeReqSection">
-                <label>Desired Success Rate (%)</label>
-                <input type="number" id="targetP" placeholder="Max 99.99" step="0.01" max="99.99" oninput="if(this.value>=100)this.value=99.99">
-                <div class="preset-buttons">
-                    <span class="preset-label">Presets:</span>
-                    <button type="button" class="preset-btn" onclick="setTargetPreset(25)">25%</button>
-                    <button type="button" class="preset-btn" onclick="setTargetPreset(50)">50%</button>
-                    <button type="button" class="preset-btn" onclick="setTargetPreset(75)">75%</button>
-                    <button type="button" class="preset-btn" onclick="setTargetPreset(99)">99%</button>
-                </div>
-            </div>
-            
-            <div id="afkChanceSection" style="display:none;">
+            <div id="afkChanceSection">
                 <label>Rolling Duration (Days)</label>
                 <input type="number" id="days" placeholder="Days AFK">
                 <div class="preset-buttons">
                     <span class="preset-label">Presets:</span>
                     <button type="button" class="preset-btn" onclick="setDaysPreset(1)">1 Day</button>
                     <button type="button" class="preset-btn" onclick="setDaysPreset(7)">7 Days</button>
+                    <button type="button" class="preset-btn" onclick="setDaysPreset(30)">30 Days</button>
                     <button type="button" class="preset-btn" onclick="setDaysPreset(100)">100 Days</button>
                     <button type="button" class="preset-btn" onclick="setDaysPreset(365)">365 Days</button>
+                </div>
+            </div>
+            
+            <div id="afkTimeReqSection" style="display:none;">
+                <label>Desired Success Rate (%)</label>
+                <input type="number" id="targetP" placeholder="Max 99.99" step="0.01" max="99.99" oninput="if(this.value>=100)this.value=99.99">
+                <div class="preset-buttons">
+                    <span class="preset-label">Presets:</span>
+                    <button type="button" class="preset-btn" onclick="setTargetPreset(1)">1%</button>
+                    <button type="button" class="preset-btn" onclick="setTargetPreset(25)">25%</button>
+                    <button type="button" class="preset-btn" onclick="setTargetPreset(50)">50%</button>
+                    <button type="button" class="preset-btn" onclick="setTargetPreset(75)">75%</button>
+                    <button type="button" class="preset-btn" onclick="setTargetPreset(99)">99%</button>
+                    <button type="button" class="preset-btn" onclick="setTargetPreset(99.9)">99.9%</button>
                 </div>
             </div>
         </div>
@@ -374,33 +403,36 @@
                 </div>
             </div>
             
-            <!-- AFK Limbo Sub-mode Switch -->
+            <!-- AFK Limbo Sub-mode Switch (Chance % on left, Time Req on right) -->
             <div class="afk-submode-switch">
-                <button type="button" id="limboTimeReq" class="afk-submode-btn active" onclick="setLimboSubMode('time')">TIME REQ.</button>
-                <button type="button" id="limboChance" class="afk-submode-btn" onclick="setLimboSubMode('chance')">CHANCE %</button>
+                <button type="button" id="limboChance" class="afk-submode-btn active" onclick="setLimboSubMode('chance')">CHANCE %</button>
+                <button type="button" id="limboTimeReq" class="afk-submode-btn" onclick="setLimboSubMode('time')">TIME REQ.</button>
             </div>
             
-            <div id="limboTimeReqSection">
-                <label>Desired Success Rate (%)</label>
-                <input type="number" id="limboTargetP" placeholder="Max 99.99" step="0.01" max="99.99" oninput="if(this.value>=100)this.value=99.99">
-                <div class="preset-buttons">
-                    <span class="preset-label">Presets:</span>
-                    <button type="button" class="preset-btn" onclick="setLimboTargetPreset(25)">25%</button>
-                    <button type="button" class="preset-btn" onclick="setLimboTargetPreset(50)">50%</button>
-                    <button type="button" class="preset-btn" onclick="setLimboTargetPreset(75)">75%</button>
-                    <button type="button" class="preset-btn" onclick="setLimboTargetPreset(99)">99%</button>
-                </div>
-            </div>
-            
-            <div id="limboChanceSection" style="display:none;">
+            <div id="limboChanceSection">
                 <label>Rolling Duration (Days)</label>
                 <input type="number" id="limboDays" placeholder="Days AFK">
                 <div class="preset-buttons">
                     <span class="preset-label">Presets:</span>
                     <button type="button" class="preset-btn" onclick="setLimboDaysPreset(1)">1 Day</button>
                     <button type="button" class="preset-btn" onclick="setLimboDaysPreset(7)">7 Days</button>
+                    <button type="button" class="preset-btn" onclick="setLimboDaysPreset(30)">30 Days</button>
                     <button type="button" class="preset-btn" onclick="setLimboDaysPreset(100)">100 Days</button>
                     <button type="button" class="preset-btn" onclick="setLimboDaysPreset(365)">365 Days</button>
+                </div>
+            </div>
+            
+            <div id="limboTimeReqSection" style="display:none;">
+                <label>Desired Success Rate (%)</label>
+                <input type="number" id="limboTargetP" placeholder="Max 99.99" step="0.01" max="99.99" oninput="if(this.value>=100)this.value=99.99">
+                <div class="preset-buttons">
+                    <span class="preset-label">Presets:</span>
+                    <button type="button" class="preset-btn" onclick="setLimboTargetPreset(1)">1%</button>
+                    <button type="button" class="preset-btn" onclick="setLimboTargetPreset(25)">25%</button>
+                    <button type="button" class="preset-btn" onclick="setLimboTargetPreset(50)">50%</button>
+                    <button type="button" class="preset-btn" onclick="setLimboTargetPreset(75)">75%</button>
+                    <button type="button" class="preset-btn" onclick="setLimboTargetPreset(99)">99%</button>
+                    <button type="button" class="preset-btn" onclick="setLimboTargetPreset(99.9)">99.9%</button>
                 </div>
             </div>
         </div>
@@ -435,7 +467,7 @@
                     
                     <div class="redmoon-group">
                         <label style="color: #e8d5f5; font-weight: bold;">Red Moon (choose one)</label>
-                        <div class="radio-group">
+                        <div class="radio-group-horizontal">
                             <label><input type="radio" name="redmoon" value="none" checked> None</label>
                             <label><input type="radio" name="redmoon" value="I"> Red Moon I (+10,000)</label>
                             <label><input type="radio" name="redmoon" value="II"> Red Moon II (+200,000)</label>
@@ -444,11 +476,11 @@
                     
                     <div class="exclusive-group">
                         <label style="color: #e8d5f5; font-weight: bold;">Exclusive Potions (choose one, cannot stack with anything)</label>
-                        <div class="radio-group">
+                        <div class="radio-group-horizontal">
                             <label><input type="radio" name="exclusive" value="none" checked> None</label>
-                            <label><input type="radio" name="exclusive" value="oblivion"> Oblivion Potion (+600,000)</label>
-                            <label><input type="radio" name="exclusive" value="pumpking"> Pumpking's Blood (+700,000)</label>
-                            <label><input type="radio" name="exclusive" value="voidheart"> Void Heart (+300,000)</label>
+                            <label><input type="radio" name="exclusive" value="oblivion"> Oblivion (+600k)</label>
+                            <label><input type="radio" name="exclusive" value="pumpking"> Pumpking's Blood (+700k)</label>
+                            <label><input type="radio" name="exclusive" value="voidheart"> Void Heart (+300k)</label>
                         </div>
                     </div>
                 </div>
@@ -495,28 +527,181 @@
 
 <script>
     let currentGlobalMode = 'afkOverworld';
-    let currentAfkSubMode = 'time';
-    let currentLimboSubMode = 'time';
+    let currentAfkSubMode = 'chance';
+    let currentLimboSubMode = 'chance';
     
-    // Biome data
-    const biomeData = {
-        none: { uptime: 0.390, boost: 1, exclusiveOnly: false, cyberspace: false },
-        day: { uptime: 0.50, boost: 1, exclusiveOnly: false, cyberspace: false },
-        night: { uptime: 0.50, boost: 10, exclusiveOnly: false, cyberspace: false },
-        windy: { uptime: 0.0936, boost: 3, exclusiveOnly: false, cyberspace: false },
-        snowy: { uptime: 0.0780, boost: 3, exclusiveOnly: false, cyberspace: false },
-        rainy: { uptime: 0.0624, boost: 4, exclusiveOnly: false, cyberspace: false },
-        sandstorm: { uptime: 0.0844, boost: 4, exclusiveOnly: false, cyberspace: false },
-        hell: { uptime: 0.0390, boost: 6, exclusiveOnly: false, cyberspace: false },
-        starfall: { uptime: 0.0312, boost: 5, exclusiveOnly: false, cyberspace: false },
-        heaven: { uptime: 0.0121, boost: 5, exclusiveOnly: false, cyberspace: false },
-        corruption: { uptime: 0.0282, boost: 5, exclusiveOnly: false, cyberspace: false },
-        null: { uptime: 0.0038, boost: 1000, exclusiveOnly: false, cyberspace: false },
-        singularity: { uptime: 0.00076, boost: 5, exclusiveOnly: false, cyberspace: false },
-        dreamspace: { uptime: 0.000026, boost: 1, exclusiveOnly: true, cyberspace: false },
-        glitch: { uptime: 0.0000068, boost: 1, exclusiveOnly: true, cyberspace: false },
-        cyberspace: { uptime: 1.0, boost: 1, exclusiveOnly: true, cyberspace: true }
+    // Base natural uptimes (will be modified by lantern)
+    const baseNaturalUptime = {
+        none: 0.390,
+        day: 0.50,
+        night: 0.50,
+        windy: 0.0936,
+        snowy: 0.0780,
+        rainy: 0.0624,
+        sandstorm: 0.0844,
+        hell: 0.0390,
+        starfall: 0.0312,
+        heaven: 0.0121,
+        corruption: 0.0282,
+        null: 0.0038,
+        singularity: 0.00076,
+        dreamspace: 0.000026,
+        glitch: 0.0000068,
+        cyberspace: 0
     };
+    
+    // Rate x Duration values for lantern calculation
+    const baseRateDuration = {
+        windy: 0.24,
+        snowy: 0.20,
+        rainy: 0.16,
+        sandstorm: 0.2165,
+        hell: 0.0999,
+        starfall: 0.08,
+        heaven: 0.0309,
+        corruption: 0.0722,
+        null: 0.0098,
+        singularity: 0.0016,
+        dreamspace: 0.00005486,
+        glitch: 0.00003255
+    };
+    
+    // Strange Controller probabilities (from your data)
+    const scProbabilities = {
+        windy: 0.3318,
+        snowy: 0.2765,
+        rainy: 0.2212,
+        sandstorm: 0.0553,
+        hell: 0.0249,
+        starfall: 0.0221,
+        heaven: 0.0213,
+        corruption: 0.0184,
+        null: 0.0163,
+        singularity: 0.000221,
+        cyberspace: 0.0002,
+        glitch: 0.00003
+    };
+    
+    // Biome durations in seconds
+    const biomeDurations = {
+        windy: 120,
+        snowy: 120,
+        rainy: 120,
+        sandstorm: 650,
+        hell: 666,
+        starfall: 600,
+        heaven: 240,
+        corruption: 650,
+        null: 99,
+        singularity: 1200,
+        cyberspace: 720,
+        glitch: 164,
+        dreamspace: 192
+    };
+    
+    // Calculate extra uptime from an item
+    function calculateItemUptime(itemProbabilities, cooldownSeconds) {
+        const usesPerSecond = 1 / cooldownSeconds;
+        const extraUptime = {};
+        
+        for (const [biome, prob] of Object.entries(itemProbabilities)) {
+            const duration = biomeDurations[biome] || 120;
+            extraUptime[biome] = usesPerSecond * prob * duration;
+        }
+        
+        return extraUptime;
+    }
+    
+    // SC: 20 min = 1200 seconds
+    const scUptime = calculateItemUptime(scProbabilities, 1200);
+    
+    // BR: 1/9 chance for each regular biome, plus specials
+    const brProbabilities = {
+        windy: 1/9,
+        snowy: 1/9,
+        rainy: 1/9,
+        sandstorm: 1/9,
+        hell: 1/9,
+        starfall: 1/9,
+        heaven: 1/9,
+        corruption: 1/9,
+        null: 1/9,
+        singularity: (1/9) * 0.01,
+        cyberspace: 0.0002,
+        glitch: 0.0000333
+    };
+    
+    // BR: 35 min = 2100 seconds
+    const brUptime = calculateItemUptime(brProbabilities, 2100);
+    
+    // Calculate natural uptime with lantern boost
+    function getNaturalUptimeWithLantern(lanternBiome) {
+        if (lanternBiome === 'none') {
+            return { ...baseNaturalUptime };
+        }
+        
+        // Get the boosted biome's original Rate x Duration
+        const boostedRD = baseRateDuration[lanternBiome] || 0;
+        if (boostedRD === 0) return { ...baseNaturalUptime };
+        
+        // Double it for the lantern
+        const newBoostedRD = boostedRD * 2;
+        
+        // Calculate total sum of Rate x Duration (excluding day/night/cyberspace which have natural uptime)
+        let totalRD = 0;
+        for (const [biome, rd] of Object.entries(baseRateDuration)) {
+            if (biome === lanternBiome) {
+                totalRD += newBoostedRD;
+            } else {
+                totalRD += rd;
+            }
+        }
+        
+        // Normal biome uptime = 1 / (1 + totalRD)
+        const normalUptime = 1 / (1 + totalRD);
+        
+        // Calculate each biome's uptime
+        const uptimes = {};
+        for (const [biome, rd] of Object.entries(baseRateDuration)) {
+            if (biome === lanternBiome) {
+                uptimes[biome] = newBoostedRD * normalUptime;
+            } else {
+                uptimes[biome] = rd * normalUptime;
+            }
+        }
+        uptimes.none = normalUptime;
+        uptimes.day = 0.50;
+        uptimes.night = 0.50;
+        uptimes.cyberspace = 0;
+        
+        return uptimes;
+    }
+    
+    // Get effective uptime for a biome based on selected items and lantern
+    function getEffectiveUptime(biomeId, useSC, useBR, lanternBiome) {
+        if (biomeId === 'none') return getNaturalUptimeWithLantern(lanternBiome).none;
+        if (biomeId === 'day' || biomeId === 'night') return 0.50;
+        
+        // Cyberspace can only be obtained from SC/BR or perpetual mode
+        if (biomeId === 'cyberspace') {
+            let uptime = 0;
+            if (useSC && scUptime.cyberspace) uptime += scUptime.cyberspace;
+            if (useBR && brUptime.cyberspace) uptime += brUptime.cyberspace;
+            return uptime;
+        }
+        
+        const naturalUptimes = getNaturalUptimeWithLantern(lanternBiome);
+        let uptime = naturalUptimes[biomeId] || 0;
+        
+        if (useSC && scUptime[biomeId]) {
+            uptime += scUptime[biomeId];
+        }
+        if (useBR && brUptime[biomeId]) {
+            uptime += brUptime[biomeId];
+        }
+        
+        return Math.min(uptime, 0.999);
+    }
     
     function setGlobalMode(mode) {
         currentGlobalMode = mode;
@@ -535,19 +720,19 @@
     
     function setAfkSubMode(mode) {
         currentAfkSubMode = mode;
-        document.getElementById('afkTimeReqSection').style.display = (mode === 'time') ? 'block' : 'none';
         document.getElementById('afkChanceSection').style.display = (mode === 'chance') ? 'block' : 'none';
-        document.getElementById('afkTimeReq').classList.toggle('active', mode === 'time');
+        document.getElementById('afkTimeReqSection').style.display = (mode === 'time') ? 'block' : 'none';
         document.getElementById('afkChance').classList.toggle('active', mode === 'chance');
+        document.getElementById('afkTimeReq').classList.toggle('active', mode === 'time');
         calculateAfkOverworld();
     }
     
     function setLimboSubMode(mode) {
         currentLimboSubMode = mode;
-        document.getElementById('limboTimeReqSection').style.display = (mode === 'time') ? 'block' : 'none';
         document.getElementById('limboChanceSection').style.display = (mode === 'chance') ? 'block' : 'none';
-        document.getElementById('limboTimeReq').classList.toggle('active', mode === 'time');
+        document.getElementById('limboTimeReqSection').style.display = (mode === 'time') ? 'block' : 'none';
         document.getElementById('limboChance').classList.toggle('active', mode === 'chance');
+        document.getElementById('limboTimeReq').classList.toggle('active', mode === 'time');
         calculateAfkLimbo();
     }
     
@@ -574,6 +759,18 @@
     function updateBiomeOptions() {
         const biome = document.getElementById('biome').value;
         const optionsDiv = document.getElementById('biomeOptionsDiv');
+        const perpetual = document.getElementById('perpetualBiome').checked;
+        const useSC = document.getElementById('useStrangeController');
+        const useBR = document.getElementById('useBiomeRandomizer');
+        
+        // Disable item checkboxes if perpetual is checked
+        if (perpetual) {
+            useSC.disabled = true;
+            useBR.disabled = true;
+        } else {
+            useSC.disabled = false;
+            useBR.disabled = false;
+        }
         
         if (biome === 'cyberspace' || biome === 'dreamspace' || biome === 'glitch') {
             optionsDiv.style.opacity = '0.5';
@@ -652,19 +849,46 @@
         });
     }
     
-    function getBiomeMultiplier(biomeId, isPerpetual, isNative) {
-        const biome = biomeData[biomeId];
-        if (!biome || biomeId === 'none') return 1;
-        if (biome.cyberspace) return 0;
+    function getBiomeMultiplier(biomeId, isPerpetual, isNative, useSC, useBR, lanternBiome) {
+        const biomeData = {
+            windy: { boost: 3 },
+            snowy: { boost: 3 },
+            rainy: { boost: 4 },
+            sandstorm: { boost: 4 },
+            hell: { boost: 6 },
+            starfall: { boost: 5 },
+            heaven: { boost: 5 },
+            corruption: { boost: 5 },
+            null: { boost: 1000 },
+            singularity: { boost: 5 },
+            day: { boost: 1 },
+            night: { boost: 10 },
+            cyberspace: { boost: 1, special: true },
+            dreamspace: { boost: 1, special: true },
+            glitch: { boost: 1, special: true },
+            none: { boost: 1 }
+        };
         
+        const biome = biomeData[biomeId];
+        if (!biome) return 1;
+        
+        if (biomeId === 'cyberspace') {
+            if (isPerpetual) return 1;
+            const hasItems = useSC || useBR;
+            if (!hasItems) return 0;
+        }
+        
+        let uptime;
         if (isPerpetual) {
-            return isNative ? biome.boost : 1;
+            uptime = 1;
         } else {
-            if (isNative) {
-                return (biome.uptime * biome.boost) + (1 - biome.uptime);
-            } else {
-                return biome.uptime;
-            }
+            uptime = getEffectiveUptime(biomeId, useSC, useBR, lanternBiome);
+        }
+        
+        if (isNative) {
+            return (uptime * biome.boost) + (1 - uptime);
+        } else {
+            return uptime;
         }
     }
     
@@ -880,22 +1104,14 @@
         const biomeId = document.getElementById('biome').value;
         const isPerpetual = document.getElementById('perpetualBiome').checked;
         const isNative = document.querySelector('input[name="biomeType"]:checked')?.value === 'native';
-        const isCyberspace = biomeId === 'cyberspace';
+        const useSC = document.getElementById('useStrangeController').checked && !isPerpetual;
+        const useBR = document.getElementById('useBiomeRandomizer').checked && !isPerpetual;
+        const lanternBiome = document.getElementById('lantern').value;
         
-        let totalLuck;
-        if (isCyberspace) {
-            totalLuck = 0;
-        } else {
-            totalLuck = calculateOverworldLuck();
-        }
+        let totalLuck = calculateOverworldLuck();
         
-        const biomeMulti = getBiomeMultiplier(biomeId, isPerpetual, isNative);
-        let pPerRoll;
-        if (isCyberspace) {
-            pPerRoll = 1 / R;
-        } else {
-            pPerRoll = (totalLuck / R) * biomeMulti;
-        }
+        let biomeMulti = getBiomeMultiplier(biomeId, isPerpetual, isNative, useSC, useBR, lanternBiome);
+        let pPerRoll = (totalLuck / R) * biomeMulti;
         pPerRoll = Math.min(pPerRoll, 1);
         
         let resValue = parseFloat(document.getElementById('resonance').value);
@@ -935,8 +1151,6 @@
         const isMultiAura = document.getElementById('multiAura').checked;
         const auraCount = parseInt(document.getElementById('auraCount').value) || 1;
         
-        let resultElement, detailElement, summaryElement;
-        
         if (currentAfkSubMode === 'time') {
             const targetInput = document.getElementById('targetP');
             let targetVal = (parseFloat(targetInput.value) || 0) / 100;
@@ -967,7 +1181,7 @@
                 }
                 
                 const daysNeeded = timeNeeded / 86400;
-                resultElement = document.getElementById('targetPResult');
+                let resultElement = document.getElementById('targetPResult');
                 if (!resultElement) {
                     const resultBox = document.createElement('div');
                     resultBox.id = 'targetPResult';
@@ -977,7 +1191,7 @@
                 }
                 resultElement.innerHTML = `<div class="result-val">${daysNeeded > 1000 ? daysNeeded.toExponential(2) + " Days" : daysNeeded.toFixed(2) + " Days"}</div><span class="stat-subtext">${Math.ceil(rollsNeeded).toLocaleString()} rolls needed</span>`;
             } else {
-                resultElement = document.getElementById('targetPResult');
+                let resultElement = document.getElementById('targetPResult');
                 if (!resultElement) {
                     const resultBox = document.createElement('div');
                     resultBox.id = 'targetPResult';
@@ -1010,7 +1224,7 @@
             }
             
             const chancePercent = P * 100;
-            resultElement = document.getElementById('daysResult');
+            let resultElement = document.getElementById('daysResult');
             if (!resultElement) {
                 const resultBox = document.createElement('div');
                 resultBox.id = 'daysResult';
@@ -1216,6 +1430,9 @@
         document.getElementById('auraCount').value = "2";
         document.getElementById('biome').value = "none";
         document.getElementById('perpetualBiome').checked = false;
+        document.getElementById('useStrangeController').checked = false;
+        document.getElementById('useBiomeRandomizer').checked = false;
+        document.getElementById('lantern').value = "none";
         document.querySelector('input[name="biomeType"][value="native"]').checked = true;
         document.getElementById('targetP').value = "";
         document.getElementById('days').value = "";
@@ -1257,8 +1474,8 @@
         document.getElementById('limboRarity').value = "2,500,000,000";
         
         updateBiomeOptions();
-        setAfkSubMode('time');
-        setLimboSubMode('time');
+        setAfkSubMode('chance');
+        setLimboSubMode('chance');
         setGlobalMode('afkOverworld');
     }
     
