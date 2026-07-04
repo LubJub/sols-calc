@@ -15,6 +15,11 @@
         .prefix { font-weight: bold; margin-right: 5px; font-size: 1.1rem; }
         .rarity-input { border: none !important; margin: 0 !important; outline: none; width: 100%; background: transparent !important; color: white !important; }
         input, select { width: 100%; padding: 10px; margin: 8px 0; border-radius: 5px; border: 1px solid #444; background: #000; color: white; font-weight: bold; box-sizing: border-box; font-size: 0.9rem; transition: background 0.3s, color 0.3s, border-color 0.3s; }
+        input:invalid, select:invalid { border-color: #ff4d4d; box-shadow: 0 0 8px rgba(255, 77, 77, 0.3); }
+        input:invalid:focus, select:invalid:focus { border-color: #ff4d4d; box-shadow: 0 0 12px rgba(255, 77, 77, 0.5); }
+        input.invalid, select.invalid { border-color: #ff4d4d; box-shadow: 0 0 8px rgba(255, 77, 77, 0.3); }
+        .validation-tooltip { background: #ff4d4d; color: white; padding: 4px 10px; border-radius: 4px; font-size: 0.65rem; margin-top: 2px; display: none; }
+        .validation-tooltip.visible { display: block; }
         label { font-size: 0.75rem; color: #ccc; display: block; transition: color 0.3s; }
         .check-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin: 10px 0; }
         .check-row { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.75rem; color: #888; transition: color 0.3s; }
@@ -757,11 +762,17 @@
 </div>
 
 <script>
+    // ============================================================
+    // STATE
+    // ============================================================
     let currentGlobalMode = 'afkOverworld';
     let currentAfkSubMode = 'chance';
     let currentLimboSubMode = 'chance';
+    let previousPotionState = {};
     
-    // ----- UNDO/REDO SYSTEM -----
+    // ============================================================
+    // UNDO/REDO SYSTEM
+    // ============================================================
     const history = [];
     let historyIndex = -1;
     const maxHistory = 30;
@@ -880,7 +891,9 @@
         el.addEventListener('click', function() { setTimeout(saveState, 50); });
     });
     
-    // ----- DECIMAL PRECISION -----
+    // ============================================================
+    // SETTINGS HELPERS
+    // ============================================================
     function getDecimalPrecision() {
         const val = document.getElementById('settingsDecimalPrecision')?.value;
         return parseInt(val) || 4;
@@ -896,7 +909,9 @@
         return value.toFixed(precision) + '%';
     }
     
-    // ----- TIME FORMATTING -----
+    // ============================================================
+    // TIME FORMATTING
+    // ============================================================
     function formatTime(days) {
         const format = getTimeFormat();
         
@@ -904,13 +919,11 @@
             if (days > 1000) return days.toExponential(2) + ' days';
             return days.toFixed(2) + ' days';
         }
-        
         if (format === 'hours') {
             const hours = days * 24;
             if (hours > 1000) return hours.toExponential(2) + ' hours';
             return hours.toFixed(2) + ' hours';
         }
-        
         if (format === 'minutes') {
             const minutes = days * 1440;
             if (minutes > 1000) return minutes.toExponential(2) + ' minutes';
@@ -949,7 +962,9 @@
         return `${years.toFixed(2)} years (${days.toFixed(2)} days)`;
     }
     
-    // ----- SETTINGS -----
+    // ============================================================
+    // SETTINGS UI
+    // ============================================================
     function toggleSettings() {
         const settings = document.getElementById('settingsContent');
         const isVisible = settings.style.display === 'block';
@@ -1029,7 +1044,9 @@
         fullReset();
     }
     
-    // ----- COPY TO CLIPBOARD -----
+    // ============================================================
+    // COPY TO CLIPBOARD
+    // ============================================================
     function copyResult() {
         const resultText = document.getElementById('summaryText')?.innerText || 'No result to copy';
         const fullText = `Sols Rng Calculator\n${resultText}`;
@@ -1069,13 +1086,280 @@
         }, 2000);
     }
     
-    function calculate() {
-        if (currentGlobalMode === 'afkOverworld') calculateAfkOverworld();
-        else if (currentGlobalMode === 'afkLimbo') calculateAfkLimbo();
-        else if (currentGlobalMode === 'potion') calculatePotionMode();
+    // ============================================================
+    // VALIDATION HELPERS
+    // ============================================================
+    function validateInput(input) {
+        const val = input.value.trim();
+        const tooltip = input.parentElement?.querySelector('.validation-tooltip');
+        
+        if (input.id === 'rarity' || input.id === 'limboRarity' || input.id === 'potionRarity') {
+            const num = parseInt(val.replace(/,/g, ''));
+            if (val && (isNaN(num) || num < 1)) {
+                input.classList.add('invalid');
+                if (tooltip) {
+                    tooltip.textContent = 'Please enter a number greater than 0';
+                    tooltip.classList.add('visible');
+                }
+                return false;
+            }
+        }
+        
+        if (input.id === 'luck' || input.id === 'resonance') {
+            const num = parseFloat(val);
+            if (val && isNaN(num)) {
+                input.classList.add('invalid');
+                if (tooltip) {
+                    tooltip.textContent = 'Please enter a valid number';
+                    tooltip.classList.add('visible');
+                }
+                return false;
+            }
+        }
+        
+        input.classList.remove('invalid');
+        if (tooltip) tooltip.classList.remove('visible');
+        return true;
     }
     
-    // ----- EXISTING CALCULATION FUNCTIONS (truncated for length) -----
+    function setupValidation(input) {
+        const parent = input.parentElement;
+        const tooltip = document.createElement('div');
+        tooltip.className = 'validation-tooltip';
+        parent.appendChild(tooltip);
+        
+        input.addEventListener('input', function() { validateInput(this); });
+        input.addEventListener('blur', function() { validateInput(this); });
+    }
+    
+    // ============================================================
+    // RESET FUNCTIONS (split for clarity)
+    // ============================================================
+    function resetAfkOverworld() {
+        document.getElementById('leftGlove').value = "thing";
+        document.getElementById('rightGlove').value = "200,22.0";
+        document.getElementById('bankLevel').value = "0";
+        document.getElementById('eventMulti').value = "1";
+        document.getElementById('infiniteSkips').checked = false;
+        document.getElementById('rollSkips').disabled = false;
+        document.getElementById('rollSkips').value = "0";
+        document.getElementById('resonance').value = "0";
+        document.getElementById('luck').value = "0";
+        document.getElementById('quickRoll').checked = true;
+        document.getElementById('vip').checked = true;
+        document.getElementById('vipPlus').checked = true;
+        document.getElementById('auraCount').value = "1";
+        document.getElementById('biome').value = "none";
+        document.getElementById('perpetualBiome').checked = false;
+        document.getElementById('useStrangeController').checked = false;
+        document.getElementById('useBiomeRandomizer').checked = false;
+        document.getElementById('lantern').value = "none";
+        document.querySelector('input[name="biomeType"][value="native"]').checked = true;
+        document.getElementById('targetP').value = "";
+        document.getElementById('days').value = "";
+        document.getElementById('rarity').value = "";
+    }
+    
+    function resetAfkLimbo() {
+        document.getElementById('limboLeftGlove').value = "thing,0,0";
+        document.getElementById('limboRightGlove').value = "200,22.0";
+        document.getElementById('limboEventMulti').value = "1";
+        document.getElementById('limboVip').checked = true;
+        document.getElementById('limboVipPlus').checked = true;
+        document.getElementById('limboQuickRoll').checked = true;
+        document.getElementById('davesHope').value = "1";
+        document.getElementById('forbidden1').checked = false;
+        document.getElementById('forbidden2').checked = false;
+        document.getElementById('forbidden3').checked = false;
+        document.getElementById('limboAuraCount').value = "1";
+        document.getElementById('limboTargetP').value = "";
+        document.getElementById('limboDays').value = "";
+        document.getElementById('limboRarity').value = "";
+    }
+    
+    function resetPotionMode() {
+        document.getElementById('potionRarity').value = "";
+        document.getElementById('potionStacked').checked = false;
+        document.getElementById('potionHeavenly').checked = false;
+        document.getElementById('potionHeavenlyQty').value = "0";
+        document.getElementById('potionGodlike').checked = false;
+        document.getElementById('potionGodlikeQty').value = "0";
+        document.getElementById('potionBound').checked = false;
+        document.getElementById('potionBoundQty').value = "0";
+        document.getElementById('potionWishStar').checked = false;
+        document.getElementById('potionWishStarQty').value = "0";
+        document.getElementById('potionCandycorn').checked = false;
+        document.getElementById('potionCandycornQty').value = "0";
+        document.getElementById('potionPumpking').checked = false;
+        document.getElementById('potionPumpkingQty').value = "0";
+        document.getElementById('potionPopping').checked = false;
+        document.getElementById('potionPoppingQty').value = "0";
+        document.getElementById('potionDune').checked = false;
+        document.getElementById('potionDuneQty').value = "0";
+        document.getElementById('potionRedMoonI').checked = false;
+        document.getElementById('potionRedMoonIQty').value = "0";
+        document.getElementById('potionRedMoonII').checked = false;
+        document.getElementById('potionRedMoonIIQty').value = "0";
+        document.getElementById('potionOblivion').checked = false;
+        document.getElementById('potionOblivionQty').value = "0";
+        document.getElementById('potionVoidHeart').checked = false;
+        document.getElementById('potionVoidHeartQty').value = "0";
+        document.getElementById('potionAuraCount').value = "1";
+        document.getElementById('potionVip').checked = true;
+        document.getElementById('potionVipPlus').checked = true;
+        document.getElementById('potionEventMulti').value = "1";
+        previousPotionState = {};
+        
+        document.querySelectorAll('#potionModeContent .event-potion').forEach(el => {
+            el.style.display = 'none';
+        });
+    }
+    
+    function resetSettingsUI() {
+        document.getElementById('settingsShowEventGear').checked = true;
+        document.getElementById('settingsShowEventPotions').checked = false;
+        document.getElementById('settingsShowBiomes').checked = true;
+        document.getElementById('settingsShowUndoRedo').checked = true;
+        document.getElementById('settingsCompactMode').checked = false;
+        document.getElementById('settingsLightTheme').checked = false;
+        document.getElementById('settingsDecimalPrecision').value = '4';
+        document.getElementById('settingsTimeFormat').value = 'auto';
+    }
+    
+    function fullReset() {
+        resetAfkOverworld();
+        resetAfkLimbo();
+        resetPotionMode();
+        resetSettingsUI();
+        
+        updateBiomeOptions();
+        setAfkSubMode('chance');
+        setLimboSubMode('chance');
+        setGlobalMode('afkOverworld');
+        applySettings();
+        closeResetModal();
+        
+        history.length = 0;
+        historyIndex = -1;
+        setTimeout(() => {
+            saveState();
+            updateUndoButtons();
+        }, 100);
+    }
+    
+    // ============================================================
+    // MODE SWITCHING
+    // ============================================================
+    function setGlobalMode(mode) {
+        currentGlobalMode = mode;
+        document.getElementById('settingsContent').style.display = 'none';
+        const buttons = ['btnAfkOverworld', 'btnAfkLimbo', 'btnPotion', 'btnSettings'];
+        buttons.forEach(id => document.getElementById(id).classList.remove('active', 'settings-active'));
+        document.getElementById('afkOverworldContent').style.display = (mode === 'afkOverworld') ? 'block' : 'none';
+        document.getElementById('afkLimboContent').style.display = (mode === 'afkLimbo') ? 'block' : 'none';
+        document.getElementById('potionModeContent').style.display = (mode === 'potion') ? 'block' : 'none';
+        const modeBtnId = {
+            'afkOverworld': 'btnAfkOverworld',
+            'afkLimbo': 'btnAfkLimbo',
+            'potion': 'btnPotion'
+        }[mode];
+        if (modeBtnId) document.getElementById(modeBtnId).classList.add('active');
+        const voidHeartRow = document.getElementById('voidHeartRow');
+        if (voidHeartRow) voidHeartRow.style.display = (mode === 'potion') ? 'block' : 'none';
+        calculate();
+        setTimeout(saveState, 100);
+    }
+    
+    function setAfkSubMode(mode) {
+        currentAfkSubMode = mode;
+        document.getElementById('afkChanceSection').style.display = (mode === 'chance') ? 'block' : 'none';
+        document.getElementById('afkTimeReqSection').style.display = (mode === 'time') ? 'block' : 'none';
+        document.getElementById('afkChance').classList.toggle('active', mode === 'chance');
+        document.getElementById('afkTimeReq').classList.toggle('active', mode === 'time');
+        calculateAfkOverworld();
+        setTimeout(saveState, 50);
+    }
+    
+    function setLimboSubMode(mode) {
+        currentLimboSubMode = mode;
+        document.getElementById('limboChanceSection').style.display = (mode === 'chance') ? 'block' : 'none';
+        document.getElementById('limboTimeReqSection').style.display = (mode === 'time') ? 'block' : 'none';
+        document.getElementById('limboChance').classList.toggle('active', mode === 'chance');
+        document.getElementById('limboTimeReq').classList.toggle('active', mode === 'time');
+        calculateAfkLimbo();
+        setTimeout(saveState, 50);
+    }
+    
+    function setTargetPreset(percent) { document.getElementById('targetP').value = percent; calculateAfkOverworld(); }
+    function setDaysPreset(days) { document.getElementById('days').value = days; calculateAfkOverworld(); }
+    function setLimboTargetPreset(percent) { document.getElementById('limboTargetP').value = percent; calculateAfkLimbo(); }
+    function setLimboDaysPreset(days) { document.getElementById('limboDays').value = days; calculateAfkLimbo(); }
+    
+    function confirmReset() { document.getElementById('resetModal').style.display = 'flex'; }
+    function closeResetModal() { document.getElementById('resetModal').style.display = 'none'; }
+    
+    // ============================================================
+    // VOID HEART HANDLING (with restore)
+    // ============================================================
+    function handleVoidHeart() {
+        const voidHeartChecked = document.getElementById('potionVoidHeart').checked;
+        const stackableIds = [
+            'potionHeavenly', 'potionGodlike', 'potionBound', 
+            'potionWishStar', 'potionCandycorn', 'potionPumpking',
+            'potionPopping', 'potionDune', 'potionRedMoonI', 
+            'potionRedMoonII', 'potionOblivion'
+        ];
+        
+        if (voidHeartChecked) {
+            // Save current state before clearing
+            previousPotionState = {};
+            stackableIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    previousPotionState[id] = el.checked;
+                }
+            });
+            // Uncheck all other potions
+            stackableIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.checked = false;
+            });
+        } else {
+            // Restore previous state
+            stackableIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el && previousPotionState[id] !== undefined) {
+                    el.checked = previousPotionState[id];
+                }
+            });
+            previousPotionState = {};
+        }
+        calculatePotionMode();
+        setTimeout(saveState, 50);
+    }
+    
+    // ============================================================
+    // BIOME DATA
+    // ============================================================
+    const biomeData = {
+        windy: { boost: 3 },
+        snowy: { boost: 3 },
+        rainy: { boost: 4 },
+        sandstorm: { boost: 4 },
+        hell: { boost: 6 },
+        starfall: { boost: 5 },
+        heaven: { boost: 5 },
+        corruption: { boost: 5 },
+        null: { boost: 1000 },
+        singularity: { boost: 5 },
+        day: { boost: 1 },
+        night: { boost: 10 },
+        cyberspace: { boost: 1, special: true },
+        dreamspace: { boost: 1, special: true },
+        glitch: { boost: 1, special: true },
+        none: { boost: 1 }
+    };
+    
     const baseNaturalUptime = {
         none: 0.390, day: 0.50, night: 0.50,
         windy: 0.0936, snowy: 0.0780, rainy: 0.0624,
@@ -1162,71 +1446,19 @@
         return Math.min(uptime, 0.999);
     }
     
-    function setGlobalMode(mode) {
-        currentGlobalMode = mode;
-        document.getElementById('settingsContent').style.display = 'none';
-        const buttons = ['btnAfkOverworld', 'btnAfkLimbo', 'btnPotion', 'btnSettings'];
-        buttons.forEach(id => document.getElementById(id).classList.remove('active', 'settings-active'));
-        document.getElementById('afkOverworldContent').style.display = (mode === 'afkOverworld') ? 'block' : 'none';
-        document.getElementById('afkLimboContent').style.display = (mode === 'afkLimbo') ? 'block' : 'none';
-        document.getElementById('potionModeContent').style.display = (mode === 'potion') ? 'block' : 'none';
-        const modeBtnId = {
-            'afkOverworld': 'btnAfkOverworld',
-            'afkLimbo': 'btnAfkLimbo',
-            'potion': 'btnPotion'
-        }[mode];
-        if (modeBtnId) document.getElementById(modeBtnId).classList.add('active');
-        const voidHeartRow = document.getElementById('voidHeartRow');
-        if (voidHeartRow) voidHeartRow.style.display = (mode === 'potion') ? 'block' : 'none';
-        calculate();
-        setTimeout(saveState, 100);
-    }
-    
-    function handleVoidHeart() {
-        const voidHeartChecked = document.getElementById('potionVoidHeart').checked;
-        if (voidHeartChecked) {
-            const otherPotions = [
-                'potionHeavenly', 'potionGodlike', 'potionBound', 
-                'potionWishStar', 'potionCandycorn', 'potionPumpking',
-                'potionPopping', 'potionDune', 'potionRedMoonI', 
-                'potionRedMoonII', 'potionOblivion'
-            ];
-            otherPotions.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.checked = false;
-            });
+    function getBiomeMultiplier(biomeId, isPerpetual, isNative, useSC, useBR, lanternBiome) {
+        const biome = biomeData[biomeId];
+        if (!biome) return 1;
+        if (biomeId === 'cyberspace' || biomeId === 'dreamspace' || biomeId === 'glitch') {
+            if (isPerpetual) return 1;
+            if (!useSC && !useBR) return 0;
         }
-        calculatePotionMode();
-        setTimeout(saveState, 50);
+        let uptime;
+        if (isPerpetual) uptime = 1;
+        else uptime = getEffectiveUptime(biomeId, useSC, useBR, lanternBiome);
+        if (isNative) return (uptime * biome.boost) + (1 - uptime);
+        else return uptime;
     }
-    
-    function confirmReset() { document.getElementById('resetModal').style.display = 'flex'; }
-    function closeResetModal() { document.getElementById('resetModal').style.display = 'none'; }
-    
-    function setAfkSubMode(mode) {
-        currentAfkSubMode = mode;
-        document.getElementById('afkChanceSection').style.display = (mode === 'chance') ? 'block' : 'none';
-        document.getElementById('afkTimeReqSection').style.display = (mode === 'time') ? 'block' : 'none';
-        document.getElementById('afkChance').classList.toggle('active', mode === 'chance');
-        document.getElementById('afkTimeReq').classList.toggle('active', mode === 'time');
-        calculateAfkOverworld();
-        setTimeout(saveState, 50);
-    }
-    
-    function setLimboSubMode(mode) {
-        currentLimboSubMode = mode;
-        document.getElementById('limboChanceSection').style.display = (mode === 'chance') ? 'block' : 'none';
-        document.getElementById('limboTimeReqSection').style.display = (mode === 'time') ? 'block' : 'none';
-        document.getElementById('limboChance').classList.toggle('active', mode === 'chance');
-        document.getElementById('limboTimeReq').classList.toggle('active', mode === 'time');
-        calculateAfkLimbo();
-        setTimeout(saveState, 50);
-    }
-    
-    function setTargetPreset(percent) { document.getElementById('targetP').value = percent; calculateAfkOverworld(); }
-    function setDaysPreset(days) { document.getElementById('days').value = days; calculateAfkOverworld(); }
-    function setLimboTargetPreset(percent) { document.getElementById('limboTargetP').value = percent; calculateAfkLimbo(); }
-    function setLimboDaysPreset(days) { document.getElementById('limboDays').value = days; calculateAfkLimbo(); }
     
     function updateBiomeOptions() {
         const biome = document.getElementById('biome').value;
@@ -1250,7 +1482,9 @@
         setTimeout(saveState, 50);
     }
     
-    // Helper functions
+    // ============================================================
+    // CALCULATION HELPERS
+    // ============================================================
     function logChoose(n, k) {
         if (k < 0 || k > n) return -Infinity;
         if (k === 0 || k === n) return 0;
@@ -1294,6 +1528,7 @@
     function setupRarityInput(inputId) {
         const input = document.getElementById(inputId);
         if (!input) return;
+        setupValidation(input);
         input.addEventListener('input', function() {
             let raw = this.value.replace(/,/g, '');
             let num = parseFloat(raw);
@@ -1301,8 +1536,6 @@
                 this.value = formatWithCommas(Math.floor(num));
             } else if (this.value === '' || this.value === '0') {
                 // Allow empty input
-            } else {
-                // Keep as is but don't format
             }
             calculate();
         });
@@ -1311,30 +1544,53 @@
         }
     }
     
-    function getBiomeMultiplier(biomeId, isPerpetual, isNative, useSC, useBR, lanternBiome) {
-        const biomeData = {
-            windy: { boost: 3 }, snowy: { boost: 3 }, rainy: { boost: 4 },
-            sandstorm: { boost: 4 }, hell: { boost: 6 }, starfall: { boost: 5 },
-            heaven: { boost: 5 }, corruption: { boost: 5 }, null: { boost: 1000 },
-            singularity: { boost: 5 }, day: { boost: 1 }, night: { boost: 10 },
-            cyberspace: { boost: 1, special: true },
-            dreamspace: { boost: 1, special: true },
-            glitch: { boost: 1, special: true },
-            none: { boost: 1 }
-        };
-        const biome = biomeData[biomeId];
-        if (!biome) return 1;
-        if (biomeId === 'cyberspace') {
-            if (isPerpetual) return 1;
-            if (!useSC && !useBR) return 0;
-        }
-        let uptime;
-        if (isPerpetual) uptime = 1;
-        else uptime = getEffectiveUptime(biomeId, useSC, useBR, lanternBiome);
-        if (isNative) return (uptime * biome.boost) + (1 - uptime);
-        else return uptime;
+    function setupValidation(input) {
+        const parent = input.parentElement;
+        const tooltip = document.createElement('div');
+        tooltip.className = 'validation-tooltip';
+        parent.appendChild(tooltip);
+        
+        input.addEventListener('input', function() { validateInput(this); });
+        input.addEventListener('blur', function() { validateInput(this); });
     }
     
+    function validateInput(input) {
+        const val = input.value.trim();
+        const parent = input.parentElement;
+        const tooltip = parent?.querySelector('.validation-tooltip');
+        
+        if (input.id === 'rarity' || input.id === 'limboRarity' || input.id === 'potionRarity') {
+            const num = parseInt(val.replace(/,/g, ''));
+            if (val && (isNaN(num) || num < 1)) {
+                input.classList.add('invalid');
+                if (tooltip) {
+                    tooltip.textContent = 'Please enter a number greater than 0';
+                    tooltip.classList.add('visible');
+                }
+                return false;
+            }
+        }
+        
+        if (input.id === 'luck' || input.id === 'resonance') {
+            const num = parseFloat(val);
+            if (val && isNaN(num)) {
+                input.classList.add('invalid');
+                if (tooltip) {
+                    tooltip.textContent = 'Please enter a valid number';
+                    tooltip.classList.add('visible');
+                }
+                return false;
+            }
+        }
+        
+        input.classList.remove('invalid');
+        if (tooltip) tooltip.classList.remove('visible');
+        return true;
+    }
+    
+    // ============================================================
+    // LUCK CALCULATIONS
+    // ============================================================
     function calculateOverworldLuck() {
         let resValue = parseFloat(document.getElementById('resonance').value);
         if (isNaN(resValue)) resValue = 0;
@@ -1484,6 +1740,42 @@
         else bar.classList.add('progress-high');
     }
     
+    function ensureResultBox(containerId, boxId) {
+        let box = document.getElementById(boxId);
+        if (!box) {
+            const container = document.getElementById(containerId);
+            if (container) {
+                box = document.createElement('div');
+                box.id = boxId;
+                box.className = 'result-box';
+                container.appendChild(box);
+            }
+        }
+        return box;
+    }
+    
+    function findRollsForTarget(p, targetProb, n, maxRolls = 1e12) {
+        if (n <= 1) { let rollsNeeded = Math.log(1 - targetProb) / Math.log(1 - p); return Math.ceil(rollsNeeded); }
+        let low = n, high = maxRolls, bestRolls = maxRolls;
+        for (let iter = 0; iter < 100; iter++) {
+            let mid = Math.floor((low + high) / 2);
+            let prob = probabilityAtLeastNRolls(p, mid, n);
+            if (prob >= targetProb) { bestRolls = mid; high = mid; }
+            else low = mid + 1;
+            if (low >= high) break;
+        }
+        return bestRolls;
+    }
+    
+    // ============================================================
+    // MAIN CALCULATE FUNCTIONS
+    // ============================================================
+    function calculate() {
+        if (currentGlobalMode === 'afkOverworld') calculateAfkOverworld();
+        else if (currentGlobalMode === 'afkLimbo') calculateAfkLimbo();
+        else if (currentGlobalMode === 'potion') calculatePotionMode();
+    }
+    
     function calculatePotionMode() {
         let rarityInput = document.getElementById('potionRarity');
         let rawRarity = rarityInput.value.replace(/,/g, '');
@@ -1607,26 +1899,12 @@
                     }
                 } else timeNeeded = rollsNeeded / rollsPerSecond;
                 const daysNeeded = timeNeeded / 86400;
-                let resultElement = document.getElementById('targetPResult');
-                if (!resultElement) {
-                    const resultBox = document.createElement('div');
-                    resultBox.id = 'targetPResult';
-                    resultBox.className = 'result-box';
-                    document.getElementById('afkTimeReqSection').appendChild(resultBox);
-                    resultElement = document.getElementById('targetPResult');
-                }
+                let resultElement = ensureResultBox('afkTimeReqSection', 'targetPResult');
                 const timeStr = daysNeeded > 1000 ? daysNeeded.toExponential(2) + " Days" : formatTime(daysNeeded);
                 resultElement.innerHTML = `<div class="result-val">${timeStr}</div><span class="stat-subtext">${Math.ceil(rollsNeeded).toLocaleString()} rolls needed</span>`;
                 currentResultText = `To get this aura, you need to AFK for approximately ${timeStr}. (${Math.ceil(rollsNeeded).toLocaleString()} rolls needed)`;
             } else {
-                let resultElement = document.getElementById('targetPResult');
-                if (!resultElement) {
-                    const resultBox = document.createElement('div');
-                    resultBox.id = 'targetPResult';
-                    resultBox.className = 'result-box';
-                    document.getElementById('afkTimeReqSection').appendChild(resultBox);
-                    resultElement = document.getElementById('targetPResult');
-                }
+                let resultElement = ensureResultBox('afkTimeReqSection', 'targetPResult');
                 resultElement.innerHTML = `<div class="result-val">${(targetVal <= 0) ? "Enter target %" : "Impossible"}</div><span class="stat-subtext">0 rolls needed</span>`;
                 currentResultText = (targetVal <= 0) ? 'Enter a target percentage above.' : 'This aura may be impossible to calculate with your current setup.';
             }
@@ -1647,14 +1925,7 @@
                 P = probabilityAtLeastNRolls(pPerRoll, totalRolls, auraCount);
             } else P = (totalRolls > 0 && pPerRoll > 0) ? 1 - Math.pow((1 - pPerRoll), totalRolls) : 0;
             const chancePercent = P * 100;
-            let resultElement = document.getElementById('daysResult');
-            if (!resultElement) {
-                const resultBox = document.createElement('div');
-                resultBox.id = 'daysResult';
-                resultBox.className = 'result-box';
-                document.getElementById('afkChanceSection').appendChild(resultBox);
-                resultElement = document.getElementById('daysResult');
-            }
+            let resultElement = ensureResultBox('afkChanceSection', 'daysResult');
             const pStr = (P >= 0.9999999) ? "99.99%+" : formatPercent(chancePercent);
             resultElement.innerHTML = `<div class="result-val">${pStr}</div><div class="progress-container"><div class="progress-bar" id="overworldProgressBar" style="width:${Math.min(chancePercent, 100)}%;"></div></div><span class="stat-subtext">${Math.floor(totalRolls).toLocaleString()} total rolls</span>`;
             updateProgressBar('overworldProgressBar', chancePercent);
@@ -1662,19 +1933,6 @@
         }
         const summaryDiv = document.getElementById('summaryText');
         summaryDiv.innerHTML = currentResultText;
-    }
-    
-    function findRollsForTarget(p, targetProb, n, maxRolls = 1e12) {
-        if (n <= 1) { let rollsNeeded = Math.log(1 - targetProb) / Math.log(1 - p); return Math.ceil(rollsNeeded); }
-        let low = n, high = maxRolls, bestRolls = maxRolls;
-        for (let iter = 0; iter < 100; iter++) {
-            let mid = Math.floor((low + high) / 2);
-            let prob = probabilityAtLeastNRolls(p, mid, n);
-            if (prob >= targetProb) { bestRolls = mid; high = mid; }
-            else low = mid + 1;
-            if (low >= high) break;
-        }
-        return bestRolls;
     }
     
     function calculateAfkLimbo() {
@@ -1715,26 +1973,12 @@
                 else rollsNeeded = Math.log(1 - targetVal) / Math.log(1 - pPerRoll);
                 timeNeeded = rollsNeeded / rollsPerSecond;
                 const daysNeeded = timeNeeded / 86400;
-                let resultElement = document.getElementById('limboTargetPResult');
-                if (!resultElement) {
-                    const resultBox = document.createElement('div');
-                    resultBox.id = 'limboTargetPResult';
-                    resultBox.className = 'result-box';
-                    document.getElementById('limboTimeReqSection').appendChild(resultBox);
-                    resultElement = document.getElementById('limboTargetPResult');
-                }
+                let resultElement = ensureResultBox('limboTimeReqSection', 'limboTargetPResult');
                 const timeStr = daysNeeded > 1000 ? daysNeeded.toExponential(2) + " Days" : formatTime(daysNeeded);
                 resultElement.innerHTML = `<div class="result-val">${timeStr}</div><span class="stat-subtext">${Math.ceil(rollsNeeded).toLocaleString()} rolls needed</span>`;
                 currentResultText = `To get this aura in Limbo, you need to AFK for approximately ${timeStr}. (${Math.ceil(rollsNeeded).toLocaleString()} rolls needed)`;
             } else {
-                let resultElement = document.getElementById('limboTargetPResult');
-                if (!resultElement) {
-                    const resultBox = document.createElement('div');
-                    resultBox.id = 'limboTargetPResult';
-                    resultBox.className = 'result-box';
-                    document.getElementById('limboTimeReqSection').appendChild(resultBox);
-                    resultElement = document.getElementById('limboTargetPResult');
-                }
+                let resultElement = ensureResultBox('limboTimeReqSection', 'limboTargetPResult');
                 resultElement.innerHTML = `<div class="result-val">${(targetVal <= 0) ? "Enter target %" : "Impossible"}</div><span class="stat-subtext">0 rolls needed</span>`;
                 currentResultText = (targetVal <= 0) ? 'Enter a target percentage above.' : 'This aura may be impossible to calculate with your current Limbo setup.';
             }
@@ -1747,14 +1991,7 @@
                 P = probabilityAtLeastNRolls(pPerRoll, totalRolls, auraCount);
             } else P = (totalRolls > 0 && pPerRoll > 0) ? 1 - Math.pow((1 - pPerRoll), totalRolls) : 0;
             const chancePercent = P * 100;
-            let resultElement = document.getElementById('limboDaysResult');
-            if (!resultElement) {
-                const resultBox = document.createElement('div');
-                resultBox.id = 'limboDaysResult';
-                resultBox.className = 'result-box';
-                document.getElementById('limboChanceSection').appendChild(resultBox);
-                resultElement = document.getElementById('limboDaysResult');
-            }
+            let resultElement = ensureResultBox('limboChanceSection', 'limboDaysResult');
             const pStr = (P >= 0.9999999) ? "99.99%+" : formatPercent(chancePercent);
             resultElement.innerHTML = `<div class="result-val">${pStr}</div><div class="progress-container"><div class="progress-bar" id="limboProgressBar" style="width:${Math.min(chancePercent, 100)}%;"></div></div><span class="stat-subtext">${Math.floor(totalRolls).toLocaleString()} total rolls</span>`;
             updateProgressBar('limboProgressBar', chancePercent);
@@ -1764,109 +2001,9 @@
         summaryDiv.innerHTML = currentResultText;
     }
     
-    function fullReset() {
-        // Reset AFK Overworld
-        document.getElementById('leftGlove').value = "thing";
-        document.getElementById('rightGlove').value = "200,22.0";
-        document.getElementById('bankLevel').value = "0";
-        document.getElementById('eventMulti').value = "1";
-        document.getElementById('infiniteSkips').checked = false;
-        document.getElementById('rollSkips').disabled = false;
-        document.getElementById('rollSkips').value = "0";
-        document.getElementById('resonance').value = "0";
-        document.getElementById('luck').value = "0";
-        document.getElementById('quickRoll').checked = true;
-        document.getElementById('vip').checked = true;
-        document.getElementById('vipPlus').checked = true;
-        document.getElementById('auraCount').value = "1";
-        document.getElementById('biome').value = "none";
-        document.getElementById('perpetualBiome').checked = false;
-        document.getElementById('useStrangeController').checked = false;
-        document.getElementById('useBiomeRandomizer').checked = false;
-        document.getElementById('lantern').value = "none";
-        document.querySelector('input[name="biomeType"][value="native"]').checked = true;
-        document.getElementById('targetP').value = "";
-        document.getElementById('days').value = "";
-        document.getElementById('rarity').value = "";
-        
-        // Reset AFK Limbo
-        document.getElementById('limboLeftGlove').value = "thing,0,0";
-        document.getElementById('limboRightGlove').value = "200,22.0";
-        document.getElementById('limboEventMulti').value = "1";
-        document.getElementById('limboVip').checked = true;
-        document.getElementById('limboVipPlus').checked = true;
-        document.getElementById('limboQuickRoll').checked = true;
-        document.getElementById('davesHope').value = "1";
-        document.getElementById('forbidden1').checked = false;
-        document.getElementById('forbidden2').checked = false;
-        document.getElementById('forbidden3').checked = false;
-        document.getElementById('limboAuraCount').value = "1";
-        document.getElementById('limboTargetP').value = "";
-        document.getElementById('limboDays').value = "";
-        document.getElementById('limboRarity').value = "";
-        
-        // Reset Potion Mode
-        document.getElementById('potionRarity').value = "";
-        document.getElementById('potionStacked').checked = false;
-        document.getElementById('potionHeavenly').checked = false;
-        document.getElementById('potionHeavenlyQty').value = "0";
-        document.getElementById('potionGodlike').checked = false;
-        document.getElementById('potionGodlikeQty').value = "0";
-        document.getElementById('potionBound').checked = false;
-        document.getElementById('potionBoundQty').value = "0";
-        document.getElementById('potionWishStar').checked = false;
-        document.getElementById('potionWishStarQty').value = "0";
-        document.getElementById('potionCandycorn').checked = false;
-        document.getElementById('potionCandycornQty').value = "0";
-        document.getElementById('potionPumpking').checked = false;
-        document.getElementById('potionPumpkingQty').value = "0";
-        document.getElementById('potionPopping').checked = false;
-        document.getElementById('potionPoppingQty').value = "0";
-        document.getElementById('potionDune').checked = false;
-        document.getElementById('potionDuneQty').value = "0";
-        document.getElementById('potionRedMoonI').checked = false;
-        document.getElementById('potionRedMoonIQty').value = "0";
-        document.getElementById('potionRedMoonII').checked = false;
-        document.getElementById('potionRedMoonIIQty').value = "0";
-        document.getElementById('potionOblivion').checked = false;
-        document.getElementById('potionOblivionQty').value = "0";
-        document.getElementById('potionVoidHeart').checked = false;
-        document.getElementById('potionVoidHeartQty').value = "0";
-        document.getElementById('potionAuraCount').value = "1";
-        document.getElementById('potionVip').checked = true;
-        document.getElementById('potionVipPlus').checked = true;
-        document.getElementById('potionEventMulti').value = "1";
-        
-        document.querySelectorAll('#potionModeContent .event-potion').forEach(el => {
-            el.style.display = 'none';
-        });
-        
-        // Settings
-        document.getElementById('settingsShowEventGear').checked = true;
-        document.getElementById('settingsShowEventPotions').checked = false;
-        document.getElementById('settingsShowBiomes').checked = true;
-        document.getElementById('settingsShowUndoRedo').checked = true;
-        document.getElementById('settingsCompactMode').checked = false;
-        document.getElementById('settingsLightTheme').checked = false;
-        document.getElementById('settingsDecimalPrecision').value = '4';
-        document.getElementById('settingsTimeFormat').value = 'auto';
-        
-        updateBiomeOptions();
-        setAfkSubMode('chance');
-        setLimboSubMode('chance');
-        setGlobalMode('afkOverworld');
-        applySettings();
-        closeResetModal();
-        
-        history.length = 0;
-        historyIndex = -1;
-        setTimeout(() => {
-            saveState();
-            updateUndoButtons();
-        }, 100);
-    }
-    
-    // Event listeners
+    // ============================================================
+    // EVENT LISTENERS
+    // ============================================================
     document.getElementById('infiniteSkips')?.addEventListener('change', function() {
         const skipsInput = document.getElementById('rollSkips');
         if (this.checked) { skipsInput.disabled = true; skipsInput.value = 0; }
@@ -1882,10 +2019,24 @@
         calculateAfkOverworld();
     });
     
+    document.getElementById('leftGlove')?.addEventListener('change', function() {
+        const v = this.value;
+        document.getElementById('rainyContainer').style.display = (v === "tide" || v === "blessed") ? "block" : "none";
+    });
+    
+    // Setup validation for all inputs
+    document.querySelectorAll('input').forEach(input => {
+        if (input.type === 'text' || input.type === 'number') {
+            setupValidation(input);
+        }
+    });
+    
+    // Setup rarity inputs with comma formatting
     setupRarityInput('rarity');
     setupRarityInput('limboRarity');
     setupRarityInput('potionRarity');
     
+    // Initialize
     window.addEventListener('load', function() {
         fullReset();
         applySettings();
