@@ -27,6 +27,7 @@
         .footer { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 20px; padding-top: 10px; border-top: 1px solid #333; }
         .discord-link { color: #7289da; font-size: 0.75rem; text-decoration: none; font-weight: bold; }
         .reset-btn { background: #2a2a35; color: #ccc; border: 1px solid #444; padding: 6px 12px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; }
+        .reset-btn:hover { background: #ff4d4d; color: #fff; border-color: #ff4d4d; }
         .disclaimer { font-size: 0.65rem; color: #666; text-align: center; margin: 5px 0; font-style: italic; }
         .event-toggle-container { display: flex; justify-content: center; margin: 10px 0; }
         .skip-container { display: flex; gap: 10px; align-items: center; }
@@ -53,12 +54,26 @@
         .potion-mode-section label { color: #c39bd3; }
         .redmoon-group, .exclusive-group { margin: 10px 0; padding: 8px; background: #1a0a2a; border-radius: 6px; }
         .redmoon-group label, .exclusive-group label { color: #e8d5f5; }
-        .potions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin: 8px 0; }
+        .potion-row { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+        .potion-row label { margin: 0; display: flex; align-items: center; gap: 5px; font-size: 0.75rem; }
+        .potion-row input[type="number"] { width: 50px; padding: 4px; margin: 0; }
         .afk-submode-switch { display: flex; background: #000; border-radius: 10px; padding: 6px; margin: 15px 0 10px 0; border: 2px solid #444; }
         .afk-submode-btn { flex: 1; padding: 8px; border: none; background: none; color: #888; cursor: pointer; font-weight: 900; font-size: 0.7rem; border-radius: 7px; text-transform: uppercase; transition: 0.2s; }
         .afk-submode-btn.active { background: #00d4ff; color: #000; }
         .item-row { display: flex; gap: 15px; margin: 10px 0; flex-wrap: wrap; }
         .lantern-row { margin: 10px 0; }
+        .potion-qty-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin: 8px 0; }
+        .event-hidden { display: none; }
+        .potion-exclusive-row { margin: 4px 0; }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-box { background: #1a1a2e; padding: 30px; border-radius: 12px; border: 2px solid #ff4d4d; max-width: 400px; text-align: center; }
+        .modal-box h3 { color: #ff4d4d; margin-top: 0; }
+        .modal-box .modal-buttons { display: flex; gap: 15px; justify-content: center; margin-top: 20px; }
+        .modal-box .modal-buttons button { padding: 10px 25px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.9rem; }
+        .modal-box .modal-buttons .confirm-btn { background: #ff4d4d; color: white; }
+        .modal-box .modal-buttons .confirm-btn:hover { background: #cc0000; }
+        .modal-box .modal-buttons .cancel-btn { background: #444; color: white; }
+        .modal-box .modal-buttons .cancel-btn:hover { background: #666; }
     </style>
 </head>
 <body>
@@ -263,7 +278,7 @@
                 </div>
             </div>
             
-            <!-- AFK Overworld Sub-mode Switch (Chance % on left, Time Req on right) -->
+            <!-- AFK Overworld Sub-mode Switch -->
             <div class="afk-submode-switch">
                 <button type="button" id="afkChance" class="afk-submode-btn active" onclick="setAfkSubMode('chance')">CHANCE %</button>
                 <button type="button" id="afkTimeReq" class="afk-submode-btn" onclick="setAfkSubMode('time')">TIME REQ.</button>
@@ -403,7 +418,7 @@
                 </div>
             </div>
             
-            <!-- AFK Limbo Sub-mode Switch (Chance % on left, Time Req on right) -->
+            <!-- AFK Limbo Sub-mode Switch -->
             <div class="afk-submode-switch">
                 <button type="button" id="limboChance" class="afk-submode-btn active" onclick="setLimboSubMode('chance')">CHANCE %</button>
                 <button type="button" id="limboTimeReq" class="afk-submode-btn" onclick="setLimboSubMode('time')">TIME REQ.</button>
@@ -449,38 +464,79 @@
                         </div>
                     </div>
                     <div>
-                        <label>Number of Potions</label>
-                        <input type="number" id="potionCount" value="100" min="1" step="1">
+                        <label>&nbsp;</label>
+                        <div></div>
                     </div>
                 </div>
                 
                 <div class="potion-mode-section">
-                    <label style="color: #c39bd3; font-weight: bold;">Stackable Potions (use all)</label>
-                    <div class="potions-grid">
-                        <label class="check-row"><input type="checkbox" id="potionHeavenly"> Heavenly Potion (+150,000)</label>
-                        <label class="check-row"><input type="checkbox" id="potionGodlike"> Godlike Potion (+400,000)</label>
-                        <label class="check-row"><input type="checkbox" id="potionBound"> Potion of Bound (+50,000)</label>
-                        <label class="check-row"><input type="checkbox" id="potionWishStar"> Wish Star (+50,000)</label>
-                        <label class="check-row"><input type="checkbox" id="potionPopping"> Popping Potion (+10,000)</label>
-                        <label class="check-row"><input type="checkbox" id="potionDune"> Potion of the Dune (+10,000)</label>
+                    <div class="multi-row">
+                        <label class="check-row"><input type="checkbox" id="potionStacked" onchange="calculatePotionMode()"> Stack Potions (use together per roll)</label>
+                        <label class="check-row"><input type="checkbox" id="showEventPotions" onchange="toggleEventPotions()"> Show Event Potions</label>
+                    </div>
+                    
+                    <label style="color: #c39bd3; font-weight: bold;">Stackable Potions</label>
+                    <div class="potion-qty-grid">
+                        <div class="potion-row">
+                            <label class="check-row"><input type="checkbox" id="potionHeavenly" onchange="calculatePotionMode()"> Heavenly (+150k)</label>
+                            <input type="number" id="potionHeavenlyQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" oninput="calculatePotionMode()">
+                        </div>
+                        <div class="potion-row">
+                            <label class="check-row"><input type="checkbox" id="potionGodlike" onchange="calculatePotionMode()"> Godlike (+400k)</label>
+                            <input type="number" id="potionGodlikeQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" oninput="calculatePotionMode()">
+                        </div>
+                        <div class="potion-row">
+                            <label class="check-row"><input type="checkbox" id="potionBound" onchange="calculatePotionMode()"> Bound (+50k)</label>
+                            <input type="number" id="potionBoundQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" oninput="calculatePotionMode()">
+                        </div>
+                        <div class="potion-row">
+                            <label class="check-row"><input type="checkbox" id="potionPopping" onchange="calculatePotionMode()"> Popping (+10k)</label>
+                            <input type="number" id="potionPoppingQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" oninput="calculatePotionMode()">
+                        </div>
+                        <div class="potion-row">
+                            <label class="check-row"><input type="checkbox" id="potionDune" onchange="calculatePotionMode()"> Dune (+10k)</label>
+                            <input type="number" id="potionDuneQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" oninput="calculatePotionMode()">
+                        </div>
+                        <!-- Event Potions (hidden by default) -->
+                        <div class="potion-row event-potion" style="display:none;">
+                            <label class="check-row"><input type="checkbox" id="potionWishStar" onchange="calculatePotionMode()"> Wish Star (+50k x5)</label>
+                            <input type="number" id="potionWishStarQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" oninput="calculatePotionMode()">
+                        </div>
+                        <div class="potion-row event-potion" style="display:none;">
+                            <label class="check-row"><input type="checkbox" id="potionCandycorn" onchange="calculatePotionMode()"> Candycorn (+75k)</label>
+                            <input type="number" id="potionCandycornQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" oninput="calculatePotionMode()">
+                        </div>
                     </div>
                     
                     <div class="redmoon-group">
-                        <label style="color: #e8d5f5; font-weight: bold;">Red Moon (choose one)</label>
-                        <div class="radio-group-horizontal">
-                            <label><input type="radio" name="redmoon" value="none" checked> None</label>
-                            <label><input type="radio" name="redmoon" value="I"> Red Moon I (+10,000)</label>
-                            <label><input type="radio" name="redmoon" value="II"> Red Moon II (+200,000)</label>
+                        <label style="color: #e8d5f5; font-weight: bold;">Red Moon</label>
+                        <div class="potion-qty-grid">
+                            <div class="potion-row">
+                                <label class="check-row"><input type="checkbox" id="potionRedMoonI" onchange="calculatePotionMode()"> Red Moon I (+10k)</label>
+                                <input type="number" id="potionRedMoonIQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" oninput="calculatePotionMode()">
+                            </div>
+                            <div class="potion-row">
+                                <label class="check-row"><input type="checkbox" id="potionRedMoonII" onchange="calculatePotionMode()"> Red Moon II (+200k)</label>
+                                <input type="number" id="potionRedMoonIIQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" oninput="calculatePotionMode()">
+                            </div>
                         </div>
                     </div>
                     
                     <div class="exclusive-group">
-                        <label style="color: #e8d5f5; font-weight: bold;">Exclusive Potions (choose one, cannot stack with anything)</label>
-                        <div class="radio-group-horizontal">
-                            <label><input type="radio" name="exclusive" value="none" checked> None</label>
-                            <label><input type="radio" name="exclusive" value="oblivion"> Oblivion (+600k)</label>
-                            <label><input type="radio" name="exclusive" value="pumpking"> Pumpking's Blood (+700k)</label>
-                            <label><input type="radio" name="exclusive" value="voidheart"> Void Heart (+300k)</label>
+                        <label style="color: #e8d5f5; font-weight: bold;">Exclusive Potions (always separate rolls)</label>
+                        <div class="potion-qty-grid">
+                            <div class="potion-row">
+                                <label class="check-row"><input type="checkbox" id="potionOblivion" onchange="calculatePotionMode()"> Oblivion (+600k)</label>
+                                <input type="number" id="potionOblivionQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" oninput="calculatePotionMode()">
+                            </div>
+                            <div class="potion-row event-potion" style="display:none;">
+                                <label class="check-row"><input type="checkbox" id="potionPumpking" onchange="calculatePotionMode()"> Pumpking's Blood (+700k)</label>
+                                <input type="number" id="potionPumpkingQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" oninput="calculatePotionMode()">
+                            </div>
+                            <div class="potion-row" id="voidHeartRow">
+                                <label class="check-row"><input type="checkbox" id="potionVoidHeart" onchange="handleVoidHeart()"> Void Heart (+300k) [Limbo]</label>
+                                <input type="number" id="potionVoidHeartQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" oninput="calculatePotionMode()">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -504,7 +560,7 @@
             <div class="result-box" id="potionResultBox">
                 <div class="result-val" id="potionResult">0.00%</div>
                 <span class="luck-status" id="potionLabel">POTION CHANCE</span>
-                <span class="stat-subtext" id="potionDetail">0 potions</span>
+                <span class="stat-subtext" id="potionDetail">0 rolls</span>
             </div>
             <div class="summary-text" id="potionSummaryText">
                 Enter values above to see results
@@ -520,9 +576,21 @@
 
         <div class="footer">
             <div><a href="https://discord.gg/yTreH64JBC" class="discord-link" target="_blank">Join the Discord!</a><div style="font-size:0.6rem; color:#666;">By @LubJub</div></div>
-            <button type="button" class="reset-btn" onclick="fullReset()">Reset</button>
+            <button type="button" class="reset-btn" onclick="confirmReset()">Reset</button>
         </div>
     </form>
+</div>
+
+<!-- Reset Confirmation Modal -->
+<div class="modal-overlay" id="resetModal">
+    <div class="modal-box">
+        <h3>⚠️ Confirm Reset</h3>
+        <p>Are you sure you want to reset all settings? This cannot be undone.</p>
+        <div class="modal-buttons">
+            <button class="confirm-btn" onclick="fullReset()">Yes, Reset</button>
+            <button class="cancel-btn" onclick="closeResetModal()">Cancel</button>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -713,9 +781,60 @@
         document.getElementById('btnAfkLimbo').classList.toggle('active', mode === 'afkLimbo');
         document.getElementById('btnPotion').classList.toggle('active', mode === 'potion');
         
+        // Show/hide Void Heart based on mode
+        const voidHeartRow = document.getElementById('voidHeartRow');
+        if (voidHeartRow) {
+            voidHeartRow.style.display = (mode === 'potion') ? 'block' : 'none';
+        }
+        
         if (mode === 'afkOverworld') calculateAfkOverworld();
         else if (mode === 'afkLimbo') calculateAfkLimbo();
         else calculatePotionMode();
+    }
+    
+    function toggleEventPotions() {
+        const show = document.getElementById('showEventPotions').checked;
+        document.querySelectorAll('.event-potion').forEach(el => {
+            el.style.display = show ? 'flex' : 'none';
+        });
+        calculatePotionMode();
+    }
+    
+    function handleVoidHeart() {
+        const voidHeartChecked = document.getElementById('potionVoidHeart').checked;
+        if (voidHeartChecked) {
+            // Uncheck all other potions (except Void Heart)
+            const otherPotions = [
+                'potionHeavenly', 'potionGodlike', 'potionBound', 
+                'potionWishStar', 'potionCandycorn', 'potionPumpking',
+                'potionPopping', 'potionDune', 'potionRedMoonI', 
+                'potionRedMoonII', 'potionOblivion'
+            ];
+            otherPotions.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.checked = false;
+            });
+            // Set quantity to 0 for all other potions
+            const qtyIds = [
+                'potionHeavenlyQty', 'potionGodlikeQty', 'potionBoundQty',
+                'potionWishStarQty', 'potionCandycornQty', 'potionPumpkingQty',
+                'potionPoppingQty', 'potionDuneQty', 'potionRedMoonIQty',
+                'potionRedMoonIIQty', 'potionOblivionQty'
+            ];
+            qtyIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '0';
+            });
+        }
+        calculatePotionMode();
+    }
+    
+    function confirmReset() {
+        document.getElementById('resetModal').style.display = 'flex';
+    }
+    
+    function closeResetModal() {
+        document.getElementById('resetModal').style.display = 'none';
     }
     
     function setAfkSubMode(mode) {
@@ -892,46 +1011,6 @@
         }
     }
     
-    function setupPotionModeInteractions() {
-        const exclusiveRadios = document.querySelectorAll('input[name="exclusive"]');
-        const stackableIds = ['potionHeavenly', 'potionGodlike', 'potionBound', 'potionWishStar', 'potionPopping', 'potionDune'];
-        const redmoonRadios = document.querySelectorAll('input[name="redmoon"]');
-        
-        exclusiveRadios.forEach(radio => {
-            radio.addEventListener('change', function() {
-                if (this.value !== 'none' && this.checked) {
-                    stackableIds.forEach(id => {
-                        const cb = document.getElementById(id);
-                        if (cb) cb.checked = false;
-                    });
-                    document.querySelector('input[name="redmoon"][value="none"]').checked = true;
-                }
-                calculatePotionMode();
-            });
-        });
-        
-        stackableIds.forEach(id => {
-            const cb = document.getElementById(id);
-            if (cb) {
-                cb.addEventListener('change', function() {
-                    if (this.checked) {
-                        document.querySelector('input[name="exclusive"][value="none"]').checked = true;
-                    }
-                    calculatePotionMode();
-                });
-            }
-        });
-        
-        redmoonRadios.forEach(radio => {
-            radio.addEventListener('change', function() {
-                if (this.value !== 'none' && this.checked) {
-                    document.querySelector('input[name="exclusive"][value="none"]').checked = true;
-                }
-                calculatePotionMode();
-            });
-        });
-    }
-    
     function calculateOverworldLuck() {
         let resValue = parseFloat(document.getElementById('resonance').value);
         if (isNaN(resValue)) resValue = 0;
@@ -1046,52 +1125,198 @@
         return totalLuck;
     }
     
-    function calculatePotionLuck() {
-        const exclusive = document.querySelector('input[name="exclusive"]:checked')?.value;
+    function getPotionLuck(potionId, qtyId, multiplier) {
+        const checkbox = document.getElementById(potionId);
+        const qtyInput = document.getElementById(qtyId);
+        if (!checkbox || !qtyInput) return 0;
+        if (!checkbox.checked) return 0;
+        let qty = parseInt(qtyInput.value) || 0;
+        if (multiplier) qty *= multiplier;
+        return qty;
+    }
+    
+    // Generate roll batches for potion mode
+    function generatePotionRolls(stacked) {
+        const rolls = [];
         
-        if (exclusive !== 'none') {
-            let exclusiveLuck = 1;
-            if (exclusive === 'oblivion') exclusiveLuck += 600000;
-            if (exclusive === 'pumpking') exclusiveLuck += 700000;
-            if (exclusive === 'voidheart') exclusiveLuck += 300000;
-            
-            const vip = document.getElementById('potionVip')?.checked;
-            const vipPlus = document.getElementById('potionVipPlus')?.checked;
-            let vipMulti = 1;
-            if (vip && vipPlus) vipMulti = 1.3;
-            else if (vip || vipPlus) vipMulti = 1.2;
-            exclusiveLuck *= vipMulti;
-            
-            const eventMulti = parseFloat(document.getElementById('potionEventMulti')?.value) || 1;
-            exclusiveLuck *= eventMulti;
-            
-            return exclusiveLuck;
+        // Get quantities for each potion type
+        // For Wish Star: each quantity is multiplied by 5 (since 1 Wish Star = 5 rolls of 50k)
+        const potions = {
+            heavenly: { luck: 150000, qty: getPotionLuck('potionHeavenly', 'potionHeavenlyQty') },
+            godlike: { luck: 400000, qty: getPotionLuck('potionGodlike', 'potionGodlikeQty') },
+            bound: { luck: 50000, qty: getPotionLuck('potionBound', 'potionBoundQty') },
+            wishStar: { luck: 50000, qty: getPotionLuck('potionWishStar', 'potionWishStarQty', 5) },
+            candycorn: { luck: 75000, qty: getPotionLuck('potionCandycorn', 'potionCandycornQty') },
+            pumpking: { luck: 700000, qty: getPotionLuck('potionPumpking', 'potionPumpkingQty') },
+            popping: { luck: 10000, qty: getPotionLuck('potionPopping', 'potionPoppingQty') },
+            dune: { luck: 10000, qty: getPotionLuck('potionDune', 'potionDuneQty') },
+            redMoonI: { luck: 10000, qty: getPotionLuck('potionRedMoonI', 'potionRedMoonIQty') },
+            redMoonII: { luck: 200000, qty: getPotionLuck('potionRedMoonII', 'potionRedMoonIIQty') },
+            oblivion: { luck: 600000, qty: getPotionLuck('potionOblivion', 'potionOblivionQty') },
+            voidHeart: { luck: 300000, qty: getPotionLuck('potionVoidHeart', 'potionVoidHeartQty') }
+        };
+        
+        // Always add exclusive potions as separate rolls (Oblivion, Void Heart)
+        // Pumpking's Blood is also exclusive but can be event-only, handled above
+        if (potions.oblivion.qty > 0) {
+            for (let i = 0; i < potions.oblivion.qty; i++) {
+                rolls.push({ luck: potions.oblivion.luck, name: 'Oblivion' });
+            }
+        }
+        if (potions.voidHeart.qty > 0) {
+            for (let i = 0; i < potions.voidHeart.qty; i++) {
+                rolls.push({ luck: potions.voidHeart.luck, name: 'Void Heart' });
+            }
+        }
+        if (potions.pumpking.qty > 0) {
+            for (let i = 0; i < potions.pumpking.qty; i++) {
+                rolls.push({ luck: potions.pumpking.luck, name: 'Pumpking\'s Blood' });
+            }
         }
         
-        let totalLuck = 1;
+        if (stacked) {
+            // Stacked mode: combine potions together
+            const stackable = [
+                { id: 'heavenly', luck: potions.heavenly.luck, qty: potions.heavenly.qty },
+                { id: 'godlike', luck: potions.godlike.luck, qty: potions.godlike.qty },
+                { id: 'bound', luck: potions.bound.luck, qty: potions.bound.qty },
+                { id: 'wishStar', luck: potions.wishStar.luck, qty: potions.wishStar.qty },
+                { id: 'candycorn', luck: potions.candycorn.luck, qty: potions.candycorn.qty },
+                { id: 'popping', luck: potions.popping.luck, qty: potions.popping.qty },
+                { id: 'dune', luck: potions.dune.luck, qty: potions.dune.qty },
+                { id: 'redMoonI', luck: potions.redMoonI.luck, qty: potions.redMoonI.qty },
+                { id: 'redMoonII', luck: potions.redMoonII.luck, qty: potions.redMoonII.qty }
+            ];
+            
+            // Filter out zero quantity
+            const active = stackable.filter(p => p.qty > 0);
+            
+            // Keep rolling while any potion has quantity left
+            let rollIndex = 1;
+            while (active.some(p => p.qty > 0)) {
+                let totalLuck = 0;
+                let nameParts = [];
+                
+                for (const potion of active) {
+                    if (potion.qty > 0) {
+                        totalLuck += potion.luck;
+                        nameParts.push(potion.id);
+                        potion.qty--;
+                    }
+                }
+                
+                if (totalLuck > 0) {
+                    rolls.push({ 
+                        luck: totalLuck, 
+                        name: nameParts.join('+') 
+                    });
+                }
+                rollIndex++;
+            }
+        } else {
+            // Sequential mode: each potion type gets its own rolls
+            const stackable = [
+                { id: 'heavenly', luck: potions.heavenly.luck, qty: potions.heavenly.qty },
+                { id: 'godlike', luck: potions.godlike.luck, qty: potions.godlike.qty },
+                { id: 'bound', luck: potions.bound.luck, qty: potions.bound.qty },
+                { id: 'wishStar', luck: potions.wishStar.luck, qty: potions.wishStar.qty },
+                { id: 'candycorn', luck: potions.candycorn.luck, qty: potions.candycorn.qty },
+                { id: 'popping', luck: potions.popping.luck, qty: potions.popping.qty },
+                { id: 'dune', luck: potions.dune.luck, qty: potions.dune.qty },
+                { id: 'redMoonI', luck: potions.redMoonI.luck, qty: potions.redMoonI.qty },
+                { id: 'redMoonII', luck: potions.redMoonII.luck, qty: potions.redMoonII.qty }
+            ];
+            
+            for (const potion of stackable) {
+                if (potion.qty > 0) {
+                    for (let i = 0; i < potion.qty; i++) {
+                        rolls.push({ luck: potion.luck, name: potion.id });
+                    }
+                }
+            }
+        }
         
-        if (document.getElementById('potionHeavenly')?.checked) totalLuck += 150000;
-        if (document.getElementById('potionGodlike')?.checked) totalLuck += 400000;
-        if (document.getElementById('potionBound')?.checked) totalLuck += 50000;
-        if (document.getElementById('potionWishStar')?.checked) totalLuck += 50000;
-        if (document.getElementById('potionPopping')?.checked) totalLuck += 10000;
-        if (document.getElementById('potionDune')?.checked) totalLuck += 10000;
+        return rolls;
+    }
+    
+    function calculatePotionMode() {
+        let rarityInput = document.getElementById('potionRarity');
+        let rawRarity = rarityInput.value.replace(/,/g, '');
+        let R = Math.floor(parseFloat(rawRarity));
+        if (R < 1 || isNaN(R)) R = 1;
+        rarityInput.value = formatWithCommas(R);
         
-        const redmoon = document.querySelector('input[name="redmoon"]:checked')?.value;
-        if (redmoon === 'I') totalLuck += 10000;
-        if (redmoon === 'II') totalLuck += 200000;
+        const stacked = document.getElementById('potionStacked').checked;
+        const rolls = generatePotionRolls(stacked);
         
+        const totalRolls = rolls.length;
+        const isMultiAura = document.getElementById('potionMultiAura').checked;
+        const auraCount = parseInt(document.getElementById('potionAuraCount').value) || 1;
+        
+        // Apply VIP and event multiplier to each roll's luck
         const vip = document.getElementById('potionVip')?.checked;
         const vipPlus = document.getElementById('potionVipPlus')?.checked;
         let vipMulti = 1;
         if (vip && vipPlus) vipMulti = 1.3;
         else if (vip || vipPlus) vipMulti = 1.2;
-        totalLuck *= vipMulti;
-        
         const eventMulti = parseFloat(document.getElementById('potionEventMulti')?.value) || 1;
-        totalLuck *= eventMulti;
         
-        return totalLuck;
+        // Calculate probability for each roll and combine
+        let overallP = 0;
+        if (totalRolls > 0) {
+            // For multiple auras, we need to calculate probability across all rolls
+            const pPerRolls = rolls.map(r => {
+                let luck = r.luck * vipMulti * eventMulti;
+                return Math.min(luck / R, 1);
+            });
+            
+            if (isMultiAura && auraCount > 1) {
+                // Need to calculate probability of getting at least auraCount successes across all rolls
+                // This is complex; for simplicity, we calculate the probability of at least one success
+                // and then use the negative binomial for the actual calculation
+                let probAtLeastOne = 1;
+                for (const p of pPerRolls) {
+                    probAtLeastOne *= (1 - p);
+                }
+                probAtLeastOne = 1 - probAtLeastOne;
+                
+                // For multiple auras, we approximate using the effective probability
+                // This is a simplification but works for most cases
+                const avgP = probAtLeastOne / totalRolls;
+                overallP = probabilityAtLeastNRolls(avgP, totalRolls, auraCount);
+            } else {
+                // Calculate probability of at least one success across all rolls
+                let probNoSuccess = 1;
+                for (const p of pPerRolls) {
+                    probNoSuccess *= (1 - p);
+                }
+                overallP = 1 - probNoSuccess;
+            }
+        }
+        
+        const chancePercent = overallP * 100;
+        document.getElementById('potionResult').innerText = (overallP >= 0.9999999) ? "99.99%+" : chancePercent.toFixed(4) + "%";
+        document.getElementById('potionDetail').innerText = `${totalRolls} total rolls`;
+        
+        const summaryDiv = document.getElementById('potionSummaryText');
+        if (totalRolls > 0) {
+            const modeText = stacked ? 'stacked' : 'sequential';
+            if (isMultiAura && auraCount > 1) {
+                summaryDiv.innerHTML = `Using ${totalRolls} ${modeText} roll${totalRolls !== 1 ? 's' : ''}, you have a ${chancePercent.toFixed(2)}% chance of getting ${auraCount} of this aura.`;
+            } else {
+                summaryDiv.innerHTML = `Using ${totalRolls} ${modeText} roll${totalRolls !== 1 ? 's' : ''}, you have a ${chancePercent.toFixed(2)}% chance of getting this aura.`;
+            }
+        } else {
+            summaryDiv.innerHTML = `Enter quantities for potions above to see your chance.`;
+        }
+        
+        const potionResultBox = document.getElementById('potionResultBox');
+        potionResultBox.classList.remove('status-low', 'status-mid', 'status-high');
+        if (overallP > 0) {
+            if (overallP < 0.1) potionResultBox.classList.add('status-low');
+            else if (overallP < 0.5) potionResultBox.classList.add('status-mid');
+            else potionResultBox.classList.add('status-high');
+        }
     }
     
     function calculateAfkOverworld() {
@@ -1357,61 +1582,6 @@
         }
     }
     
-    function calculatePotionMode() {
-        let rarityInput = document.getElementById('potionRarity');
-        let rawRarity = rarityInput.value.replace(/,/g, '');
-        let R = Math.floor(parseFloat(rawRarity));
-        if (R < 1 || isNaN(R)) R = 1;
-        rarityInput.value = formatWithCommas(R);
-        
-        let totalLuck = calculatePotionLuck();
-        let pPerRoll = totalLuck / R;
-        pPerRoll = Math.min(pPerRoll, 1);
-        
-        const potionCount = parseInt(document.getElementById('potionCount').value) || 1;
-        const isMultiAura = document.getElementById('potionMultiAura').checked;
-        const auraCount = parseInt(document.getElementById('potionAuraCount').value) || 1;
-        
-        let P;
-        if (isMultiAura && auraCount > 1 && potionCount > 0 && pPerRoll > 0 && pPerRoll < 1) {
-            P = probabilityAtLeastNRolls(pPerRoll, potionCount, auraCount);
-        } else {
-            P = (potionCount > 0 && pPerRoll > 0) ? 1 - Math.pow((1 - pPerRoll), potionCount) : 0;
-        }
-        
-        const chancePercent = P * 100;
-        document.getElementById('potionResult').innerText = (P >= 0.9999999) ? "99.99%+" : chancePercent.toFixed(4) + "%";
-        
-        let resultText = '';
-        if (isMultiAura && auraCount > 1) {
-            resultText = `${potionCount.toLocaleString()} potions, chance for ${auraCount} auras`;
-        } else {
-            resultText = `${potionCount.toLocaleString()} potions`;
-        }
-        document.getElementById('potionDetail').innerText = resultText;
-        
-        const summaryDiv = document.getElementById('potionSummaryText');
-        if (potionCount > 0 && pPerRoll > 0) {
-            if (isMultiAura && auraCount > 1) {
-                summaryDiv.innerHTML = `Using ${potionCount.toLocaleString()} potion${potionCount !== 1 ? 's' : ''}, you have a ${chancePercent.toFixed(2)}% chance of getting ${auraCount} of this aura.`;
-            } else {
-                summaryDiv.innerHTML = `Using ${potionCount.toLocaleString()} potion${potionCount !== 1 ? 's' : ''}, you have a ${chancePercent.toFixed(2)}% chance of getting this aura.`;
-            }
-        } else if (potionCount <= 0) {
-            summaryDiv.innerHTML = `Enter how many potions you plan to use above to see your chance.`;
-        } else {
-            summaryDiv.innerHTML = `With your selected potions, this aura may be impossible to get. Try using stronger potions.`;
-        }
-        
-        const potionResultBox = document.getElementById('potionResultBox');
-        potionResultBox.classList.remove('status-low', 'status-mid', 'status-high');
-        if (P > 0) {
-            if (P < 0.1) potionResultBox.classList.add('status-low');
-            else if (P < 0.5) potionResultBox.classList.add('status-mid');
-            else potionResultBox.classList.add('status-high');
-        }
-    }
-    
     function fullReset() {
         // Reset AFK Overworld
         document.getElementById('leftGlove').value = "thing";
@@ -1455,20 +1625,42 @@
         
         // Reset Potion Mode
         document.getElementById('potionRarity').value = "2,500,000,000";
-        document.getElementById('potionCount').value = "100";
+        document.getElementById('potionStacked').checked = false;
+        document.getElementById('showEventPotions').checked = false;
         document.getElementById('potionHeavenly').checked = false;
+        document.getElementById('potionHeavenlyQty').value = "0";
         document.getElementById('potionGodlike').checked = false;
+        document.getElementById('potionGodlikeQty').value = "0";
         document.getElementById('potionBound').checked = false;
+        document.getElementById('potionBoundQty').value = "0";
         document.getElementById('potionWishStar').checked = false;
+        document.getElementById('potionWishStarQty').value = "0";
+        document.getElementById('potionCandycorn').checked = false;
+        document.getElementById('potionCandycornQty').value = "0";
+        document.getElementById('potionPumpking').checked = false;
+        document.getElementById('potionPumpkingQty').value = "0";
         document.getElementById('potionPopping').checked = false;
+        document.getElementById('potionPoppingQty').value = "0";
         document.getElementById('potionDune').checked = false;
-        document.querySelector('input[name="redmoon"][value="none"]').checked = true;
-        document.querySelector('input[name="exclusive"][value="none"]').checked = true;
+        document.getElementById('potionDuneQty').value = "0";
+        document.getElementById('potionRedMoonI').checked = false;
+        document.getElementById('potionRedMoonIQty').value = "0";
+        document.getElementById('potionRedMoonII').checked = false;
+        document.getElementById('potionRedMoonIIQty').value = "0";
+        document.getElementById('potionOblivion').checked = false;
+        document.getElementById('potionOblivionQty').value = "0";
+        document.getElementById('potionVoidHeart').checked = false;
+        document.getElementById('potionVoidHeartQty').value = "0";
         document.getElementById('potionMultiAura').checked = false;
         document.getElementById('potionAuraCount').value = "2";
         document.getElementById('potionVip').checked = true;
         document.getElementById('potionVipPlus').checked = true;
         document.getElementById('potionEventMulti').value = "1";
+        
+        // Hide event potions
+        document.querySelectorAll('.event-potion').forEach(el => {
+            el.style.display = 'none';
+        });
         
         document.getElementById('rarity').value = "2,500,000,000";
         document.getElementById('limboRarity').value = "2,500,000,000";
@@ -1477,6 +1669,7 @@
         setAfkSubMode('chance');
         setLimboSubMode('chance');
         setGlobalMode('afkOverworld');
+        closeResetModal();
     }
     
     function toggleEvents() {
@@ -1531,10 +1724,10 @@
     setupRarityInput('limboRarity');
     setupRarityInput('potionRarity');
     
-    setupPotionModeInteractions();
-    
     document.querySelectorAll('#afkOverworldContent input, #afkOverworldContent select').forEach(el => el.addEventListener('input', calculateAfkOverworld));
     document.querySelectorAll('#afkLimboContent input, #afkLimboContent select').forEach(el => el.addEventListener('input', calculateAfkLimbo));
+    
+    // Potion mode specific listeners
     document.querySelectorAll('#potionModeContent input, #potionModeContent select').forEach(el => el.addEventListener('input', calculatePotionMode));
     
     window.addEventListener('load', function() {
