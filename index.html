@@ -3,33 +3,33 @@
 <head>
     <title>Sols Rng Calculator</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; background: #050a0f; color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .calc-card { width: 100%; max-width: 440px; background: #0d141f; padding: 25px; border-radius: 12px; border: 2px solid #00d4ff; box-shadow: 0 0 20px rgba(0, 212, 255, 0.4); }
+        body { font-family: sans-serif; padding: 20px; background: #050a0f; color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; transition: background 0.3s, color 0.3s; }
+        .calc-card { width: 100%; max-width: 460px; background: #0d141f; padding: 25px; border-radius: 12px; border: 2px solid #00d4ff; box-shadow: 0 0 20px rgba(0, 212, 255, 0.4); transition: background 0.3s, border-color 0.3s, box-shadow 0.3s; }
         h2 { text-align: center; text-transform: uppercase; margin-top: 0; margin-bottom: 20px; letter-spacing: 2px; }
         .mode-switch { display: flex; background: #000; border-radius: 10px; padding: 6px; margin-bottom: 20px; border: 2px solid #444; }
-        .mode-btn { flex: 1; padding: 12px; border: none; background: none; color: #888; cursor: pointer; font-weight: 900; font-size: 0.65rem; border-radius: 7px; text-transform: uppercase; transition: 0.2s; }
+        .mode-btn { flex: 1; padding: 12px; border: none; background: none; color: #888; cursor: pointer; font-weight: 900; font-size: 0.6rem; border-radius: 7px; text-transform: uppercase; transition: 0.2s; text-align: center; }
         .mode-btn.active { background: #add8e6; color: #000; }
-        .section { margin-bottom: 15px; padding: 12px; background: #161c26; border-radius: 8px; border: 1px solid #2a3545; }
+        .mode-btn.settings-active { background: #9b59b6; color: #fff; }
+        .section { margin-bottom: 15px; padding: 12px; background: #161c26; border-radius: 8px; border: 1px solid #2a3545; transition: background 0.3s, border-color 0.3s; }
         .rarity-container { display: flex; align-items: center; background: #000; border: 1px solid #444; border-radius: 5px; padding: 0 10px; margin: 8px 0; }
         .prefix { font-weight: bold; margin-right: 5px; font-size: 1.1rem; }
-        .rarity-input { border: none !important; margin: 0 !important; outline: none; width: 100%; }
-        input, select { width: 100%; padding: 10px; margin: 8px 0; border-radius: 5px; border: 1px solid #444; background: #000; color: white; font-weight: bold; box-sizing: border-box; font-size: 0.9rem; }
-        label { font-size: 0.75rem; color: #ccc; display: block; }
+        .rarity-input { border: none !important; margin: 0 !important; outline: none; width: 100%; background: transparent !important; color: white !important; }
+        input, select { width: 100%; padding: 10px; margin: 8px 0; border-radius: 5px; border: 1px solid #444; background: #000; color: white; font-weight: bold; box-sizing: border-box; font-size: 0.9rem; transition: background 0.3s, color 0.3s, border-color 0.3s; }
+        label { font-size: 0.75rem; color: #ccc; display: block; transition: color 0.3s; }
         .check-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin: 10px 0; }
-        .check-row { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.75rem; color: #888; }
+        .check-row { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.75rem; color: #888; transition: color 0.3s; }
         .check-row input { width: 16px; height: 16px; margin: 0; cursor: pointer; }
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .result-box { padding: 20px; border-radius: 8px; text-align: center; margin-top: 10px; border: 2px solid #add8e6; background: rgba(173, 216, 230, 0.05); transition: border-color 0.3s; }
+        .result-box { padding: 20px; border-radius: 8px; text-align: center; margin-top: 10px; border: 2px solid #add8e6; background: rgba(173, 216, 230, 0.05); transition: border-color 0.3s, background 0.3s; }
         .result-val { font-size: 2.1rem; font-weight: bold; color: #add8e6; margin: 5px 0; }
         .luck-status { font-size: 0.8rem; font-weight: bold; text-transform: uppercase; color: #add8e6; display: block; height: 1rem; }
-        .stat-subtext { font-size: 0.7rem; color: #888; margin-top: 5px; display: block; }
+        .stat-subtext { font-size: 0.7rem; color: #888; margin-top: 5px; display: block; transition: color 0.3s; }
         .status-low { border-color: #ff4d4d !important; } .status-mid { border-color: #ffcc00 !important; } .status-high { border-color: #00ff88 !important; }
-        .footer { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 20px; padding-top: 10px; border-top: 1px solid #333; }
+        .footer { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 20px; padding-top: 10px; border-top: 1px solid #333; flex-wrap: wrap; gap: 8px; }
         .discord-link { color: #7289da; font-size: 0.75rem; text-decoration: none; font-weight: bold; }
-        .reset-btn { background: #2a2a35; color: #ccc; border: 1px solid #444; padding: 6px 12px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; }
+        .reset-btn { background: #2a2a35; color: #ccc; border: 1px solid #444; padding: 6px 12px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; transition: 0.2s; }
         .reset-btn:hover { background: #ff4d4d; color: #fff; border-color: #ff4d4d; }
-        .disclaimer { font-size: 0.65rem; color: #666; text-align: center; margin: 5px 0; font-style: italic; }
-        .event-toggle-container { display: flex; justify-content: center; margin: 10px 0; }
+        .disclaimer { font-size: 0.65rem; color: #666; text-align: center; margin: 5px 0; font-style: italic; transition: color 0.3s; }
         .skip-container { display: flex; gap: 10px; align-items: center; }
         .skip-container input { flex: 1; }
         .skip-container label.check-row { margin: 0; white-space: nowrap; }
@@ -39,10 +39,10 @@
         .limbo-only { border-left: 3px solid #ff6b35; padding-left: 10px; margin-top: 10px; }
         .potion-stack { display: flex; gap: 10px; margin: 8px 0; flex-wrap: wrap; }
         .potion-stack label { margin: 0; }
-        .preset-buttons { display: flex; gap: 8px; margin-top: 5px; margin-bottom: 5px; flex-wrap: wrap; align-items: center; }
-        .preset-btn { background: #2a2a35; color: #add8e6; border: 1px solid #444; padding: 5px 10px; border-radius: 4px; font-size: 0.7rem; cursor: pointer; transition: 0.2s; }
+        .preset-buttons { display: flex; gap: 6px; margin-top: 5px; margin-bottom: 5px; flex-wrap: wrap; align-items: center; }
+        .preset-btn { background: #2a2a35; color: #add8e6; border: 1px solid #444; padding: 4px 8px; border-radius: 4px; font-size: 0.65rem; cursor: pointer; transition: 0.2s; white-space: nowrap; }
         .preset-btn:hover { background: #add8e6; color: #000; border-color: #add8e6; }
-        .preset-label { font-size: 0.65rem; color: #888; margin-right: 5px; }
+        .preset-label { font-size: 0.65rem; color: #888; margin-right: 4px; transition: color 0.3s; }
         .summary-text { background: #000; padding: 10px; border-radius: 6px; margin-top: 10px; text-align: center; font-size: 0.8rem; color: #add8e6; border: 1px solid #2a3545; }
         .glove-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
         .multi-row { display: flex; gap: 15px; align-items: center; margin: 10px 0; flex-wrap: wrap; }
@@ -64,7 +64,6 @@
         .lantern-row { margin: 10px 0; }
         .potion-qty-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin: 8px 0; }
         .event-hidden { display: none; }
-        .potion-exclusive-row { margin: 4px 0; }
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
         .modal-box { background: #1a1a2e; padding: 30px; border-radius: 12px; border: 2px solid #ff4d4d; max-width: 400px; text-align: center; }
         .modal-box h3 { color: #ff4d4d; margin-top: 0; }
@@ -74,6 +73,130 @@
         .modal-box .modal-buttons .confirm-btn:hover { background: #cc0000; }
         .modal-box .modal-buttons .cancel-btn { background: #444; color: white; }
         .modal-box .modal-buttons .cancel-btn:hover { background: #666; }
+        .footer-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .footer-actions .undo-btn, .footer-actions .redo-btn { background: #2a2a35; color: #ccc; border: 1px solid #444; padding: 6px 10px; border-radius: 4px; font-size: 0.7rem; cursor: pointer; transition: 0.2s; }
+        .footer-actions .undo-btn:hover, .footer-actions .redo-btn:hover { background: #444; color: #fff; }
+        .footer-actions .undo-btn:disabled, .footer-actions .redo-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+        .progress-container { width: 100%; height: 8px; background: #222; border-radius: 4px; margin: 8px 0; overflow: hidden; }
+        .progress-bar { height: 100%; border-radius: 4px; transition: width 0.3s ease; }
+        .progress-low { background: #ff4d4d; }
+        .progress-mid { background: #ffcc00; }
+        .progress-high { background: #00ff88; }
+        .copy-btn { background: #2a2a35; color: #add8e6; border: 1px solid #444; padding: 4px 10px; border-radius: 4px; font-size: 0.65rem; cursor: pointer; transition: 0.2s; }
+        .copy-btn:hover { background: #add8e6; color: #000; border-color: #add8e6; }
+        .copy-btn.copied { background: #00ff88; color: #000; border-color: #00ff88; }
+
+        /* Settings Tab */
+        .settings-tab { background: #1a1a2e; border: 1px solid #9b59b6; border-radius: 8px; padding: 10px; margin-top: 10px; }
+        .settings-tab label { color: #c39bd3; font-size: 0.75rem; }
+        .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 8px 0; }
+        .settings-grid .check-row { font-size: 0.7rem; }
+        .shortcuts-help { background: #0a0a1a; border: 1px solid #444; border-radius: 6px; padding: 10px; margin-top: 8px; font-size: 0.7rem; }
+        .shortcuts-help .shortcut-row { display: flex; justify-content: space-between; padding: 3px 0; border-bottom: 1px solid #222; }
+        .shortcuts-help .shortcut-row:last-child { border-bottom: none; }
+        .shortcuts-help kbd { background: #222; padding: 1px 6px; border-radius: 3px; color: #add8e6; font-size: 0.7rem; }
+        .settings-select { background: #000; color: white; border: 1px solid #444; padding: 6px 10px; border-radius: 4px; font-size: 0.75rem; width: 100%; }
+
+        /* Light Theme */
+        body.light-theme { background: #f0f0f0; color: #222; }
+        body.light-theme .calc-card { background: #ffffff; border-color: #3498db; box-shadow: 0 0 20px rgba(52, 152, 219, 0.3); }
+        body.light-theme .section { background: #f5f5f5; border-color: #ddd; }
+        body.light-theme .rarity-container { background: #fff; border-color: #ccc; }
+        body.light-theme .rarity-input { color: #222 !important; }
+        body.light-theme input, body.light-theme select { background: #fff; color: #222; border-color: #ccc; }
+        body.light-theme .check-row { color: #666; }
+        body.light-theme label { color: #666; }
+        body.light-theme .result-box { background: rgba(52, 152, 219, 0.05); border-color: #3498db; }
+        body.light-theme .result-val { color: #2980b9; }
+        body.light-theme .luck-status { color: #2980b9; }
+        body.light-theme .stat-subtext { color: #888; }
+        body.light-theme .disclaimer { color: #999; }
+        body.light-theme .summary-text { background: #f5f5f5; border-color: #ddd; color: #2980b9; }
+        body.light-theme .preset-btn { background: #e0e0e0; color: #2980b9; border-color: #ccc; }
+        body.light-theme .preset-btn:hover { background: #2980b9; color: #fff; border-color: #2980b9; }
+        body.light-theme .reset-btn { background: #e0e0e0; color: #666; border-color: #ccc; }
+        body.light-theme .reset-btn:hover { background: #ff4d4d; color: #fff; border-color: #ff4d4d; }
+        body.light-theme .mode-switch { background: #e0e0e0; border-color: #ccc; }
+        body.light-theme .mode-btn { color: #888; }
+        body.light-theme .mode-btn.active { background: #3498db; color: #fff; }
+        body.light-theme .mode-btn.settings-active { background: #9b59b6; color: #fff; }
+        body.light-theme .biome-section { background: #e8f5e9; border-color: #66bb6a; }
+        body.light-theme .biome-section label { color: #388e3c; }
+        body.light-theme .radio-group-horizontal label { color: #388e3c; }
+        body.light-theme .potion-mode-section { background: #f3e5f5; border-color: #ab47bc; }
+        body.light-theme .potion-mode-section label { color: #7b1fa2; }
+        body.light-theme .redmoon-group, body.light-theme .exclusive-group { background: #f3e5f5; }
+        body.light-theme .redmoon-group label, body.light-theme .exclusive-group label { color: #7b1fa2; }
+        body.light-theme .limbo-only { border-color: #ff6b35; }
+        body.light-theme .footer-actions .undo-btn, body.light-theme .footer-actions .redo-btn { background: #e0e0e0; color: #666; border-color: #ccc; }
+        body.light-theme .footer-actions .undo-btn:hover, body.light-theme .footer-actions .redo-btn:hover { background: #ccc; color: #222; }
+        body.light-theme .copy-btn { background: #e0e0e0; color: #2980b9; border-color: #ccc; }
+        body.light-theme .copy-btn:hover { background: #2980b9; color: #fff; border-color: #2980b9; }
+        body.light-theme .settings-tab { background: #f3e5f5; border-color: #ab47bc; }
+        body.light-theme .settings-tab label { color: #7b1fa2; }
+        body.light-theme .settings-select { background: #fff; color: #222; border-color: #ccc; }
+        body.light-theme .shortcuts-help { background: #f5f5f5; border-color: #ddd; }
+        body.light-theme .shortcuts-help kbd { background: #e0e0e0; color: #222; }
+        body.light-theme .afk-submode-switch { background: #e0e0e0; border-color: #ccc; }
+        body.light-theme .afk-submode-btn { color: #888; }
+        body.light-theme .afk-submode-btn.active { background: #3498db; color: #fff; }
+        body.light-theme .modal-box { background: #fff; border-color: #ff4d4d; }
+        body.light-theme .modal-box h3 { color: #ff4d4d; }
+        body.light-theme .discord-link { color: #7289da; }
+        body.light-theme .progress-container { background: #e0e0e0; }
+        body.light-theme .preset-label { color: #888; }
+        body.light-theme .prefix { color: #222; }
+
+        /* Compact Mode */
+        body.compact-mode .section { padding: 8px; margin-bottom: 8px; }
+        body.compact-mode .biome-section .disclaimer { display: none; }
+        body.compact-mode .multi-row span { display: none; }
+        body.compact-mode .preset-label { display: none; }
+        body.compact-mode .check-row { font-size: 0.65rem; }
+        body.compact-mode label { font-size: 0.65rem; }
+        body.compact-mode input, body.compact-mode select { padding: 6px; font-size: 0.8rem; margin: 4px 0; }
+        body.compact-mode .result-val { font-size: 1.6rem; }
+        body.compact-mode .summary-text { font-size: 0.7rem; padding: 6px; }
+        body.compact-mode .disclaimer { font-size: 0.55rem; }
+        body.compact-mode .mode-btn { font-size: 0.5rem; padding: 8px 4px; }
+        body.compact-mode .result-box { padding: 12px; }
+        body.compact-mode .footer { margin-top: 10px; padding-top: 5px; }
+        body.compact-mode .preset-btn { font-size: 0.55rem; padding: 3px 6px; }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 480px) {
+            .calc-card { padding: 12px; max-width: 100%; }
+            .grid-2 { grid-template-columns: 1fr; gap: 5px; }
+            .glove-row { grid-template-columns: 1fr; gap: 5px; }
+            .check-grid { grid-template-columns: repeat(2, 1fr); gap: 4px; }
+            .mode-btn, .preset-btn, .afk-submode-btn { font-size: 0.5rem; padding: 10px 4px; }
+            input, select { font-size: 1rem; padding: 12px 8px; }
+            .result-val { font-size: 1.6rem; }
+            .potion-qty-grid { grid-template-columns: 1fr; }
+            .potion-row { flex-wrap: wrap; }
+            .potion-row input[type="number"] { width: 60px; }
+            .multi-row { gap: 8px; }
+            .multi-row label { font-size: 0.7rem; }
+            .preset-buttons { gap: 4px; }
+            .preset-btn { font-size: 0.55rem; padding: 4px 6px; }
+            .radio-group-horizontal { gap: 10px; font-size: 0.7rem; }
+            .biome-section label { font-size: 0.7rem; }
+            .item-row { gap: 10px; }
+            .item-row label { font-size: 0.7rem; }
+            .lantern-row label { font-size: 0.7rem; }
+            .disclaimer { font-size: 0.55rem; }
+            .summary-text { font-size: 0.7rem; padding: 8px; }
+            .result-box { padding: 15px; }
+            .stat-subtext { font-size: 0.6rem; }
+            .footer-actions .undo-btn, .footer-actions .redo-btn { font-size: 0.6rem; padding: 4px 8px; }
+            .reset-btn { font-size: 0.6rem; padding: 4px 10px; }
+            .modal-box { padding: 20px; margin: 15px; }
+            .modal-box h3 { font-size: 1.1rem; }
+            .modal-box .modal-buttons button { padding: 8px 20px; font-size: 0.8rem; }
+            .progress-container { height: 6px; }
+            .settings-grid { grid-template-columns: 1fr; }
+            .copy-btn { font-size: 0.55rem; padding: 3px 8px; }
+        }
     </style>
 </head>
 <body>
@@ -82,11 +205,54 @@
     <form id="calcForm" onsubmit="return false;">
         <h2>Sols Rng Calculator</h2>
 
-        <!-- Global Mode Selection (3 tabs) -->
+        <!-- Global Mode Selection (4 tabs) -->
         <div class="mode-switch">
             <button type="button" id="btnAfkOverworld" class="mode-btn active" onclick="setGlobalMode('afkOverworld')">AFK OVERWORLD</button>
             <button type="button" id="btnAfkLimbo" class="mode-btn" onclick="setGlobalMode('afkLimbo')">AFK LIMBO</button>
             <button type="button" id="btnPotion" class="mode-btn" onclick="setGlobalMode('potion')">POTION MODE</button>
+            <button type="button" id="btnSettings" class="mode-btn" onclick="toggleSettings()">SETTINGS</button>
+        </div>
+
+        <!-- Settings Tab -->
+        <div id="settingsContent" style="display:none;">
+            <div class="section settings-tab">
+                <label style="color: #c39bd3; font-weight: bold;">Settings</label>
+                <div class="settings-grid">
+                    <label class="check-row"><input type="checkbox" id="settingsShowEventGear" checked onchange="applySettings()"> Show Event Gear</label>
+                    <label class="check-row"><input type="checkbox" id="settingsShowEventPotions" onchange="applySettings()"> Show Event Potions</label>
+                    <label class="check-row"><input type="checkbox" id="settingsShowBiomes" checked onchange="applySettings()"> Show Biomes</label>
+                    <label class="check-row"><input type="checkbox" id="settingsShowUndoRedo" checked onchange="applySettings()"> Show Undo/Redo Buttons</label>
+                    <label class="check-row"><input type="checkbox" id="settingsCompactMode" onchange="applySettings()"> Compact Mode</label>
+                    <label class="check-row"><input type="checkbox" id="settingsLightTheme" onchange="applySettings()"> Light Theme</label>
+                    <div>
+                        <label style="font-size:0.65rem; color:#c39bd3;">Decimal Precision</label>
+                        <select id="settingsDecimalPrecision" class="settings-select" onchange="applySettings()">
+                            <option value="2">2 decimals</option>
+                            <option value="4" selected>4 decimals</option>
+                            <option value="6">6 decimals</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size:0.65rem; color:#c39bd3;">Time Format</label>
+                        <select id="settingsTimeFormat" class="settings-select" onchange="applySettings()">
+                            <option value="auto" selected>Auto (days/hours)</option>
+                            <option value="days">Days only</option>
+                            <option value="hours">Hours only</option>
+                            <option value="minutes">Minutes only</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="margin-top: 8px;">
+                    <button class="preset-btn" onclick="resetSettings()" style="background: #2a2a35; color: #ff4d4d; border-color: #ff4d4d;">Reset to Defaults</button>
+                </div>
+                <div class="shortcuts-help">
+                    <label style="color: #9bd3c3; font-weight: bold; font-size: 0.7rem;">Keyboard Shortcuts</label>
+                    <div class="shortcut-row"><span>Undo</span><kbd>Ctrl+Z</kbd></div>
+                    <div class="shortcut-row"><span>Redo</span><kbd>Ctrl+Y</kbd></div>
+                    <div class="shortcut-row"><span>Reset (with confirmation)</span><kbd>Ctrl+R</kbd></div>
+                    <div class="shortcut-row"><span>Copy Result</span><kbd>Ctrl+C</kbd></div>
+                </div>
+            </div>
         </div>
 
         <!-- AFK Overworld Content -->
@@ -97,7 +263,7 @@
                         <label>Rarity of Aura</label>
                         <div class="rarity-container">
                             <span class="prefix">1/</span>
-                            <input type="text" id="rarity" class="rarity-input comma-input" value="2,500,000,000">
+                            <input type="text" id="rarity" class="rarity-input comma-input" placeholder="Enter rarity" value="">
                         </div>
                     </div>
                     <div>
@@ -159,7 +325,7 @@
                 <div id="rainyContainer" style="display:none; margin-bottom: 10px;"><label class="check-row" style="color: #add8e6;"><input type="checkbox" id="isRainy"> Rainy Aura?</label></div>
                 
                 <!-- Biome Section -->
-                <div class="biome-section">
+                <div class="biome-section" id="biomeSection">
                     <label style="color: #59b69b; font-weight: bold;">What biome or time is this aura from</label>
                     <div class="grid-2">
                         <div>
@@ -223,11 +389,9 @@
                 </div>
                 
                 <div class="multi-row">
-                    <label class="check-row"><input type="checkbox" id="multiAura" onchange="calculateAfkOverworld()"> Multiple Auras Mode</label>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <label>Amount Needed:</label>
-                        <input type="number" id="auraCount" value="2" min="1" step="1" style="width: 80px;" oninput="calculateAfkOverworld()">
-                    </div>
+                    <label>Aura Count</label>
+                    <input type="number" id="auraCount" value="1" min="1" step="1" style="width: 80px;" oninput="calculateAfkOverworld()">
+                    <span style="font-size:0.65rem; color:#888;">(Number of times you need this aura)</span>
                 </div>
                 
                 <div class="check-grid">
@@ -320,7 +484,7 @@
                         <label>Rarity of Aura</label>
                         <div class="rarity-container">
                             <span class="prefix">1/</span>
-                            <input type="text" id="limboRarity" class="rarity-input comma-input" value="2,500,000,000">
+                            <input type="text" id="limboRarity" class="rarity-input comma-input" placeholder="Enter rarity" value="">
                         </div>
                     </div>
                     <div>
@@ -380,11 +544,9 @@
                 </div>
                 
                 <div class="multi-row">
-                    <label class="check-row"><input type="checkbox" id="limboMultiAura" onchange="calculateAfkLimbo()"> Multiple Auras Mode</label>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <label>Amount Needed:</label>
-                        <input type="number" id="limboAuraCount" value="2" min="1" step="1" style="width: 80px;" oninput="calculateAfkLimbo()">
-                    </div>
+                    <label>Aura Count</label>
+                    <input type="number" id="limboAuraCount" value="1" min="1" step="1" style="width: 80px;" oninput="calculateAfkLimbo()">
+                    <span style="font-size:0.65rem; color:#888;">(Number of times you need this aura)</span>
                 </div>
                 
                 <div class="check-grid">
@@ -460,7 +622,7 @@
                         <label>Rarity of Aura</label>
                         <div class="rarity-container">
                             <span class="prefix">1/</span>
-                            <input type="text" id="potionRarity" class="rarity-input comma-input" value="2,500,000,000">
+                            <input type="text" id="potionRarity" class="rarity-input comma-input" placeholder="Enter rarity" value="">
                         </div>
                     </div>
                     <div>
@@ -472,7 +634,6 @@
                 <div class="potion-mode-section">
                     <div class="multi-row">
                         <label class="check-row"><input type="checkbox" id="potionStacked" onchange="calculatePotionMode()"> Stack Potions (use together per roll)</label>
-                        <label class="check-row"><input type="checkbox" id="showEventPotions" onchange="toggleEventPotions()"> Show Event Potions</label>
                     </div>
                     
                     <label style="color: #c39bd3; font-weight: bold;">Stackable Potions</label>
@@ -542,11 +703,9 @@
                 </div>
                 
                 <div class="multi-row">
-                    <label class="check-row"><input type="checkbox" id="potionMultiAura" onchange="calculatePotionMode()"> Multiple Auras Mode</label>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <label>Amount Needed:</label>
-                        <input type="number" id="potionAuraCount" value="2" min="1" step="1" style="width: 80px;" oninput="calculatePotionMode()">
-                    </div>
+                    <label>Aura Count</label>
+                    <input type="number" id="potionAuraCount" value="1" min="1" step="1" style="width: 80px;" oninput="calculatePotionMode()">
+                    <span style="font-size:0.65rem; color:#888;">(Number of times you need this aura)</span>
                 </div>
                 
                 <div class="check-grid">
@@ -559,6 +718,9 @@
             <!-- Potion Mode Result Display -->
             <div class="result-box" id="potionResultBox">
                 <div class="result-val" id="potionResult">0.00%</div>
+                <div class="progress-container">
+                    <div class="progress-bar" id="potionProgressBar" style="width:0%;"></div>
+                </div>
                 <span class="luck-status" id="potionLabel">POTION CHANCE</span>
                 <span class="stat-subtext" id="potionDetail">0 rolls</span>
             </div>
@@ -567,16 +729,17 @@
             </div>
         </div>
 
-        <div class="event-toggle-container">
-            <label class="check-row" style="color: #00d4ff; font-weight: bold;"><input type="checkbox" id="showEventGlobal" onchange="toggleEvents()"> Show Event Gear</label>
-        </div>
-
         <div class="disclaimer">Disclaimer: 100% is impossible because RNG is never guaranteed. 99.99% is effectively guaranteed but mathematically never 100%.</div>
         <div class="disclaimer">These calculations represent statistical averages. Due to the random nature of the game, your actual experience may vary.</div>
 
         <div class="footer">
             <div><a href="https://discord.gg/yTreH64JBC" class="discord-link" target="_blank">Join the Discord!</a><div style="font-size:0.6rem; color:#666;">By @LubJub</div></div>
-            <button type="button" class="reset-btn" onclick="confirmReset()">Reset</button>
+            <div class="footer-actions" id="footerActions">
+                <button type="button" class="undo-btn" id="undoBtn" onclick="undoState()" disabled title="Ctrl+Z">↩️</button>
+                <button type="button" class="redo-btn" id="redoBtn" onclick="redoState()" disabled title="Ctrl+Y">↪️</button>
+                <button type="button" class="copy-btn" id="copyBtn" onclick="copyResult()" title="Copy result to clipboard (Ctrl+C)">Copy</button>
+                <button type="button" class="reset-btn" onclick="confirmReset()">Reset</button>
+            </div>
         </div>
     </form>
 </div>
@@ -598,212 +761,430 @@
     let currentAfkSubMode = 'chance';
     let currentLimboSubMode = 'chance';
     
-    // Base natural uptimes (will be modified by lantern)
+    // ----- UNDO/REDO SYSTEM -----
+    const history = [];
+    let historyIndex = -1;
+    const maxHistory = 30;
+    let isRestoringState = false;
+    let currentResultText = '';
+    let stateChangeTimeout = null;
+    
+    function getCurrentState() {
+        const state = {};
+        const inputs = document.querySelectorAll('input, select');
+        inputs.forEach(el => {
+            const id = el.id;
+            if (!id) return;
+            if (el.type === 'checkbox' || el.type === 'radio') {
+                state[id] = el.checked;
+            } else if (el.type === 'number' || el.type === 'text') {
+                state[id] = el.value;
+            } else if (el.tagName === 'SELECT') {
+                state[id] = el.value;
+            }
+        });
+        state.currentGlobalMode = currentGlobalMode;
+        state.currentAfkSubMode = currentAfkSubMode;
+        state.currentLimboSubMode = currentLimboSubMode;
+        return state;
+    }
+    
+    function restoreState(state) {
+        isRestoringState = true;
+        for (const [key, value] of Object.entries(state)) {
+            const el = document.getElementById(key);
+            if (el) {
+                if (el.type === 'checkbox' || el.type === 'radio') {
+                    el.checked = value;
+                } else if (el.tagName === 'SELECT') {
+                    el.value = value;
+                } else {
+                    el.value = value;
+                }
+            }
+        }
+        if (state.currentGlobalMode) setGlobalMode(state.currentGlobalMode);
+        if (state.currentAfkSubMode) setAfkSubMode(state.currentAfkSubMode);
+        if (state.currentLimboSubMode) setLimboSubMode(state.currentLimboSubMode);
+        isRestoringState = false;
+        calculate();
+        updateUndoButtons();
+    }
+    
+    function saveState() {
+        if (isRestoringState) return;
+        if (stateChangeTimeout) clearTimeout(stateChangeTimeout);
+        stateChangeTimeout = setTimeout(() => {
+            history.splice(historyIndex + 1);
+            const state = getCurrentState();
+            history.push(state);
+            historyIndex = history.length - 1;
+            while (history.length > maxHistory) {
+                history.shift();
+                historyIndex--;
+            }
+            updateUndoButtons();
+            stateChangeTimeout = null;
+        }, 100);
+    }
+    
+    function undoState() {
+        if (historyIndex > 0) {
+            historyIndex--;
+            restoreState(history[historyIndex]);
+            updateUndoButtons();
+        }
+    }
+    
+    function redoState() {
+        if (historyIndex < history.length - 1) {
+            historyIndex++;
+            restoreState(history[historyIndex]);
+            updateUndoButtons();
+        }
+    }
+    
+    function updateUndoButtons() {
+        const undoBtn = document.getElementById('undoBtn');
+        const redoBtn = document.getElementById('redoBtn');
+        if (undoBtn) undoBtn.disabled = historyIndex <= 0;
+        if (redoBtn) redoBtn.disabled = historyIndex >= history.length - 1;
+    }
+    
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        const tag = document.activeElement?.tagName;
+        const isInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+        
+        if (e.ctrlKey && e.key === 'z' && !e.shiftKey && !isInput) {
+            e.preventDefault();
+            undoState();
+        }
+        if (e.ctrlKey && e.key === 'y' && !isInput) {
+            e.preventDefault();
+            redoState();
+        }
+        if (e.ctrlKey && e.key === 'r' && !isInput) {
+            e.preventDefault();
+            confirmReset();
+        }
+        if (e.ctrlKey && e.key === 'c' && !isInput) {
+            e.preventDefault();
+            copyResult();
+        }
+    });
+    
+    document.addEventListener('input', function() { if (!isRestoringState) saveState(); });
+    document.addEventListener('change', function() { if (!isRestoringState) saveState(); });
+    document.querySelectorAll('.mode-btn, .afk-submode-btn, .area-btn').forEach(el => {
+        el.addEventListener('click', function() { setTimeout(saveState, 50); });
+    });
+    
+    // ----- DECIMAL PRECISION -----
+    function getDecimalPrecision() {
+        const val = document.getElementById('settingsDecimalPrecision')?.value;
+        return parseInt(val) || 4;
+    }
+    
+    function getTimeFormat() {
+        return document.getElementById('settingsTimeFormat')?.value || 'auto';
+    }
+    
+    function formatPercent(value) {
+        const precision = getDecimalPrecision();
+        if (value >= 99.99) return '99.99%+';
+        return value.toFixed(precision) + '%';
+    }
+    
+    // ----- TIME FORMATTING -----
+    function formatTime(days) {
+        const format = getTimeFormat();
+        
+        if (format === 'days') {
+            if (days > 1000) return days.toExponential(2) + ' days';
+            return days.toFixed(2) + ' days';
+        }
+        
+        if (format === 'hours') {
+            const hours = days * 24;
+            if (hours > 1000) return hours.toExponential(2) + ' hours';
+            return hours.toFixed(2) + ' hours';
+        }
+        
+        if (format === 'minutes') {
+            const minutes = days * 1440;
+            if (minutes > 1000) return minutes.toExponential(2) + ' minutes';
+            return minutes.toFixed(2) + ' minutes';
+        }
+        
+        // Auto format
+        if (days < 0.001) {
+            const minutes = days * 1440;
+            if (minutes < 1) {
+                const seconds = days * 86400;
+                return `${seconds.toFixed(0)} seconds`;
+            }
+            return `${minutes.toFixed(1)} minutes`;
+        }
+        if (days < 1) {
+            const hours = days * 24;
+            return `${hours.toFixed(1)} hours`;
+        }
+        if (days < 2) {
+            const hours = (days - 1) * 24;
+            if (hours < 1) return `1 day`;
+            return `1 day, ${hours.toFixed(0)} hours`;
+        }
+        if (days < 30) {
+            const wholeDays = Math.floor(days);
+            const hours = (days - wholeDays) * 24;
+            if (hours < 1) return `${wholeDays} days`;
+            return `${wholeDays} days, ${hours.toFixed(0)} hours`;
+        }
+        if (days < 365) {
+            return `${days.toFixed(2)} days`;
+        }
+        const years = days / 365;
+        if (years < 2) return `1 year (${days.toFixed(2)} days)`;
+        return `${years.toFixed(2)} years (${days.toFixed(2)} days)`;
+    }
+    
+    // ----- SETTINGS -----
+    function toggleSettings() {
+        const settings = document.getElementById('settingsContent');
+        const isVisible = settings.style.display === 'block';
+        settings.style.display = isVisible ? 'none' : 'block';
+        
+        const buttons = ['btnAfkOverworld', 'btnAfkLimbo', 'btnPotion', 'btnSettings'];
+        buttons.forEach(id => document.getElementById(id).classList.remove('active', 'settings-active'));
+        
+        const btn = document.getElementById('btnSettings');
+        if (!isVisible) {
+            btn.classList.add('settings-active');
+            document.getElementById('afkOverworldContent').style.display = 'none';
+            document.getElementById('afkLimboContent').style.display = 'none';
+            document.getElementById('potionModeContent').style.display = 'none';
+        } else {
+            btn.classList.remove('settings-active');
+            const modeMap = {
+                'afkOverworld': 'afkOverworldContent',
+                'afkLimbo': 'afkLimboContent',
+                'potion': 'potionModeContent'
+            };
+            const contentId = modeMap[currentGlobalMode];
+            if (contentId) {
+                document.getElementById(contentId).style.display = 'block';
+                const modeBtnId = {
+                    'afkOverworld': 'btnAfkOverworld',
+                    'afkLimbo': 'btnAfkLimbo',
+                    'potion': 'btnPotion'
+                }[currentGlobalMode];
+                if (modeBtnId) document.getElementById(modeBtnId).classList.add('active');
+            }
+        }
+        setTimeout(saveState, 50);
+    }
+    
+    function applySettings() {
+        const showEventGear = document.getElementById('settingsShowEventGear').checked;
+        const showEventPotions = document.getElementById('settingsShowEventPotions').checked;
+        const showBiomes = document.getElementById('settingsShowBiomes').checked;
+        const showUndoRedo = document.getElementById('settingsShowUndoRedo').checked;
+        const compactMode = document.getElementById('settingsCompactMode').checked;
+        const lightTheme = document.getElementById('settingsLightTheme').checked;
+        
+        document.querySelectorAll('.event-speed, .event-luck').forEach(el => {
+            el.style.display = showEventGear ? '' : 'none';
+        });
+        
+        const biomeSection = document.getElementById('biomeSection');
+        if (biomeSection) biomeSection.style.display = showBiomes ? 'block' : 'none';
+        
+        document.querySelectorAll('#potionModeContent .event-potion').forEach(el => {
+            el.style.display = showEventPotions ? 'flex' : 'none';
+        });
+        
+        const undoBtn = document.getElementById('undoBtn');
+        const redoBtn = document.getElementById('redoBtn');
+        if (undoBtn) undoBtn.style.display = showUndoRedo ? 'inline-block' : 'none';
+        if (redoBtn) redoBtn.style.display = showUndoRedo ? 'inline-block' : 'none';
+        
+        document.body.classList.toggle('compact-mode', compactMode);
+        document.body.classList.toggle('light-theme', lightTheme);
+        
+        calculate();
+        setTimeout(saveState, 50);
+    }
+    
+    function resetSettings() {
+        document.getElementById('settingsShowEventGear').checked = true;
+        document.getElementById('settingsShowEventPotions').checked = false;
+        document.getElementById('settingsShowBiomes').checked = true;
+        document.getElementById('settingsShowUndoRedo').checked = true;
+        document.getElementById('settingsCompactMode').checked = false;
+        document.getElementById('settingsLightTheme').checked = false;
+        document.getElementById('settingsDecimalPrecision').value = '4';
+        document.getElementById('settingsTimeFormat').value = 'auto';
+        applySettings();
+        fullReset();
+    }
+    
+    // ----- COPY TO CLIPBOARD -----
+    function copyResult() {
+        const resultText = document.getElementById('summaryText')?.innerText || 'No result to copy';
+        const fullText = `Sols Rng Calculator\n${resultText}`;
+        
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(fullText).then(() => showCopyFeedback('Copied!'))
+                .catch(() => fallbackCopy(fullText));
+        } else {
+            fallbackCopy(fullText);
+        }
+    }
+    
+    function fallbackCopy(text) {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        try {
+            document.execCommand('copy');
+            showCopyFeedback('Copied!');
+        } catch (e) {
+            showCopyFeedback('Copy failed');
+        }
+        document.body.removeChild(textarea);
+    }
+    
+    function showCopyFeedback(message) {
+        const btn = document.getElementById('copyBtn');
+        const originalText = btn.textContent;
+        btn.textContent = message;
+        btn.classList.add('copied');
+        setTimeout(() => {
+            btn.textContent = originalText;
+            btn.classList.remove('copied');
+        }, 2000);
+    }
+    
+    function calculate() {
+        if (currentGlobalMode === 'afkOverworld') calculateAfkOverworld();
+        else if (currentGlobalMode === 'afkLimbo') calculateAfkLimbo();
+        else if (currentGlobalMode === 'potion') calculatePotionMode();
+    }
+    
+    // ----- EXISTING CALCULATION FUNCTIONS (truncated for length) -----
     const baseNaturalUptime = {
-        none: 0.390,
-        day: 0.50,
-        night: 0.50,
-        windy: 0.0936,
-        snowy: 0.0780,
-        rainy: 0.0624,
-        sandstorm: 0.0844,
-        hell: 0.0390,
-        starfall: 0.0312,
-        heaven: 0.0121,
-        corruption: 0.0282,
-        null: 0.0038,
-        singularity: 0.00076,
-        dreamspace: 0.000026,
-        glitch: 0.0000068,
-        cyberspace: 0
+        none: 0.390, day: 0.50, night: 0.50,
+        windy: 0.0936, snowy: 0.0780, rainy: 0.0624,
+        sandstorm: 0.0844, hell: 0.0390, starfall: 0.0312,
+        heaven: 0.0121, corruption: 0.0282, null: 0.0038,
+        singularity: 0.00076, dreamspace: 0.000026,
+        glitch: 0.0000068, cyberspace: 0
     };
     
-    // Rate x Duration values for lantern calculation
     const baseRateDuration = {
-        windy: 0.24,
-        snowy: 0.20,
-        rainy: 0.16,
-        sandstorm: 0.2165,
-        hell: 0.0999,
-        starfall: 0.08,
-        heaven: 0.0309,
-        corruption: 0.0722,
-        null: 0.0098,
-        singularity: 0.0016,
-        dreamspace: 0.00005486,
-        glitch: 0.00003255
+        windy: 0.24, snowy: 0.20, rainy: 0.16,
+        sandstorm: 0.2165, hell: 0.0999, starfall: 0.08,
+        heaven: 0.0309, corruption: 0.0722, null: 0.0098,
+        singularity: 0.0016, dreamspace: 0.00005486, glitch: 0.00003255
     };
     
-    // Strange Controller probabilities (from your data)
     const scProbabilities = {
-        windy: 0.3318,
-        snowy: 0.2765,
-        rainy: 0.2212,
-        sandstorm: 0.0553,
-        hell: 0.0249,
-        starfall: 0.0221,
-        heaven: 0.0213,
-        corruption: 0.0184,
-        null: 0.0163,
-        singularity: 0.000221,
-        cyberspace: 0.0002,
-        glitch: 0.00003
+        windy: 0.3318, snowy: 0.2765, rainy: 0.2212,
+        sandstorm: 0.0553, hell: 0.0249, starfall: 0.0221,
+        heaven: 0.0213, corruption: 0.0184, null: 0.0163,
+        singularity: 0.000221, cyberspace: 0.0002, glitch: 0.00003
     };
     
-    // Biome durations in seconds
     const biomeDurations = {
-        windy: 120,
-        snowy: 120,
-        rainy: 120,
-        sandstorm: 650,
-        hell: 666,
-        starfall: 600,
-        heaven: 240,
-        corruption: 650,
-        null: 99,
-        singularity: 1200,
-        cyberspace: 720,
-        glitch: 164,
-        dreamspace: 192
+        windy: 120, snowy: 120, rainy: 120,
+        sandstorm: 650, hell: 666, starfall: 600,
+        heaven: 240, corruption: 650, null: 99,
+        singularity: 1200, cyberspace: 720, glitch: 164, dreamspace: 192
     };
     
-    // Calculate extra uptime from an item
     function calculateItemUptime(itemProbabilities, cooldownSeconds) {
         const usesPerSecond = 1 / cooldownSeconds;
         const extraUptime = {};
-        
         for (const [biome, prob] of Object.entries(itemProbabilities)) {
             const duration = biomeDurations[biome] || 120;
             extraUptime[biome] = usesPerSecond * prob * duration;
         }
-        
         return extraUptime;
     }
     
-    // SC: 20 min = 1200 seconds
     const scUptime = calculateItemUptime(scProbabilities, 1200);
-    
-    // BR: 1/9 chance for each regular biome, plus specials
     const brProbabilities = {
-        windy: 1/9,
-        snowy: 1/9,
-        rainy: 1/9,
-        sandstorm: 1/9,
-        hell: 1/9,
-        starfall: 1/9,
-        heaven: 1/9,
-        corruption: 1/9,
-        null: 1/9,
-        singularity: (1/9) * 0.01,
-        cyberspace: 0.0002,
-        glitch: 0.0000333
+        windy: 1/9, snowy: 1/9, rainy: 1/9,
+        sandstorm: 1/9, hell: 1/9, starfall: 1/9,
+        heaven: 1/9, corruption: 1/9, null: 1/9,
+        singularity: (1/9) * 0.01, cyberspace: 0.0002, glitch: 0.0000333
     };
-    
-    // BR: 35 min = 2100 seconds
     const brUptime = calculateItemUptime(brProbabilities, 2100);
     
-    // Calculate natural uptime with lantern boost
     function getNaturalUptimeWithLantern(lanternBiome) {
-        if (lanternBiome === 'none') {
-            return { ...baseNaturalUptime };
-        }
-        
-        // Get the boosted biome's original Rate x Duration
+        if (lanternBiome === 'none') return { ...baseNaturalUptime };
         const boostedRD = baseRateDuration[lanternBiome] || 0;
         if (boostedRD === 0) return { ...baseNaturalUptime };
-        
-        // Double it for the lantern
         const newBoostedRD = boostedRD * 2;
-        
-        // Calculate total sum of Rate x Duration (excluding day/night/cyberspace which have natural uptime)
         let totalRD = 0;
         for (const [biome, rd] of Object.entries(baseRateDuration)) {
-            if (biome === lanternBiome) {
-                totalRD += newBoostedRD;
-            } else {
-                totalRD += rd;
-            }
+            totalRD += (biome === lanternBiome) ? newBoostedRD : rd;
         }
-        
-        // Normal biome uptime = 1 / (1 + totalRD)
         const normalUptime = 1 / (1 + totalRD);
-        
-        // Calculate each biome's uptime
         const uptimes = {};
         for (const [biome, rd] of Object.entries(baseRateDuration)) {
-            if (biome === lanternBiome) {
-                uptimes[biome] = newBoostedRD * normalUptime;
-            } else {
-                uptimes[biome] = rd * normalUptime;
-            }
+            uptimes[biome] = (biome === lanternBiome) ? newBoostedRD * normalUptime : rd * normalUptime;
         }
         uptimes.none = normalUptime;
         uptimes.day = 0.50;
         uptimes.night = 0.50;
         uptimes.cyberspace = 0;
-        
         return uptimes;
     }
     
-    // Get effective uptime for a biome based on selected items and lantern
     function getEffectiveUptime(biomeId, useSC, useBR, lanternBiome) {
         if (biomeId === 'none') return getNaturalUptimeWithLantern(lanternBiome).none;
         if (biomeId === 'day' || biomeId === 'night') return 0.50;
-        
-        // Cyberspace can only be obtained from SC/BR or perpetual mode
         if (biomeId === 'cyberspace') {
             let uptime = 0;
             if (useSC && scUptime.cyberspace) uptime += scUptime.cyberspace;
             if (useBR && brUptime.cyberspace) uptime += brUptime.cyberspace;
             return uptime;
         }
-        
         const naturalUptimes = getNaturalUptimeWithLantern(lanternBiome);
         let uptime = naturalUptimes[biomeId] || 0;
-        
-        if (useSC && scUptime[biomeId]) {
-            uptime += scUptime[biomeId];
-        }
-        if (useBR && brUptime[biomeId]) {
-            uptime += brUptime[biomeId];
-        }
-        
+        if (useSC && scUptime[biomeId]) uptime += scUptime[biomeId];
+        if (useBR && brUptime[biomeId]) uptime += brUptime[biomeId];
         return Math.min(uptime, 0.999);
     }
     
     function setGlobalMode(mode) {
         currentGlobalMode = mode;
+        document.getElementById('settingsContent').style.display = 'none';
+        const buttons = ['btnAfkOverworld', 'btnAfkLimbo', 'btnPotion', 'btnSettings'];
+        buttons.forEach(id => document.getElementById(id).classList.remove('active', 'settings-active'));
         document.getElementById('afkOverworldContent').style.display = (mode === 'afkOverworld') ? 'block' : 'none';
         document.getElementById('afkLimboContent').style.display = (mode === 'afkLimbo') ? 'block' : 'none';
         document.getElementById('potionModeContent').style.display = (mode === 'potion') ? 'block' : 'none';
-        
-        document.getElementById('btnAfkOverworld').classList.toggle('active', mode === 'afkOverworld');
-        document.getElementById('btnAfkLimbo').classList.toggle('active', mode === 'afkLimbo');
-        document.getElementById('btnPotion').classList.toggle('active', mode === 'potion');
-        
-        // Show/hide Void Heart based on mode
+        const modeBtnId = {
+            'afkOverworld': 'btnAfkOverworld',
+            'afkLimbo': 'btnAfkLimbo',
+            'potion': 'btnPotion'
+        }[mode];
+        if (modeBtnId) document.getElementById(modeBtnId).classList.add('active');
         const voidHeartRow = document.getElementById('voidHeartRow');
-        if (voidHeartRow) {
-            voidHeartRow.style.display = (mode === 'potion') ? 'block' : 'none';
-        }
-        
-        if (mode === 'afkOverworld') calculateAfkOverworld();
-        else if (mode === 'afkLimbo') calculateAfkLimbo();
-        else calculatePotionMode();
-    }
-    
-    function toggleEventPotions() {
-        const show = document.getElementById('showEventPotions').checked;
-        document.querySelectorAll('.event-potion').forEach(el => {
-            el.style.display = show ? 'flex' : 'none';
-        });
-        calculatePotionMode();
+        if (voidHeartRow) voidHeartRow.style.display = (mode === 'potion') ? 'block' : 'none';
+        calculate();
+        setTimeout(saveState, 100);
     }
     
     function handleVoidHeart() {
         const voidHeartChecked = document.getElementById('potionVoidHeart').checked;
         if (voidHeartChecked) {
-            // Uncheck all other potions (except Void Heart)
             const otherPotions = [
                 'potionHeavenly', 'potionGodlike', 'potionBound', 
                 'potionWishStar', 'potionCandycorn', 'potionPumpking',
@@ -814,28 +1195,13 @@
                 const el = document.getElementById(id);
                 if (el) el.checked = false;
             });
-            // Set quantity to 0 for all other potions
-            const qtyIds = [
-                'potionHeavenlyQty', 'potionGodlikeQty', 'potionBoundQty',
-                'potionWishStarQty', 'potionCandycornQty', 'potionPumpkingQty',
-                'potionPoppingQty', 'potionDuneQty', 'potionRedMoonIQty',
-                'potionRedMoonIIQty', 'potionOblivionQty'
-            ];
-            qtyIds.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.value = '0';
-            });
         }
         calculatePotionMode();
+        setTimeout(saveState, 50);
     }
     
-    function confirmReset() {
-        document.getElementById('resetModal').style.display = 'flex';
-    }
-    
-    function closeResetModal() {
-        document.getElementById('resetModal').style.display = 'none';
-    }
+    function confirmReset() { document.getElementById('resetModal').style.display = 'flex'; }
+    function closeResetModal() { document.getElementById('resetModal').style.display = 'none'; }
     
     function setAfkSubMode(mode) {
         currentAfkSubMode = mode;
@@ -844,6 +1210,7 @@
         document.getElementById('afkChance').classList.toggle('active', mode === 'chance');
         document.getElementById('afkTimeReq').classList.toggle('active', mode === 'time');
         calculateAfkOverworld();
+        setTimeout(saveState, 50);
     }
     
     function setLimboSubMode(mode) {
@@ -853,27 +1220,13 @@
         document.getElementById('limboChance').classList.toggle('active', mode === 'chance');
         document.getElementById('limboTimeReq').classList.toggle('active', mode === 'time');
         calculateAfkLimbo();
+        setTimeout(saveState, 50);
     }
     
-    function setTargetPreset(percent) {
-        document.getElementById('targetP').value = percent;
-        calculateAfkOverworld();
-    }
-    
-    function setDaysPreset(days) {
-        document.getElementById('days').value = days;
-        calculateAfkOverworld();
-    }
-    
-    function setLimboTargetPreset(percent) {
-        document.getElementById('limboTargetP').value = percent;
-        calculateAfkLimbo();
-    }
-    
-    function setLimboDaysPreset(days) {
-        document.getElementById('limboDays').value = days;
-        calculateAfkLimbo();
-    }
+    function setTargetPreset(percent) { document.getElementById('targetP').value = percent; calculateAfkOverworld(); }
+    function setDaysPreset(days) { document.getElementById('days').value = days; calculateAfkOverworld(); }
+    function setLimboTargetPreset(percent) { document.getElementById('limboTargetP').value = percent; calculateAfkLimbo(); }
+    function setLimboDaysPreset(days) { document.getElementById('limboDays').value = days; calculateAfkLimbo(); }
     
     function updateBiomeOptions() {
         const biome = document.getElementById('biome').value;
@@ -881,16 +1234,8 @@
         const perpetual = document.getElementById('perpetualBiome').checked;
         const useSC = document.getElementById('useStrangeController');
         const useBR = document.getElementById('useBiomeRandomizer');
-        
-        // Disable item checkboxes if perpetual is checked
-        if (perpetual) {
-            useSC.disabled = true;
-            useBR.disabled = true;
-        } else {
-            useSC.disabled = false;
-            useBR.disabled = false;
-        }
-        
+        if (perpetual) { useSC.disabled = true; useBR.disabled = true; }
+        else { useSC.disabled = false; useBR.disabled = false; }
         if (biome === 'cyberspace' || biome === 'dreamspace' || biome === 'glitch') {
             optionsDiv.style.opacity = '0.5';
             document.querySelector('input[name="biomeType"][value="exclusive"]').checked = true;
@@ -901,8 +1246,8 @@
             document.querySelector('input[name="biomeType"][value="native"]').disabled = false;
             document.querySelector('input[name="biomeType"][value="exclusive"]').disabled = false;
         }
-        
         calculateAfkOverworld();
+        setTimeout(saveState, 50);
     }
     
     // Helper functions
@@ -917,28 +1262,21 @@
     }
     
     function probabilityAtLeastNRolls(p, rolls, n) {
-        if (n <= 1) {
-            return 1 - Math.pow(1 - p, rolls);
-        }
-        
+        if (n <= 1) return 1 - Math.pow(1 - p, rolls);
         let log1MinusP = Math.log(1 - p);
         let logP = Math.log(p);
         let logProbLessThanN = -Infinity;
-        
         for (let k = 0; k < n; k++) {
             let logTerm = logChoose(rolls, k) + k * logP + (rolls - k) * log1MinusP;
             logProbLessThanN = logSumExp(logProbLessThanN, logTerm);
         }
-        
         return 1 - Math.exp(logProbLessThanN);
     }
     
     function logSumExp(logA, logB) {
         if (logA === -Infinity) return logB;
         if (logB === -Infinity) return logA;
-        if (logA > logB) {
-            return logA + Math.log(1 + Math.exp(logB - logA));
-        }
+        if (logA > logB) return logA + Math.log(1 + Math.exp(logB - logA));
         return logB + Math.log(1 + Math.exp(logA - logB));
     }
     
@@ -959,169 +1297,109 @@
         input.addEventListener('input', function() {
             let raw = this.value.replace(/,/g, '');
             let num = parseFloat(raw);
-            if (!isNaN(num)) {
+            if (!isNaN(num) && num >= 1) {
                 this.value = formatWithCommas(Math.floor(num));
+            } else if (this.value === '' || this.value === '0') {
+                // Allow empty input
+            } else {
+                // Keep as is but don't format
             }
-            if (currentGlobalMode === 'afkOverworld') calculateAfkOverworld();
-            else if (currentGlobalMode === 'afkLimbo') calculateAfkLimbo();
-            else calculatePotionMode();
+            calculate();
         });
+        if (!input.value) {
+            input.value = '';
+        }
     }
     
     function getBiomeMultiplier(biomeId, isPerpetual, isNative, useSC, useBR, lanternBiome) {
         const biomeData = {
-            windy: { boost: 3 },
-            snowy: { boost: 3 },
-            rainy: { boost: 4 },
-            sandstorm: { boost: 4 },
-            hell: { boost: 6 },
-            starfall: { boost: 5 },
-            heaven: { boost: 5 },
-            corruption: { boost: 5 },
-            null: { boost: 1000 },
-            singularity: { boost: 5 },
-            day: { boost: 1 },
-            night: { boost: 10 },
+            windy: { boost: 3 }, snowy: { boost: 3 }, rainy: { boost: 4 },
+            sandstorm: { boost: 4 }, hell: { boost: 6 }, starfall: { boost: 5 },
+            heaven: { boost: 5 }, corruption: { boost: 5 }, null: { boost: 1000 },
+            singularity: { boost: 5 }, day: { boost: 1 }, night: { boost: 10 },
             cyberspace: { boost: 1, special: true },
             dreamspace: { boost: 1, special: true },
             glitch: { boost: 1, special: true },
             none: { boost: 1 }
         };
-        
         const biome = biomeData[biomeId];
         if (!biome) return 1;
-        
         if (biomeId === 'cyberspace') {
             if (isPerpetual) return 1;
-            const hasItems = useSC || useBR;
-            if (!hasItems) return 0;
+            if (!useSC && !useBR) return 0;
         }
-        
         let uptime;
-        if (isPerpetual) {
-            uptime = 1;
-        } else {
-            uptime = getEffectiveUptime(biomeId, useSC, useBR, lanternBiome);
-        }
-        
-        if (isNative) {
-            return (uptime * biome.boost) + (1 - uptime);
-        } else {
-            return uptime;
-        }
+        if (isPerpetual) uptime = 1;
+        else uptime = getEffectiveUptime(biomeId, useSC, useBR, lanternBiome);
+        if (isNative) return (uptime * biome.boost) + (1 - uptime);
+        else return uptime;
     }
     
     function calculateOverworldLuck() {
         let resValue = parseFloat(document.getElementById('resonance').value);
         if (isNaN(resValue)) resValue = 0;
         resValue = Math.min(22, Math.max(0, resValue));
-        
         let displayedLuck = parseFloat(document.getElementById('luck').value) || 1;
         let tempLuck = displayedLuck;
-        
         const eventMulti = parseFloat(document.getElementById('eventMulti').value) || 1;
         tempLuck /= eventMulti;
-        
         const vip = document.getElementById('vip').checked;
         const vipPlus = document.getElementById('vipPlus').checked;
         let vipMulti = 1;
         if (vip && vipPlus) vipMulti = 1.3;
         else if (vip || vipPlus) vipMulti = 1.2;
         tempLuck /= vipMulti;
-        
         const left = document.getElementById('leftGlove').value;
-        let leftMultiplier = 1;
-        let leftAdditiveLuck = 0;
-        
-        if (left === "thing") {
-            leftMultiplier = 2.0;
-        } else if (left === "pole") {
-            leftAdditiveLuck = 5;
-            leftMultiplier = 1.1;
-        } else if (left === "jackpot") {
-            leftAdditiveLuck = 0.77;
-        } else if (left === "grav") {
-            leftMultiplier = 1.5;
-        } else if (left === "gemstone") {
-            leftAdditiveLuck = 0.075;
-        } else if (left === "xmas") {
-            leftMultiplier = 1.5;
-        } else if (left === "present") {
-            leftMultiplier = 1.36;
-        } else if (left === "1.35") {
-            leftMultiplier = 1.35;
-        } else if (left === "blessed" || left === "tide") {
-            leftMultiplier = 1;
-        } else {
-            leftMultiplier = parseFloat(left) || 1;
-        }
-        
+        let leftMultiplier = 1, leftAdditiveLuck = 0;
+        if (left === "thing") leftMultiplier = 2.0;
+        else if (left === "pole") { leftAdditiveLuck = 5; leftMultiplier = 1.1; }
+        else if (left === "jackpot") leftAdditiveLuck = 0.77;
+        else if (left === "grav") leftMultiplier = 1.5;
+        else if (left === "gemstone") leftAdditiveLuck = 0.075;
+        else if (left === "xmas") leftMultiplier = 1.5;
+        else if (left === "present") leftMultiplier = 1.36;
+        else if (left === "1.35") leftMultiplier = 1.35;
+        else if (left === "blessed" || left === "tide") leftMultiplier = 1;
+        else leftMultiplier = parseFloat(left) || 1;
         let totalLuck = (tempLuck + leftAdditiveLuck) * leftMultiplier;
         totalLuck *= vipMulti;
         totalLuck *= eventMulti;
-        
         return totalLuck;
     }
     
     function calculateLimboLuck() {
         let totalLuck = 1;
-        
-        const forbidden1 = document.getElementById('forbidden1').checked;
-        const forbidden2 = document.getElementById('forbidden2').checked;
-        const forbidden3 = document.getElementById('forbidden3').checked;
-        
-        if (forbidden1) totalLuck += 0.7;
-        if (forbidden2) totalLuck += 3.25;
-        if (forbidden3) totalLuck += 13.5;
-        
+        if (document.getElementById('forbidden1').checked) totalLuck += 0.7;
+        if (document.getElementById('forbidden2').checked) totalLuck += 3.25;
+        if (document.getElementById('forbidden3').checked) totalLuck += 13.5;
         const rightGloveValue = document.getElementById('limboRightGlove').value;
         const [speed, luck] = rightGloveValue.split(',').map(Number);
         totalLuck += luck || 0;
-        
         const leftGloveValue = document.getElementById('limboLeftGlove').value;
         const leftParts = leftGloveValue.split(',');
         const gloveName = leftParts[0];
-        let leftMultiplier = 1;
-        let leftAdditiveLuck = 0;
-        
-        if (gloveName === "thing") {
-            leftMultiplier = 2.0;
-        } else if (gloveName === "pole") {
-            leftAdditiveLuck = 5;
-            leftMultiplier = 1.1;
-        } else if (gloveName === "jackpot") {
-            leftAdditiveLuck = 0.77;
-        } else if (gloveName === "grav") {
-            leftMultiplier = 1.5;
-        } else if (gloveName === "gemstone") {
-            leftAdditiveLuck = 0.075;
-        } else if (gloveName === "xmas") {
-            leftMultiplier = 1.5;
-        } else if (gloveName === "present") {
-            leftMultiplier = 1.36;
-        } else if (gloveName === "1.35") {
-            leftMultiplier = 1.35;
-        } else {
-            leftMultiplier = parseFloat(gloveName) || 1;
-            leftAdditiveLuck = leftParts.length > 1 ? parseFloat(leftParts[1]) : 0;
-        }
-        
+        let leftMultiplier = 1, leftAdditiveLuck = 0;
+        if (gloveName === "thing") leftMultiplier = 2.0;
+        else if (gloveName === "pole") { leftAdditiveLuck = 5; leftMultiplier = 1.1; }
+        else if (gloveName === "jackpot") leftAdditiveLuck = 0.77;
+        else if (gloveName === "grav") leftMultiplier = 1.5;
+        else if (gloveName === "gemstone") leftAdditiveLuck = 0.075;
+        else if (gloveName === "xmas") leftMultiplier = 1.5;
+        else if (gloveName === "present") leftMultiplier = 1.36;
+        else if (gloveName === "1.35") leftMultiplier = 1.35;
+        else { leftMultiplier = parseFloat(gloveName) || 1; leftAdditiveLuck = leftParts.length > 1 ? parseFloat(leftParts[1]) : 0; }
         totalLuck += leftAdditiveLuck;
         totalLuck *= leftMultiplier;
-        
         const vip = document.getElementById('limboVip').checked;
         const vipPlus = document.getElementById('limboVipPlus').checked;
         let vipMulti = 1;
         if (vip && vipPlus) vipMulti = 1.3;
         else if (vip || vipPlus) vipMulti = 1.2;
         totalLuck *= vipMulti;
-        
         const davesHope = parseFloat(document.getElementById('davesHope').value) || 1;
         totalLuck *= davesHope;
-        
         const eventMulti = parseFloat(document.getElementById('limboEventMulti').value) || 1;
         totalLuck *= eventMulti;
-        
         return totalLuck;
     }
     
@@ -1135,12 +1413,8 @@
         return qty;
     }
     
-    // Generate roll batches for potion mode
     function generatePotionRolls(stacked) {
         const rolls = [];
-        
-        // Get quantities for each potion type
-        // For Wish Star: each quantity is multiplied by 5 (since 1 Wish Star = 5 rolls of 50k)
         const potions = {
             heavenly: { luck: 150000, qty: getPotionLuck('potionHeavenly', 'potionHeavenlyQty') },
             godlike: { luck: 400000, qty: getPotionLuck('potionGodlike', 'potionGodlikeQty') },
@@ -1155,27 +1429,10 @@
             oblivion: { luck: 600000, qty: getPotionLuck('potionOblivion', 'potionOblivionQty') },
             voidHeart: { luck: 300000, qty: getPotionLuck('potionVoidHeart', 'potionVoidHeartQty') }
         };
-        
-        // Always add exclusive potions as separate rolls (Oblivion, Void Heart)
-        // Pumpking's Blood is also exclusive but can be event-only, handled above
-        if (potions.oblivion.qty > 0) {
-            for (let i = 0; i < potions.oblivion.qty; i++) {
-                rolls.push({ luck: potions.oblivion.luck, name: 'Oblivion' });
-            }
-        }
-        if (potions.voidHeart.qty > 0) {
-            for (let i = 0; i < potions.voidHeart.qty; i++) {
-                rolls.push({ luck: potions.voidHeart.luck, name: 'Void Heart' });
-            }
-        }
-        if (potions.pumpking.qty > 0) {
-            for (let i = 0; i < potions.pumpking.qty; i++) {
-                rolls.push({ luck: potions.pumpking.luck, name: 'Pumpking\'s Blood' });
-            }
-        }
-        
+        if (potions.oblivion.qty > 0) { for (let i = 0; i < potions.oblivion.qty; i++) rolls.push({ luck: potions.oblivion.luck, name: 'Oblivion' }); }
+        if (potions.voidHeart.qty > 0) { for (let i = 0; i < potions.voidHeart.qty; i++) rolls.push({ luck: potions.voidHeart.luck, name: 'Void Heart' }); }
+        if (potions.pumpking.qty > 0) { for (let i = 0; i < potions.pumpking.qty; i++) rolls.push({ luck: potions.pumpking.luck, name: 'Pumpking\'s Blood' }); }
         if (stacked) {
-            // Stacked mode: combine potions together
             const stackable = [
                 { id: 'heavenly', luck: potions.heavenly.luck, qty: potions.heavenly.qty },
                 { id: 'godlike', luck: potions.godlike.luck, qty: potions.godlike.qty },
@@ -1187,34 +1444,15 @@
                 { id: 'redMoonI', luck: potions.redMoonI.luck, qty: potions.redMoonI.qty },
                 { id: 'redMoonII', luck: potions.redMoonII.luck, qty: potions.redMoonII.qty }
             ];
-            
-            // Filter out zero quantity
             const active = stackable.filter(p => p.qty > 0);
-            
-            // Keep rolling while any potion has quantity left
-            let rollIndex = 1;
             while (active.some(p => p.qty > 0)) {
-                let totalLuck = 0;
-                let nameParts = [];
-                
+                let totalLuck = 0, nameParts = [];
                 for (const potion of active) {
-                    if (potion.qty > 0) {
-                        totalLuck += potion.luck;
-                        nameParts.push(potion.id);
-                        potion.qty--;
-                    }
+                    if (potion.qty > 0) { totalLuck += potion.luck; nameParts.push(potion.id); potion.qty--; }
                 }
-                
-                if (totalLuck > 0) {
-                    rolls.push({ 
-                        luck: totalLuck, 
-                        name: nameParts.join('+') 
-                    });
-                }
-                rollIndex++;
+                if (totalLuck > 0) rolls.push({ luck: totalLuck, name: nameParts.join('+') });
             }
         } else {
-            // Sequential mode: each potion type gets its own rolls
             const stackable = [
                 { id: 'heavenly', luck: potions.heavenly.luck, qty: potions.heavenly.qty },
                 { id: 'godlike', luck: potions.godlike.luck, qty: potions.godlike.qty },
@@ -1226,17 +1464,24 @@
                 { id: 'redMoonI', luck: potions.redMoonI.luck, qty: potions.redMoonI.qty },
                 { id: 'redMoonII', luck: potions.redMoonII.luck, qty: potions.redMoonII.qty }
             ];
-            
             for (const potion of stackable) {
                 if (potion.qty > 0) {
-                    for (let i = 0; i < potion.qty; i++) {
-                        rolls.push({ luck: potion.luck, name: potion.id });
-                    }
+                    for (let i = 0; i < potion.qty; i++) rolls.push({ luck: potion.luck, name: potion.id });
                 }
             }
         }
-        
         return rolls;
+    }
+    
+    function updateProgressBar(elementId, percent) {
+        const bar = document.getElementById(elementId);
+        if (!bar) return;
+        const clampedPercent = Math.min(percent, 100);
+        bar.style.width = `${clampedPercent}%`;
+        bar.className = 'progress-bar';
+        if (clampedPercent < 10) bar.classList.add('progress-low');
+        else if (clampedPercent < 50) bar.classList.add('progress-mid');
+        else bar.classList.add('progress-high');
     }
     
     function calculatePotionMode() {
@@ -1244,64 +1489,42 @@
         let rawRarity = rarityInput.value.replace(/,/g, '');
         let R = Math.floor(parseFloat(rawRarity));
         if (R < 1 || isNaN(R)) R = 1;
-        rarityInput.value = formatWithCommas(R);
-        
+        if (rarityInput.value && rarityInput.value !== '') {
+            rarityInput.value = formatWithCommas(R);
+        }
         const stacked = document.getElementById('potionStacked').checked;
         const rolls = generatePotionRolls(stacked);
-        
         const totalRolls = rolls.length;
-        const isMultiAura = document.getElementById('potionMultiAura').checked;
         const auraCount = parseInt(document.getElementById('potionAuraCount').value) || 1;
-        
-        // Apply VIP and event multiplier to each roll's luck
         const vip = document.getElementById('potionVip')?.checked;
         const vipPlus = document.getElementById('potionVipPlus')?.checked;
         let vipMulti = 1;
         if (vip && vipPlus) vipMulti = 1.3;
         else if (vip || vipPlus) vipMulti = 1.2;
         const eventMulti = parseFloat(document.getElementById('potionEventMulti')?.value) || 1;
-        
-        // Calculate probability for each roll and combine
         let overallP = 0;
         if (totalRolls > 0) {
-            // For multiple auras, we need to calculate probability across all rolls
-            const pPerRolls = rolls.map(r => {
-                let luck = r.luck * vipMulti * eventMulti;
-                return Math.min(luck / R, 1);
-            });
-            
-            if (isMultiAura && auraCount > 1) {
-                // Need to calculate probability of getting at least auraCount successes across all rolls
-                // This is complex; for simplicity, we calculate the probability of at least one success
-                // and then use the negative binomial for the actual calculation
+            const pPerRolls = rolls.map(r => { let luck = r.luck * vipMulti * eventMulti; return Math.min(luck / R, 1); });
+            if (auraCount > 1) {
                 let probAtLeastOne = 1;
-                for (const p of pPerRolls) {
-                    probAtLeastOne *= (1 - p);
-                }
+                for (const p of pPerRolls) probAtLeastOne *= (1 - p);
                 probAtLeastOne = 1 - probAtLeastOne;
-                
-                // For multiple auras, we approximate using the effective probability
-                // This is a simplification but works for most cases
                 const avgP = probAtLeastOne / totalRolls;
                 overallP = probabilityAtLeastNRolls(avgP, totalRolls, auraCount);
             } else {
-                // Calculate probability of at least one success across all rolls
                 let probNoSuccess = 1;
-                for (const p of pPerRolls) {
-                    probNoSuccess *= (1 - p);
-                }
+                for (const p of pPerRolls) probNoSuccess *= (1 - p);
                 overallP = 1 - probNoSuccess;
             }
         }
-        
         const chancePercent = overallP * 100;
-        document.getElementById('potionResult').innerText = (overallP >= 0.9999999) ? "99.99%+" : chancePercent.toFixed(4) + "%";
+        document.getElementById('potionResult').innerText = (overallP >= 0.9999999) ? "99.99%+" : formatPercent(chancePercent);
         document.getElementById('potionDetail').innerText = `${totalRolls} total rolls`;
-        
+        updateProgressBar('potionProgressBar', chancePercent);
         const summaryDiv = document.getElementById('potionSummaryText');
         if (totalRolls > 0) {
             const modeText = stacked ? 'stacked' : 'sequential';
-            if (isMultiAura && auraCount > 1) {
+            if (auraCount > 1) {
                 summaryDiv.innerHTML = `Using ${totalRolls} ${modeText} roll${totalRolls !== 1 ? 's' : ''}, you have a ${chancePercent.toFixed(2)}% chance of getting ${auraCount} of this aura.`;
             } else {
                 summaryDiv.innerHTML = `Using ${totalRolls} ${modeText} roll${totalRolls !== 1 ? 's' : ''}, you have a ${chancePercent.toFixed(2)}% chance of getting this aura.`;
@@ -1309,7 +1532,7 @@
         } else {
             summaryDiv.innerHTML = `Enter quantities for potions above to see your chance.`;
         }
-        
+        currentResultText = summaryDiv.innerHTML;
         const potionResultBox = document.getElementById('potionResultBox');
         potionResultBox.classList.remove('status-low', 'status-mid', 'status-high');
         if (overallP > 0) {
@@ -1324,87 +1547,65 @@
         let rawRarity = rarityInput.value.replace(/,/g, '');
         let R = Math.floor(parseFloat(rawRarity));
         if (R < 1 || isNaN(R)) R = 1;
-        rarityInput.value = formatWithCommas(R);
-        
+        if (rarityInput.value && rarityInput.value !== '') {
+            rarityInput.value = formatWithCommas(R);
+        }
         const biomeId = document.getElementById('biome').value;
         const isPerpetual = document.getElementById('perpetualBiome').checked;
         const isNative = document.querySelector('input[name="biomeType"]:checked')?.value === 'native';
         const useSC = document.getElementById('useStrangeController').checked && !isPerpetual;
         const useBR = document.getElementById('useBiomeRandomizer').checked && !isPerpetual;
         const lanternBiome = document.getElementById('lantern').value;
-        
         let totalLuck = calculateOverworldLuck();
-        
         let biomeMulti = getBiomeMultiplier(biomeId, isPerpetual, isNative, useSC, useBR, lanternBiome);
         let pPerRoll = (totalLuck / R) * biomeMulti;
         pPerRoll = Math.min(pPerRoll, 1);
-        
         let resValue = parseFloat(document.getElementById('resonance').value);
         if (isNaN(resValue)) resValue = 0;
         resValue = Math.min(22, Math.max(0, resValue));
-        
         let speedBonus = 0;
         speedBonus += resValue;
-        
         const rightGloveValue = document.getElementById('rightGlove').value;
         const [rightSpeed, rightLuck] = rightGloveValue.split(',').map(Number);
         speedBonus += rightSpeed || 0;
-        
         const left = document.getElementById('leftGlove').value;
         if (left === "pole") speedBonus += 13.3;
         else if (left === "jackpot") speedBonus += 7;
         else if (left === "gemstone") speedBonus += 1.25;
-        
         const bankLevel = parseInt(document.getElementById('bankLevel').value) || 0;
         const bankBonuses = {0:0, 1:7, 2:14, 3:21, 4:28, 5:35, 6:42, 7:50};
         speedBonus += bankBonuses[bankLevel];
-        
         speedBonus += parseFloat(document.getElementById('buffBasic').value) || 0;
         speedBonus += parseFloat(document.getElementById('buffHaste').value) || 0;
         speedBonus += parseFloat(document.getElementById('buffGod').value) || 0;
         speedBonus += parseFloat(document.getElementById('buffKnowledge').value) || 0;
         speedBonus += parseFloat(document.getElementById('buffEventPot').value) || 0;
         speedBonus += parseFloat(document.getElementById('buffCombat').value) || 0;
-        
         const baseRollSpeed = document.getElementById('quickRoll').checked ? 1 : 0.5;
         let rollsPerSecond = baseRollSpeed * (1 + (speedBonus / 100));
-        
         const skipRollsPerSecond = 11 * baseRollSpeed;
         const skipCount = parseFloat(document.getElementById('rollSkips').value) || 0;
         const infiniteSkips = document.getElementById('infiniteSkips').checked;
-        
-        const isMultiAura = document.getElementById('multiAura').checked;
         const auraCount = parseInt(document.getElementById('auraCount').value) || 1;
-        
         if (currentAfkSubMode === 'time') {
             const targetInput = document.getElementById('targetP');
             let targetVal = (parseFloat(targetInput.value) || 0) / 100;
             if (targetVal >= 1) targetVal = 0.9999;
-            
             let timeNeeded = 0;
             if (targetVal > 0 && pPerRoll > 0 && pPerRoll < 1) {
                 let rollsNeeded;
-                if (isMultiAura && auraCount > 1) {
-                    rollsNeeded = findRollsForTarget(pPerRoll, targetVal, auraCount);
-                } else {
-                    rollsNeeded = Math.log(1 - targetVal) / Math.log(1 - pPerRoll);
-                }
-                
-                if (infiniteSkips) {
-                    timeNeeded = rollsNeeded / skipRollsPerSecond;
-                } else if (skipCount > 0) {
-                    if (skipCount >= rollsNeeded) {
-                        timeNeeded = rollsNeeded / skipRollsPerSecond;
-                    } else {
+                if (auraCount > 1) rollsNeeded = findRollsForTarget(pPerRoll, targetVal, auraCount);
+                else rollsNeeded = Math.log(1 - targetVal) / Math.log(1 - pPerRoll);
+                if (infiniteSkips) timeNeeded = rollsNeeded / skipRollsPerSecond;
+                else if (skipCount > 0) {
+                    if (skipCount >= rollsNeeded) timeNeeded = rollsNeeded / skipRollsPerSecond;
+                    else {
                         const skipTimeNeeded = skipCount / skipRollsPerSecond;
                         const remainingRolls = rollsNeeded - skipCount;
                         const normalTimeNeeded = remainingRolls / rollsPerSecond;
                         timeNeeded = skipTimeNeeded + normalTimeNeeded;
                     }
-                } else {
-                    timeNeeded = rollsNeeded / rollsPerSecond;
-                }
-                
+                } else timeNeeded = rollsNeeded / rollsPerSecond;
                 const daysNeeded = timeNeeded / 86400;
                 let resultElement = document.getElementById('targetPResult');
                 if (!resultElement) {
@@ -1414,7 +1615,9 @@
                     document.getElementById('afkTimeReqSection').appendChild(resultBox);
                     resultElement = document.getElementById('targetPResult');
                 }
-                resultElement.innerHTML = `<div class="result-val">${daysNeeded > 1000 ? daysNeeded.toExponential(2) + " Days" : daysNeeded.toFixed(2) + " Days"}</div><span class="stat-subtext">${Math.ceil(rollsNeeded).toLocaleString()} rolls needed</span>`;
+                const timeStr = daysNeeded > 1000 ? daysNeeded.toExponential(2) + " Days" : formatTime(daysNeeded);
+                resultElement.innerHTML = `<div class="result-val">${timeStr}</div><span class="stat-subtext">${Math.ceil(rollsNeeded).toLocaleString()} rolls needed</span>`;
+                currentResultText = `To get this aura, you need to AFK for approximately ${timeStr}. (${Math.ceil(rollsNeeded).toLocaleString()} rolls needed)`;
             } else {
                 let resultElement = document.getElementById('targetPResult');
                 if (!resultElement) {
@@ -1425,29 +1628,24 @@
                     resultElement = document.getElementById('targetPResult');
                 }
                 resultElement.innerHTML = `<div class="result-val">${(targetVal <= 0) ? "Enter target %" : "Impossible"}</div><span class="stat-subtext">0 rolls needed</span>`;
+                currentResultText = (targetVal <= 0) ? 'Enter a target percentage above.' : 'This aura may be impossible to calculate with your current setup.';
             }
         } else {
             const days = parseFloat(document.getElementById('days').value) || 0;
             const totalSeconds = 86400 * days;
-            
             let totalRolls;
-            if (infiniteSkips) {
-                totalRolls = totalSeconds * skipRollsPerSecond;
-            } else {
+            if (infiniteSkips) totalRolls = totalSeconds * skipRollsPerSecond;
+            else {
                 const skipTime = Math.min(skipCount / skipRollsPerSecond, totalSeconds);
                 const skipRolls = skipTime * skipRollsPerSecond;
                 const normalTime = totalSeconds - skipTime;
                 const normalRolls = normalTime * rollsPerSecond;
                 totalRolls = skipRolls + normalRolls;
             }
-            
             let P;
-            if (isMultiAura && auraCount > 1 && totalRolls > 0 && pPerRoll > 0 && pPerRoll < 1) {
+            if (auraCount > 1 && totalRolls > 0 && pPerRoll > 0 && pPerRoll < 1) {
                 P = probabilityAtLeastNRolls(pPerRoll, totalRolls, auraCount);
-            } else {
-                P = (totalRolls > 0 && pPerRoll > 0) ? 1 - Math.pow((1 - pPerRoll), totalRolls) : 0;
-            }
-            
+            } else P = (totalRolls > 0 && pPerRoll > 0) ? 1 - Math.pow((1 - pPerRoll), totalRolls) : 0;
             const chancePercent = P * 100;
             let resultElement = document.getElementById('daysResult');
             if (!resultElement) {
@@ -1457,34 +1655,25 @@
                 document.getElementById('afkChanceSection').appendChild(resultBox);
                 resultElement = document.getElementById('daysResult');
             }
-            resultElement.innerHTML = `<div class="result-val">${(P >= 0.9999999) ? "99.99%+" : chancePercent.toFixed(4) + "%"}</div><span class="stat-subtext">${Math.floor(totalRolls).toLocaleString()} total rolls</span>`;
+            const pStr = (P >= 0.9999999) ? "99.99%+" : formatPercent(chancePercent);
+            resultElement.innerHTML = `<div class="result-val">${pStr}</div><div class="progress-container"><div class="progress-bar" id="overworldProgressBar" style="width:${Math.min(chancePercent, 100)}%;"></div></div><span class="stat-subtext">${Math.floor(totalRolls).toLocaleString()} total rolls</span>`;
+            updateProgressBar('overworldProgressBar', chancePercent);
+            currentResultText = `After AFKing for ${days} day${days !== 1 ? 's' : ''}, you have a ${chancePercent.toFixed(2)}% chance of getting this aura. (${Math.floor(totalRolls).toLocaleString()} total rolls)`;
         }
+        const summaryDiv = document.getElementById('summaryText');
+        summaryDiv.innerHTML = currentResultText;
     }
     
     function findRollsForTarget(p, targetProb, n, maxRolls = 1e12) {
-        if (n <= 1) {
-            let rollsNeeded = Math.log(1 - targetProb) / Math.log(1 - p);
-            return Math.ceil(rollsNeeded);
-        }
-        
-        let low = n;
-        let high = maxRolls;
-        let bestRolls = maxRolls;
-        
+        if (n <= 1) { let rollsNeeded = Math.log(1 - targetProb) / Math.log(1 - p); return Math.ceil(rollsNeeded); }
+        let low = n, high = maxRolls, bestRolls = maxRolls;
         for (let iter = 0; iter < 100; iter++) {
             let mid = Math.floor((low + high) / 2);
             let prob = probabilityAtLeastNRolls(p, mid, n);
-            
-            if (prob >= targetProb) {
-                bestRolls = mid;
-                high = mid;
-            } else {
-                low = mid + 1;
-            }
-            
+            if (prob >= targetProb) { bestRolls = mid; high = mid; }
+            else low = mid + 1;
             if (low >= high) break;
         }
-        
         return bestRolls;
     }
     
@@ -1493,50 +1682,39 @@
         let rawRarity = rarityInput.value.replace(/,/g, '');
         let R = Math.floor(parseFloat(rawRarity));
         if (R < 1 || isNaN(R)) R = 1;
-        rarityInput.value = formatWithCommas(R);
-        
+        if (rarityInput.value && rarityInput.value !== '') {
+            rarityInput.value = formatWithCommas(R);
+        }
         let totalLuck = calculateLimboLuck();
         let pPerRoll = totalLuck / R;
         pPerRoll = Math.min(pPerRoll, 1);
-        
         let speedBonus = 0;
         const rightGloveValue = document.getElementById('limboRightGlove').value;
         const [rightSpeed, rightLuck] = rightGloveValue.split(',').map(Number);
         speedBonus += rightSpeed || 0;
-        
         const leftGloveValue = document.getElementById('limboLeftGlove').value;
         const leftParts = leftGloveValue.split(',');
         const gloveName = leftParts[0];
         if (gloveName === "pole") speedBonus += 13.3;
         else if (gloveName === "jackpot") speedBonus += 7;
         else if (gloveName === "gemstone") speedBonus += 1.25;
-        
         if (document.getElementById('forbidden1').checked) speedBonus += 10;
         if (document.getElementById('forbidden2').checked) speedBonus += 25;
         if (document.getElementById('forbidden3').checked) speedBonus += 75;
-        
         const baseRollSpeed = document.getElementById('limboQuickRoll').checked ? 1 : 0.5;
         let rollsPerSecond = baseRollSpeed * (1 + (speedBonus / 100));
-        
-        const isMultiAura = document.getElementById('limboMultiAura').checked;
         const auraCount = parseInt(document.getElementById('limboAuraCount').value) || 1;
-        
         if (currentLimboSubMode === 'time') {
             const targetInput = document.getElementById('limboTargetP');
             let targetVal = (parseFloat(targetInput.value) || 0) / 100;
             if (targetVal >= 1) targetVal = 0.9999;
-            
             let timeNeeded = 0;
             if (targetVal > 0 && pPerRoll > 0 && pPerRoll < 1) {
                 let rollsNeeded;
-                if (isMultiAura && auraCount > 1) {
-                    rollsNeeded = findRollsForTarget(pPerRoll, targetVal, auraCount);
-                } else {
-                    rollsNeeded = Math.log(1 - targetVal) / Math.log(1 - pPerRoll);
-                }
+                if (auraCount > 1) rollsNeeded = findRollsForTarget(pPerRoll, targetVal, auraCount);
+                else rollsNeeded = Math.log(1 - targetVal) / Math.log(1 - pPerRoll);
                 timeNeeded = rollsNeeded / rollsPerSecond;
                 const daysNeeded = timeNeeded / 86400;
-                
                 let resultElement = document.getElementById('limboTargetPResult');
                 if (!resultElement) {
                     const resultBox = document.createElement('div');
@@ -1545,7 +1723,9 @@
                     document.getElementById('limboTimeReqSection').appendChild(resultBox);
                     resultElement = document.getElementById('limboTargetPResult');
                 }
-                resultElement.innerHTML = `<div class="result-val">${daysNeeded > 1000 ? daysNeeded.toExponential(2) + " Days" : daysNeeded.toFixed(2) + " Days"}</div><span class="stat-subtext">${Math.ceil(rollsNeeded).toLocaleString()} rolls needed</span>`;
+                const timeStr = daysNeeded > 1000 ? daysNeeded.toExponential(2) + " Days" : formatTime(daysNeeded);
+                resultElement.innerHTML = `<div class="result-val">${timeStr}</div><span class="stat-subtext">${Math.ceil(rollsNeeded).toLocaleString()} rolls needed</span>`;
+                currentResultText = `To get this aura in Limbo, you need to AFK for approximately ${timeStr}. (${Math.ceil(rollsNeeded).toLocaleString()} rolls needed)`;
             } else {
                 let resultElement = document.getElementById('limboTargetPResult');
                 if (!resultElement) {
@@ -1556,19 +1736,16 @@
                     resultElement = document.getElementById('limboTargetPResult');
                 }
                 resultElement.innerHTML = `<div class="result-val">${(targetVal <= 0) ? "Enter target %" : "Impossible"}</div><span class="stat-subtext">0 rolls needed</span>`;
+                currentResultText = (targetVal <= 0) ? 'Enter a target percentage above.' : 'This aura may be impossible to calculate with your current Limbo setup.';
             }
         } else {
             const days = parseFloat(document.getElementById('limboDays').value) || 0;
             const totalSeconds = 86400 * days;
             const totalRolls = totalSeconds * rollsPerSecond;
-            
             let P;
-            if (isMultiAura && auraCount > 1 && totalRolls > 0 && pPerRoll > 0 && pPerRoll < 1) {
+            if (auraCount > 1 && totalRolls > 0 && pPerRoll > 0 && pPerRoll < 1) {
                 P = probabilityAtLeastNRolls(pPerRoll, totalRolls, auraCount);
-            } else {
-                P = (totalRolls > 0 && pPerRoll > 0) ? 1 - Math.pow((1 - pPerRoll), totalRolls) : 0;
-            }
-            
+            } else P = (totalRolls > 0 && pPerRoll > 0) ? 1 - Math.pow((1 - pPerRoll), totalRolls) : 0;
             const chancePercent = P * 100;
             let resultElement = document.getElementById('limboDaysResult');
             if (!resultElement) {
@@ -1578,8 +1755,13 @@
                 document.getElementById('limboChanceSection').appendChild(resultBox);
                 resultElement = document.getElementById('limboDaysResult');
             }
-            resultElement.innerHTML = `<div class="result-val">${(P >= 0.9999999) ? "99.99%+" : chancePercent.toFixed(4) + "%"}</div><span class="stat-subtext">${Math.floor(totalRolls).toLocaleString()} total rolls</span>`;
+            const pStr = (P >= 0.9999999) ? "99.99%+" : formatPercent(chancePercent);
+            resultElement.innerHTML = `<div class="result-val">${pStr}</div><div class="progress-container"><div class="progress-bar" id="limboProgressBar" style="width:${Math.min(chancePercent, 100)}%;"></div></div><span class="stat-subtext">${Math.floor(totalRolls).toLocaleString()} total rolls</span>`;
+            updateProgressBar('limboProgressBar', chancePercent);
+            currentResultText = `After AFKing for ${days} day${days !== 1 ? 's' : ''} in Limbo, you have a ${chancePercent.toFixed(2)}% chance of getting this aura. (${Math.floor(totalRolls).toLocaleString()} total rolls)`;
         }
+        const summaryDiv = document.getElementById('summaryText');
+        summaryDiv.innerHTML = currentResultText;
     }
     
     function fullReset() {
@@ -1596,8 +1778,7 @@
         document.getElementById('quickRoll').checked = true;
         document.getElementById('vip').checked = true;
         document.getElementById('vipPlus').checked = true;
-        document.getElementById('multiAura').checked = false;
-        document.getElementById('auraCount').value = "2";
+        document.getElementById('auraCount').value = "1";
         document.getElementById('biome').value = "none";
         document.getElementById('perpetualBiome').checked = false;
         document.getElementById('useStrangeController').checked = false;
@@ -1606,6 +1787,7 @@
         document.querySelector('input[name="biomeType"][value="native"]').checked = true;
         document.getElementById('targetP').value = "";
         document.getElementById('days').value = "";
+        document.getElementById('rarity').value = "";
         
         // Reset AFK Limbo
         document.getElementById('limboLeftGlove').value = "thing,0,0";
@@ -1618,15 +1800,14 @@
         document.getElementById('forbidden1').checked = false;
         document.getElementById('forbidden2').checked = false;
         document.getElementById('forbidden3').checked = false;
-        document.getElementById('limboMultiAura').checked = false;
-        document.getElementById('limboAuraCount').value = "2";
+        document.getElementById('limboAuraCount').value = "1";
         document.getElementById('limboTargetP').value = "";
         document.getElementById('limboDays').value = "";
+        document.getElementById('limboRarity').value = "";
         
         // Reset Potion Mode
-        document.getElementById('potionRarity').value = "2,500,000,000";
+        document.getElementById('potionRarity').value = "";
         document.getElementById('potionStacked').checked = false;
-        document.getElementById('showEventPotions').checked = false;
         document.getElementById('potionHeavenly').checked = false;
         document.getElementById('potionHeavenlyQty').value = "0";
         document.getElementById('potionGodlike').checked = false;
@@ -1651,64 +1832,45 @@
         document.getElementById('potionOblivionQty').value = "0";
         document.getElementById('potionVoidHeart').checked = false;
         document.getElementById('potionVoidHeartQty').value = "0";
-        document.getElementById('potionMultiAura').checked = false;
-        document.getElementById('potionAuraCount').value = "2";
+        document.getElementById('potionAuraCount').value = "1";
         document.getElementById('potionVip').checked = true;
         document.getElementById('potionVipPlus').checked = true;
         document.getElementById('potionEventMulti').value = "1";
         
-        // Hide event potions
-        document.querySelectorAll('.event-potion').forEach(el => {
+        document.querySelectorAll('#potionModeContent .event-potion').forEach(el => {
             el.style.display = 'none';
         });
         
-        document.getElementById('rarity').value = "2,500,000,000";
-        document.getElementById('limboRarity').value = "2,500,000,000";
+        // Settings
+        document.getElementById('settingsShowEventGear').checked = true;
+        document.getElementById('settingsShowEventPotions').checked = false;
+        document.getElementById('settingsShowBiomes').checked = true;
+        document.getElementById('settingsShowUndoRedo').checked = true;
+        document.getElementById('settingsCompactMode').checked = false;
+        document.getElementById('settingsLightTheme').checked = false;
+        document.getElementById('settingsDecimalPrecision').value = '4';
+        document.getElementById('settingsTimeFormat').value = 'auto';
         
         updateBiomeOptions();
         setAfkSubMode('chance');
         setLimboSubMode('chance');
         setGlobalMode('afkOverworld');
+        applySettings();
         closeResetModal();
-    }
-    
-    function toggleEvents() {
-        const checked = document.getElementById('showEventGlobal').checked;
         
-        const luckGlove = document.getElementById('leftGlove');
-        const speedGlove = document.getElementById('rightGlove');
-        const limboLuckGlove = document.getElementById('limboLeftGlove');
-        const limboSpeedGlove = document.getElementById('limboRightGlove');
-        
-        document.querySelectorAll('.event-luck').forEach(el => el.style.display = checked ? "block" : "none");
-        document.querySelectorAll('.event-speed').forEach(el => el.style.display = checked ? "block" : "none");
-
-        if (!checked) {
-            if (luckGlove && luckGlove.selectedOptions[0]?.classList.contains('event-luck')) luckGlove.value = "1";
-            if (speedGlove && speedGlove.selectedOptions[0]?.classList.contains('event-speed')) speedGlove.value = "200,22.0";
-            if (limboLuckGlove && limboLuckGlove.selectedOptions[0]?.classList.contains('event-luck')) limboLuckGlove.value = "thing,0,0";
-            if (limboSpeedGlove && limboSpeedGlove.selectedOptions[0]?.classList.contains('event-speed')) limboSpeedGlove.value = "200,22.0";
-        }
-
-        checkRainySupport();
-        calculateAfkOverworld();
-    }
-    
-    function checkRainySupport() {
-        const v = document.getElementById('leftGlove').value;
-        document.getElementById('rainyContainer').style.display = (v === "tide" || v === "blessed") ? "block" : "none";
-        calculateAfkOverworld();
+        history.length = 0;
+        historyIndex = -1;
+        setTimeout(() => {
+            saveState();
+            updateUndoButtons();
+        }, 100);
     }
     
     // Event listeners
     document.getElementById('infiniteSkips')?.addEventListener('change', function() {
         const skipsInput = document.getElementById('rollSkips');
-        if (this.checked) {
-            skipsInput.disabled = true;
-            skipsInput.value = 0;
-        } else {
-            skipsInput.disabled = false;
-        }
+        if (this.checked) { skipsInput.disabled = true; skipsInput.value = 0; }
+        else skipsInput.disabled = false;
         calculateAfkOverworld();
     });
     
@@ -1724,14 +1886,13 @@
     setupRarityInput('limboRarity');
     setupRarityInput('potionRarity');
     
-    document.querySelectorAll('#afkOverworldContent input, #afkOverworldContent select').forEach(el => el.addEventListener('input', calculateAfkOverworld));
-    document.querySelectorAll('#afkLimboContent input, #afkLimboContent select').forEach(el => el.addEventListener('input', calculateAfkLimbo));
-    
-    // Potion mode specific listeners
-    document.querySelectorAll('#potionModeContent input, #potionModeContent select').forEach(el => el.addEventListener('input', calculatePotionMode));
-    
     window.addEventListener('load', function() {
         fullReset();
+        applySettings();
+        setTimeout(() => {
+            saveState();
+            updateUndoButtons();
+        }, 200);
     });
     
     calculateAfkOverworld();
