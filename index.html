@@ -25,8 +25,15 @@
         .check-row { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.75rem; color: #888; transition: color 0.3s; }
         .check-row input { width: 16px; height: 16px; margin: 0; cursor: pointer; }
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .result-box { padding: 20px; border-radius: 8px; text-align: center; margin-top: 10px; border: 2px solid #add8e6; background: rgba(173, 216, 230, 0.05); transition: border-color 0.3s, background 0.3s; }
-        .result-val { font-size: 2.1rem; font-weight: bold; color: #add8e6; margin: 5px 0; }
+        .result-box { padding: 20px; border-radius: 8px; text-align: center; margin-top: 10px; border: 2px solid #add8e6; background: rgba(173, 216, 230, 0.05); transition: border-color 0.3s, background 0.3s, box-shadow 0.3s; position: relative; overflow: hidden; }
+        .result-box .glow { position: absolute; inset: -2px; border-radius: 8px; opacity: 0; transition: opacity 0.5s; pointer-events: none; }
+        .result-box .glow-active { opacity: 1; }
+        .result-box.glow-low { border-color: #ff4d4d; box-shadow: 0 0 30px rgba(255, 77, 77, 0.3); }
+        .result-box.glow-mid { border-color: #ffcc00; box-shadow: 0 0 30px rgba(255, 204, 0, 0.3); }
+        .result-box.glow-high { border-color: #00ff88; box-shadow: 0 0 30px rgba(0, 255, 136, 0.3); }
+        .result-box.glow-very-high { border-color: #00ff88; box-shadow: 0 0 50px rgba(0, 255, 136, 0.6); animation: pulse 1.5s ease-in-out infinite; }
+        @keyframes pulse { 0%, 100% { box-shadow: 0 0 30px rgba(0, 255, 136, 0.3); } 50% { box-shadow: 0 0 60px rgba(0, 255, 136, 0.6); } }
+        .result-val { font-size: 2.1rem; font-weight: bold; color: #add8e6; margin: 5px 0; transition: color 0.3s; }
         .luck-status { font-size: 0.8rem; font-weight: bold; text-transform: uppercase; color: #add8e6; display: block; height: 1rem; }
         .stat-subtext { font-size: 0.7rem; color: #888; margin-top: 5px; display: block; transition: color 0.3s; }
         .status-low { border-color: #ff4d4d !important; } .status-mid { border-color: #ffcc00 !important; } .status-high { border-color: #00ff88 !important; }
@@ -90,7 +97,7 @@
         .footer-actions .import-btn { color: #ff6b35; border-color: #ff6b35; }
         .footer-actions .import-btn:hover { background: #ff6b35; color: #000; }
         .progress-container { width: 100%; height: 8px; background: #222; border-radius: 4px; margin: 8px 0; overflow: hidden; }
-        .progress-bar { height: 100%; border-radius: 4px; transition: width 0.3s ease; }
+        .progress-bar { height: 100%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94); width: 0%; }
         .progress-low { background: #ff4d4d; }
         .progress-mid { background: #ffcc00; }
         .progress-high { background: #00ff88; }
@@ -240,6 +247,7 @@
                     <label class="check-row"><input type="checkbox" id="settingsShowUndoRedo" checked onchange="applySettings()"> Show Undo/Redo Buttons</label>
                     <label class="check-row"><input type="checkbox" id="settingsCompactMode" onchange="applySettings()"> Compact Mode</label>
                     <label class="check-row"><input type="checkbox" id="settingsLightTheme" onchange="applySettings()"> Light Theme</label>
+                    <label class="check-row"><input type="checkbox" id="settingsSoundEffects" checked onchange="applySettings()"> Sound Effects</label>
                     <div>
                         <label style="font-size:0.65rem; color:#c39bd3;">Decimal Precision</label>
                         <select id="settingsDecimalPrecision" class="settings-select" onchange="applySettings()">
@@ -467,7 +475,7 @@
             
             <div id="afkChanceSection">
                 <label>Rolling Duration (Days)</label>
-                <input type="number" id="days" placeholder="Days AFK">
+                <input type="number" id="days" placeholder="Days AFK" onkeydown="handleEnterKey(event, 'calculateAfkOverworld')">
                 <div class="preset-buttons">
                     <span class="preset-label">Presets:</span>
                     <button type="button" class="preset-btn" onclick="setDaysPreset(1)">1 Day</button>
@@ -480,7 +488,7 @@
             
             <div id="afkTimeReqSection" style="display:none;">
                 <label>Desired Success Rate (%)</label>
-                <input type="number" id="targetP" placeholder="Max 99.99" step="0.01" max="99.99" oninput="if(this.value>=100)this.value=99.99">
+                <input type="number" id="targetP" placeholder="Max 99.99" step="0.01" max="99.99" oninput="if(this.value>=100)this.value=99.99" onkeydown="handleEnterKey(event, 'calculateAfkOverworld')">
                 <div class="preset-buttons">
                     <span class="preset-label">Presets:</span>
                     <button type="button" class="preset-btn" onclick="setTargetPreset(1)">1%</button>
@@ -605,7 +613,7 @@
             
             <div id="limboChanceSection">
                 <label>Rolling Duration (Days)</label>
-                <input type="number" id="limboDays" placeholder="Days AFK">
+                <input type="number" id="limboDays" placeholder="Days AFK" onkeydown="handleEnterKey(event, 'calculateAfkLimbo')">
                 <div class="preset-buttons">
                     <span class="preset-label">Presets:</span>
                     <button type="button" class="preset-btn" onclick="setLimboDaysPreset(1)">1 Day</button>
@@ -618,7 +626,7 @@
             
             <div id="limboTimeReqSection" style="display:none;">
                 <label>Desired Success Rate (%)</label>
-                <input type="number" id="limboTargetP" placeholder="Max 99.99" step="0.01" max="99.99" oninput="if(this.value>=100)this.value=99.99">
+                <input type="number" id="limboTargetP" placeholder="Max 99.99" step="0.01" max="99.99" oninput="if(this.value>=100)this.value=99.99" onkeydown="handleEnterKey(event, 'calculateAfkLimbo')">
                 <div class="preset-buttons">
                     <span class="preset-label">Presets:</span>
                     <button type="button" class="preset-btn" onclick="setLimboTargetPreset(1)">1%</button>
@@ -657,32 +665,32 @@
                     <div class="potion-qty-grid">
                         <div class="potion-row">
                             <label class="check-row"><input type="checkbox" id="potionHeavenly" onchange="calculatePotionMode()"> Heavenly (+150k)</label>
-                            <input type="number" id="potionHeavenlyQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" oninput="calculatePotionMode()">
+                            <input type="number" id="potionHeavenlyQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" onkeydown="handleEnterKey(event, 'calculatePotionMode')">
                         </div>
                         <div class="potion-row">
                             <label class="check-row"><input type="checkbox" id="potionGodlike" onchange="calculatePotionMode()"> Godlike (+400k)</label>
-                            <input type="number" id="potionGodlikeQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" oninput="calculatePotionMode()">
+                            <input type="number" id="potionGodlikeQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" onkeydown="handleEnterKey(event, 'calculatePotionMode')">
                         </div>
                         <div class="potion-row">
                             <label class="check-row"><input type="checkbox" id="potionBound" onchange="calculatePotionMode()"> Bound (+50k)</label>
-                            <input type="number" id="potionBoundQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" oninput="calculatePotionMode()">
+                            <input type="number" id="potionBoundQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" onkeydown="handleEnterKey(event, 'calculatePotionMode')">
                         </div>
                         <div class="potion-row">
                             <label class="check-row"><input type="checkbox" id="potionPopping" onchange="calculatePotionMode()"> Popping (+10k)</label>
-                            <input type="number" id="potionPoppingQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" oninput="calculatePotionMode()">
+                            <input type="number" id="potionPoppingQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" onkeydown="handleEnterKey(event, 'calculatePotionMode')">
                         </div>
                         <div class="potion-row">
                             <label class="check-row"><input type="checkbox" id="potionDune" onchange="calculatePotionMode()"> Dune (+10k)</label>
-                            <input type="number" id="potionDuneQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" oninput="calculatePotionMode()">
+                            <input type="number" id="potionDuneQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" onkeydown="handleEnterKey(event, 'calculatePotionMode')">
                         </div>
                         <!-- Event Potions (hidden by default) -->
                         <div class="potion-row event-potion" style="display:none;">
                             <label class="check-row"><input type="checkbox" id="potionWishStar" onchange="calculatePotionMode()"> Wish Star (+50k x5)</label>
-                            <input type="number" id="potionWishStarQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" oninput="calculatePotionMode()">
+                            <input type="number" id="potionWishStarQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" onkeydown="handleEnterKey(event, 'calculatePotionMode')">
                         </div>
                         <div class="potion-row event-potion" style="display:none;">
                             <label class="check-row"><input type="checkbox" id="potionCandycorn" onchange="calculatePotionMode()"> Candycorn (+75k)</label>
-                            <input type="number" id="potionCandycornQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" oninput="calculatePotionMode()">
+                            <input type="number" id="potionCandycornQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" onkeydown="handleEnterKey(event, 'calculatePotionMode')">
                         </div>
                     </div>
                     
@@ -691,11 +699,11 @@
                         <div class="potion-qty-grid">
                             <div class="potion-row">
                                 <label class="check-row"><input type="checkbox" id="potionRedMoonI" onchange="calculatePotionMode()"> Red Moon I (+10k)</label>
-                                <input type="number" id="potionRedMoonIQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" oninput="calculatePotionMode()">
+                                <input type="number" id="potionRedMoonIQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" onkeydown="handleEnterKey(event, 'calculatePotionMode')">
                             </div>
                             <div class="potion-row">
                                 <label class="check-row"><input type="checkbox" id="potionRedMoonII" onchange="calculatePotionMode()"> Red Moon II (+200k)</label>
-                                <input type="number" id="potionRedMoonIIQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" oninput="calculatePotionMode()">
+                                <input type="number" id="potionRedMoonIIQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" onkeydown="handleEnterKey(event, 'calculatePotionMode')">
                             </div>
                         </div>
                     </div>
@@ -705,15 +713,15 @@
                         <div class="potion-qty-grid">
                             <div class="potion-row">
                                 <label class="check-row"><input type="checkbox" id="potionOblivion" onchange="calculatePotionMode()"> Oblivion (+600k)</label>
-                                <input type="number" id="potionOblivionQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" oninput="calculatePotionMode()">
+                                <input type="number" id="potionOblivionQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" onkeydown="handleEnterKey(event, 'calculatePotionMode')">
                             </div>
                             <div class="potion-row event-potion" style="display:none;">
                                 <label class="check-row"><input type="checkbox" id="potionPumpking" onchange="calculatePotionMode()"> Pumpking's Blood (+700k)</label>
-                                <input type="number" id="potionPumpkingQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" oninput="calculatePotionMode()">
+                                <input type="number" id="potionPumpkingQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" onkeydown="handleEnterKey(event, 'calculatePotionMode')">
                             </div>
                             <div class="potion-row" id="voidHeartRow">
                                 <label class="check-row"><input type="checkbox" id="potionVoidHeart" onchange="handleVoidHeart()"> Void Heart (+300k) [Limbo]</label>
-                                <input type="number" id="potionVoidHeartQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" oninput="calculatePotionMode()">
+                                <input type="number" id="potionVoidHeartQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" onkeydown="handleEnterKey(event, 'calculatePotionMode')">
                             </div>
                         </div>
                     </div>
@@ -791,6 +799,110 @@
 
 <script>
     // ============================================================
+    // SOUND EFFECTS
+    // ============================================================
+    let audioCtx = null;
+    let soundEnabled = true;
+    
+    function initAudio() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+    }
+    
+    function playClickSound() {
+        if (!soundEnabled) return;
+        try {
+            initAudio();
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            oscillator.frequency.value = 800;
+            oscillator.type = 'sine';
+            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+            oscillator.start(audioCtx.currentTime);
+            oscillator.stop(audioCtx.currentTime + 0.1);
+        } catch (e) {
+            // Silently fail if audio isn't supported
+        }
+    }
+    
+    function playSuccessSound() {
+        if (!soundEnabled) return;
+        try {
+            initAudio();
+            // Play a pleasant ascending tone
+            const notes = [523, 659, 784];
+            notes.forEach((freq, i) => {
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                oscillator.frequency.value = freq;
+                oscillator.type = 'sine';
+                const startTime = audioCtx.currentTime + (i * 0.1);
+                gainNode.gain.setValueAtTime(0.08, startTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.15);
+                oscillator.start(startTime);
+                oscillator.stop(startTime + 0.15);
+            });
+        } catch (e) {
+            // Silently fail
+        }
+    }
+    
+    function playEnterSound() {
+        if (!soundEnabled) return;
+        try {
+            initAudio();
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            oscillator.frequency.value = 600;
+            oscillator.type = 'sine';
+            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+            oscillator.start(audioCtx.currentTime);
+            oscillator.stop(audioCtx.currentTime + 0.15);
+            
+            // Add a second tone for emphasis
+            setTimeout(() => {
+                const osc2 = audioCtx.createOscillator();
+                const gain2 = audioCtx.createGain();
+                osc2.connect(gain2);
+                gain2.connect(audioCtx.destination);
+                osc2.frequency.value = 900;
+                osc2.type = 'sine';
+                gain2.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                gain2.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                osc2.start(audioCtx.currentTime);
+                osc2.stop(audioCtx.currentTime + 0.1);
+            }, 100);
+        } catch (e) {
+            // Silently fail
+        }
+    }
+    
+    // ============================================================
+    // ENTER KEY HANDLER
+    // ============================================================
+    function handleEnterKey(event, callbackName) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            playEnterSound();
+            if (typeof window[callbackName] === 'function') {
+                window[callbackName]();
+            }
+        }
+    }
+    
+    // ============================================================
     // STATE
     // ============================================================
     let currentGlobalMode = 'afkOverworld';
@@ -799,9 +911,10 @@
     let previousPotionState = {};
     let currentPresetName = '';
     let isRestoring = false;
+    let lastChancePercent = -1;
     
     // ============================================================
-    // SIMPLE UNDO/REDO - ONLY KEYBOARD SHORTCUTS, NO BUTTONS
+    // SIMPLE UNDO/REDO - ONLY KEYBOARD SHORTCUTS
     // ============================================================
     const history = [];
     let historyIndex = -1;
@@ -890,29 +1003,25 @@
         const tag = document.activeElement?.tagName;
         const isInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
         
-        // Ctrl+Z = Undo
+        // Only intercept Ctrl+C when not in an input field
+        if (e.ctrlKey && e.key === 'c' && !isInput) {
+            e.preventDefault();
+            copyResult();
+        }
         if (e.ctrlKey && e.key === 'z' && !isInput) {
             e.preventDefault();
             undoState();
         }
-        // Ctrl+Y = Redo
         if (e.ctrlKey && e.key === 'y' && !isInput) {
             e.preventDefault();
             redoState();
         }
-        // Ctrl+R = Reset (with confirmation)
         if (e.ctrlKey && e.key === 'r' && !isInput) {
             e.preventDefault();
             if (confirm('Are you sure you want to reset all settings?')) {
                 location.reload();
             }
         }
-        // Ctrl+C = Copy
-        if (e.ctrlKey && e.key === 'c' && !isInput) {
-            e.preventDefault();
-            copyResult();
-        }
-        // Ctrl+S = Save Preset
         if (e.ctrlKey && e.key === 's' && !isInput) {
             e.preventDefault();
             savePreset();
@@ -920,7 +1029,7 @@
     });
     
     // ============================================================
-    // RESET - SIMPLY RELOAD THE PAGE
+    // RESET
     // ============================================================
     function confirmReset() {
         if (confirm('Are you sure you want to reset all settings? This cannot be undone.')) {
@@ -929,7 +1038,7 @@
     }
     
     // ============================================================
-    // SETTINGS (unchanged)
+    // SETTINGS
     // ============================================================
     function toggleSettings() {
         const settings = document.getElementById('settingsContent');
@@ -973,6 +1082,7 @@
         const showUndoRedo = document.getElementById('settingsShowUndoRedo').checked;
         const compactMode = document.getElementById('settingsCompactMode').checked;
         const lightTheme = document.getElementById('settingsLightTheme').checked;
+        soundEnabled = document.getElementById('settingsSoundEffects').checked;
         
         document.querySelectorAll('.event-speed, .event-luck').forEach(el => {
             el.style.display = showEventGear ? '' : 'none';
@@ -1002,8 +1112,24 @@
     }
     
     function resetSettings() {
+        // Reset all settings to defaults
+        document.getElementById('settingsShowEventGear').checked = false;
+        document.getElementById('settingsShowEventPotions').checked = false;
+        document.getElementById('settingsShowBiomes').checked = true;
+        document.getElementById('settingsShowUndoRedo').checked = true;
+        document.getElementById('settingsCompactMode').checked = false;
+        document.getElementById('settingsLightTheme').checked = false;
+        document.getElementById('settingsSoundEffects').checked = true;
+        document.getElementById('settingsDecimalPrecision').value = '4';
+        document.getElementById('settingsTimeFormat').value = 'auto';
+        
+        // Apply the settings
         applySettings();
-        confirmReset();
+        
+        // Show feedback without reloading
+        showCopyFeedback('⚙️ Settings reset to defaults');
+        playClickSound();
+        setTimeout(saveState, 100);
     }
     
     // ============================================================
@@ -1019,6 +1145,7 @@
         } else {
             fallbackCopy(fullText);
         }
+        playClickSound();
     }
     
     function fallbackCopy(text) {
@@ -1102,13 +1229,17 @@
     
     function savePreset() {
         const name = prompt('Enter a name for this preset:', currentPresetName || 'My Setup');
-        if (!name) return;
-        
+        if (!name || name.trim() === '') {
+            showCopyFeedback('❌ Preset name cannot be empty');
+            return;
+        }
+        const trimmedName = name.trim();
         const presets = getPresets();
-        presets[name] = getState();
+        presets[trimmedName] = getState();
         savePresets(presets);
-        currentPresetName = name;
-        showCopyFeedback('💾 Preset "' + name + '" saved!');
+        currentPresetName = trimmedName;
+        showCopyFeedback('💾 Preset "' + trimmedName + '" saved!');
+        playClickSound();
     }
     
     function loadPreset() {
@@ -1137,6 +1268,7 @@
         }
         
         modal.style.display = 'flex';
+        playClickSound();
     }
     
     function closeLoadModal() {
@@ -1150,6 +1282,7 @@
             currentPresetName = name;
             closeLoadModal();
             showCopyFeedback('📂 Loaded preset: ' + name);
+            playClickSound();
         }
     }
     
@@ -1188,11 +1321,13 @@
         URL.revokeObjectURL(url);
         
         showCopyFeedback('📤 Config exported!');
+        playClickSound();
     }
     
     function importConfig() {
         document.getElementById('importModal').style.display = 'flex';
         document.getElementById('importTextarea').value = '';
+        playClickSound();
     }
     
     function closeImportModal() {
@@ -1230,17 +1365,29 @@
             showCopyFeedback('📥 Config imported successfully!');
             calculate();
             saveState();
+            playSuccessSound();
         } catch (e) {
             alert('Error importing configuration: ' + e.message);
         }
     }
     
     // ============================================================
+    // MODAL CLOSE ON OVERLAY CLICK
+    // ============================================================
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+        overlay.addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.style.display = 'none';
+            }
+        });
+    });
+    
+    // ============================================================
     // VOID HEART HANDLING
     // ============================================================
     function handleVoidHeart() {
         const voidHeartChecked = document.getElementById('potionVoidHeart').checked;
-        const stackableIds = [
+        const allPotionIds = [
             'potionHeavenly', 'potionGodlike', 'potionBound', 
             'potionWishStar', 'potionCandycorn', 'potionPumpking',
             'potionPopping', 'potionDune', 'potionRedMoonI', 
@@ -1249,18 +1396,15 @@
         
         if (voidHeartChecked) {
             previousPotionState = {};
-            stackableIds.forEach(id => {
+            allPotionIds.forEach(id => {
                 const el = document.getElementById(id);
                 if (el) {
                     previousPotionState[id] = el.checked;
+                    el.checked = false;
                 }
             });
-            stackableIds.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.checked = false;
-            });
         } else {
-            stackableIds.forEach(id => {
+            allPotionIds.forEach(id => {
                 const el = document.getElementById(id);
                 if (el && previousPotionState[id] !== undefined) {
                     el.checked = previousPotionState[id];
@@ -1270,6 +1414,7 @@
         }
         calculatePotionMode();
         setTimeout(saveState, 50);
+        playClickSound();
     }
     
     // ============================================================
@@ -1293,6 +1438,7 @@
         if (voidHeartRow) voidHeartRow.style.display = (mode === 'potion') ? 'block' : 'none';
         calculate();
         setTimeout(saveState, 100);
+        playClickSound();
     }
     
     function setAfkSubMode(mode) {
@@ -1303,6 +1449,7 @@
         document.getElementById('afkTimeReq').classList.toggle('active', mode === 'time');
         calculateAfkOverworld();
         setTimeout(saveState, 50);
+        playClickSound();
     }
     
     function setLimboSubMode(mode) {
@@ -1313,12 +1460,41 @@
         document.getElementById('limboTimeReq').classList.toggle('active', mode === 'time');
         calculateAfkLimbo();
         setTimeout(saveState, 50);
+        playClickSound();
     }
     
-    function setTargetPreset(percent) { document.getElementById('targetP').value = percent; calculateAfkOverworld(); }
-    function setDaysPreset(days) { document.getElementById('days').value = days; calculateAfkOverworld(); }
-    function setLimboTargetPreset(percent) { document.getElementById('limboTargetP').value = percent; calculateAfkLimbo(); }
-    function setLimboDaysPreset(days) { document.getElementById('limboDays').value = days; calculateAfkLimbo(); }
+    function setTargetPreset(percent) { document.getElementById('targetP').value = percent; calculateAfkOverworld(); playClickSound(); }
+    function setDaysPreset(days) { document.getElementById('days').value = days; calculateAfkOverworld(); playClickSound(); }
+    function setLimboTargetPreset(percent) { document.getElementById('limboTargetP').value = percent; calculateAfkLimbo(); playClickSound(); }
+    function setLimboDaysPreset(days) { document.getElementById('limboDays').value = days; calculateAfkLimbo(); playClickSound(); }
+    
+    // ============================================================
+    // UPDATE GLOW EFFECT
+    // ============================================================
+    function updateGlowEffect(elementId, chancePercent) {
+        const box = document.getElementById(elementId);
+        if (!box) return;
+        
+        // Remove all glow classes
+        box.classList.remove('glow-low', 'glow-mid', 'glow-high', 'glow-very-high');
+        
+        if (chancePercent <= 0) return;
+        
+        if (chancePercent < 10) {
+            box.classList.add('glow-low');
+        } else if (chancePercent < 50) {
+            box.classList.add('glow-mid');
+        } else if (chancePercent < 99) {
+            box.classList.add('glow-high');
+        } else {
+            box.classList.add('glow-very-high');
+            // Play success sound for very high chance
+            if (lastChancePercent < 99 && soundEnabled) {
+                playSuccessSound();
+            }
+        }
+        lastChancePercent = chancePercent;
+    }
     
     // ============================================================
     // BIOME DATA (unchanged)
@@ -1430,8 +1606,14 @@
         let uptime;
         if (isPerpetual) uptime = 1;
         else uptime = getEffectiveUptime(biomeId, useSC, useBR, lanternBiome);
-        if (isNative) return (uptime * biome.boost) + (1 - uptime);
-        else return uptime;
+        
+        if (isNative) {
+            // Native: can roll anywhere, boosted in biome
+            return (uptime * biome.boost) + (1 - uptime);
+        } else {
+            // Exclusive: ONLY rolls in biome
+            return uptime * biome.boost;
+        }
     }
     
     function updateBiomeOptions() {
@@ -1454,6 +1636,7 @@
         }
         calculateAfkOverworld();
         setTimeout(saveState, 50);
+        playClickSound();
     }
     
     // ============================================================
@@ -1480,7 +1663,7 @@
     }
     
     // ============================================================
-    // LUCK CALCULATIONS (unchanged)
+    // LUCK CALCULATIONS
     // ============================================================
     function calculateOverworldLuck() {
         let resValue = parseFloat(document.getElementById('resonance').value);
@@ -1671,18 +1854,26 @@
         if (clampedPercent < 10) bar.classList.add('progress-low');
         else if (clampedPercent < 50) bar.classList.add('progress-mid');
         else bar.classList.add('progress-high');
+        
+        // Update glow effect on the parent result box
+        const resultBox = bar.closest('.result-box');
+        if (resultBox) {
+            updateGlowEffect(resultBox.id, clampedPercent);
+        }
     }
     
     function ensureResultBox(containerId, boxId) {
+        // First check if the box already exists anywhere
         let box = document.getElementById(boxId);
-        if (!box) {
-            const container = document.getElementById(containerId);
-            if (container) {
-                box = document.createElement('div');
-                box.id = boxId;
-                box.className = 'result-box';
-                container.appendChild(box);
-            }
+        if (box) return box;
+        
+        // If not, create it in the container
+        const container = document.getElementById(containerId);
+        if (container) {
+            box = document.createElement('div');
+            box.id = boxId;
+            box.className = 'result-box';
+            container.appendChild(box);
         }
         return box;
     }
@@ -1752,6 +1943,16 @@
         return `${years.toFixed(2)} years (${days.toFixed(2)} days)`;
     }
     
+    function getRarityFromInput(inputId) {
+        const input = document.getElementById(inputId);
+        if (!input) return null;
+        const raw = input.value.replace(/,/g, '');
+        if (raw === '') return null;
+        const num = Math.floor(parseFloat(raw));
+        if (isNaN(num) || num < 1) return null;
+        return num;
+    }
+    
     function calculate() {
         if (currentGlobalMode === 'afkOverworld') calculateAfkOverworld();
         else if (currentGlobalMode === 'afkLimbo') calculateAfkLimbo();
@@ -1759,13 +1960,15 @@
     }
     
     function calculatePotionMode() {
-        let rarityInput = document.getElementById('potionRarity');
-        let rawRarity = rarityInput.value.replace(/,/g, '');
-        let R = Math.floor(parseFloat(rawRarity));
-        if (R < 1 || isNaN(R)) R = 1;
-        if (rarityInput.value && rarityInput.value !== '') {
-            rarityInput.value = formatWithCommas(R);
+        const R = getRarityFromInput('potionRarity');
+        if (R === null) {
+            document.getElementById('potionResult').innerText = 'Enter rarity';
+            document.getElementById('potionDetail').innerText = '0 rolls';
+            document.getElementById('potionSummaryText').innerHTML = 'Please enter a valid rarity above.';
+            updateProgressBar('potionProgressBar', 0);
+            return;
         }
+        
         const stacked = document.getElementById('potionStacked').checked;
         const rolls = generatePotionRolls(stacked);
         const totalRolls = rolls.length;
@@ -1778,7 +1981,11 @@
         const eventMulti = parseFloat(document.getElementById('potionEventMulti')?.value) || 1;
         let overallP = 0;
         if (totalRolls > 0) {
-            const pPerRolls = rolls.map(r => { let luck = r.luck * vipMulti * eventMulti; return Math.min(luck / R, 1); });
+            const pPerRolls = rolls.map(r => { 
+                let luck = r.luck * vipMulti * eventMulti;
+                let p = luck / R;
+                return Math.min(p, 1); // Cap at 100%
+            });
             if (auraCount > 1) {
                 let probAtLeastOne = 1;
                 for (const p of pPerRolls) probAtLeastOne *= (1 - p);
@@ -1814,16 +2021,26 @@
             else if (overallP < 0.5) potionResultBox.classList.add('status-mid');
             else potionResultBox.classList.add('status-high');
         }
+        updateGlowEffect('potionResultBox', chancePercent);
     }
     
     function calculateAfkOverworld() {
-        let rarityInput = document.getElementById('rarity');
-        let rawRarity = rarityInput.value.replace(/,/g, '');
-        let R = Math.floor(parseFloat(rawRarity));
-        if (R < 1 || isNaN(R)) R = 1;
-        if (rarityInput.value && rarityInput.value !== '') {
-            rarityInput.value = formatWithCommas(R);
+        const R = getRarityFromInput('rarity');
+        if (R === null) {
+            // Show placeholder message instead of calculating with invalid rarity
+            const summaryDiv = document.getElementById('summaryText');
+            summaryDiv.innerHTML = 'Please enter a valid rarity above.';
+            const daysResult = document.getElementById('daysResult');
+            if (daysResult) {
+                daysResult.innerHTML = `<div class="result-val">Enter rarity</div><span class="stat-subtext">0 rolls</span>`;
+            }
+            const targetResult = document.getElementById('targetPResult');
+            if (targetResult) {
+                targetResult.innerHTML = `<div class="result-val">Enter rarity</div><span class="stat-subtext">0 rolls needed</span>`;
+            }
+            return;
         }
+        
         const biomeId = document.getElementById('biome').value;
         const isPerpetual = document.getElementById('perpetualBiome').checked;
         const isNative = document.querySelector('input[name="biomeType"]:checked')?.value === 'native';
@@ -1885,10 +2102,12 @@
                 const timeStr = daysNeeded > 1000 ? daysNeeded.toExponential(2) + " Days" : formatTime(daysNeeded);
                 resultElement.innerHTML = `<div class="result-val">${timeStr}</div><span class="stat-subtext">${Math.ceil(rollsNeeded).toLocaleString()} rolls needed</span>`;
                 currentResultText = `To get this aura, you need to AFK for approximately ${timeStr}. (${Math.ceil(rollsNeeded).toLocaleString()} rolls needed)`;
+                updateGlowEffect('targetPResult', targetVal * 100);
             } else {
                 let resultElement = ensureResultBox('afkTimeReqSection', 'targetPResult');
                 resultElement.innerHTML = `<div class="result-val">${(targetVal <= 0) ? "Enter target %" : "Impossible"}</div><span class="stat-subtext">0 rolls needed</span>`;
                 currentResultText = (targetVal <= 0) ? 'Enter a target percentage above.' : 'This aura may be impossible to calculate with your current setup.';
+                updateGlowEffect('targetPResult', 0);
             }
         } else {
             const days = parseFloat(document.getElementById('days').value) || 0;
@@ -1912,19 +2131,28 @@
             resultElement.innerHTML = `<div class="result-val">${pStr}</div><div class="progress-container"><div class="progress-bar" id="overworldProgressBar" style="width:${Math.min(chancePercent, 100)}%;"></div></div><span class="stat-subtext">${Math.floor(totalRolls).toLocaleString()} total rolls</span>`;
             updateProgressBar('overworldProgressBar', chancePercent);
             currentResultText = `After AFKing for ${days} day${days !== 1 ? 's' : ''}, you have a ${chancePercent.toFixed(2)}% chance of getting this aura. (${Math.floor(totalRolls).toLocaleString()} total rolls)`;
+            updateGlowEffect('daysResult', chancePercent);
         }
         const summaryDiv = document.getElementById('summaryText');
         summaryDiv.innerHTML = currentResultText;
     }
     
     function calculateAfkLimbo() {
-        let rarityInput = document.getElementById('limboRarity');
-        let rawRarity = rarityInput.value.replace(/,/g, '');
-        let R = Math.floor(parseFloat(rawRarity));
-        if (R < 1 || isNaN(R)) R = 1;
-        if (rarityInput.value && rarityInput.value !== '') {
-            rarityInput.value = formatWithCommas(R);
+        const R = getRarityFromInput('limboRarity');
+        if (R === null) {
+            const summaryDiv = document.getElementById('summaryText');
+            summaryDiv.innerHTML = 'Please enter a valid rarity above.';
+            const limboDaysResult = document.getElementById('limboDaysResult');
+            if (limboDaysResult) {
+                limboDaysResult.innerHTML = `<div class="result-val">Enter rarity</div><span class="stat-subtext">0 rolls</span>`;
+            }
+            const limboTargetResult = document.getElementById('limboTargetPResult');
+            if (limboTargetResult) {
+                limboTargetResult.innerHTML = `<div class="result-val">Enter rarity</div><span class="stat-subtext">0 rolls needed</span>`;
+            }
+            return;
         }
+        
         let totalLuck = calculateLimboLuck();
         let pPerRoll = totalLuck / R;
         pPerRoll = Math.min(pPerRoll, 1);
@@ -1959,10 +2187,12 @@
                 const timeStr = daysNeeded > 1000 ? daysNeeded.toExponential(2) + " Days" : formatTime(daysNeeded);
                 resultElement.innerHTML = `<div class="result-val">${timeStr}</div><span class="stat-subtext">${Math.ceil(rollsNeeded).toLocaleString()} rolls needed</span>`;
                 currentResultText = `To get this aura in Limbo, you need to AFK for approximately ${timeStr}. (${Math.ceil(rollsNeeded).toLocaleString()} rolls needed)`;
+                updateGlowEffect('limboTargetPResult', targetVal * 100);
             } else {
                 let resultElement = ensureResultBox('limboTimeReqSection', 'limboTargetPResult');
                 resultElement.innerHTML = `<div class="result-val">${(targetVal <= 0) ? "Enter target %" : "Impossible"}</div><span class="stat-subtext">0 rolls needed</span>`;
                 currentResultText = (targetVal <= 0) ? 'Enter a target percentage above.' : 'This aura may be impossible to calculate with your current Limbo setup.';
+                updateGlowEffect('limboTargetPResult', 0);
             }
         } else {
             const days = parseFloat(document.getElementById('limboDays').value) || 0;
@@ -1978,6 +2208,7 @@
             resultElement.innerHTML = `<div class="result-val">${pStr}</div><div class="progress-container"><div class="progress-bar" id="limboProgressBar" style="width:${Math.min(chancePercent, 100)}%;"></div></div><span class="stat-subtext">${Math.floor(totalRolls).toLocaleString()} total rolls</span>`;
             updateProgressBar('limboProgressBar', chancePercent);
             currentResultText = `After AFKing for ${days} day${days !== 1 ? 's' : ''} in Limbo, you have a ${chancePercent.toFixed(2)}% chance of getting this aura. (${Math.floor(totalRolls).toLocaleString()} total rolls)`;
+            updateGlowEffect('limboDaysResult', chancePercent);
         }
         const summaryDiv = document.getElementById('summaryText');
         summaryDiv.innerHTML = currentResultText;
@@ -1991,6 +2222,7 @@
         if (this.checked) { skipsInput.disabled = true; skipsInput.value = 0; }
         else skipsInput.disabled = false;
         calculateAfkOverworld();
+        playClickSound();
     });
     
     document.getElementById('resonance')?.addEventListener('input', function() {
@@ -2004,7 +2236,16 @@
     document.getElementById('leftGlove')?.addEventListener('change', function() {
         const v = this.value;
         document.getElementById('rainyContainer').style.display = (v === "tide" || v === "blessed") ? "block" : "none";
+        playClickSound();
     });
+    
+    // ============================================================
+    // CHECK RAINY SUPPORT
+    // ============================================================
+    function checkRainySupport() {
+        const v = document.getElementById('leftGlove').value;
+        document.getElementById('rainyContainer').style.display = (v === "tide" || v === "blessed") ? "block" : "none";
+    }
     
     // ============================================================
     // INIT
