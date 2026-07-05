@@ -15,6 +15,7 @@
         .prefix { font-weight: bold; margin-right: 5px; font-size: 1.1rem; }
         .rarity-input { border: none !important; margin: 0 !important; outline: none; width: 100%; background: transparent !important; color: white !important; }
         input, select { width: 100%; padding: 10px; margin: 8px 0; border-radius: 5px; border: 1px solid #444; background: #000; color: white; font-weight: bold; box-sizing: border-box; font-size: 0.9rem; transition: background 0.3s, color 0.3s, border-color 0.3s; }
+        input:disabled, select:disabled { opacity: 0.5; cursor: not-allowed; }
         input:invalid, select:invalid { border-color: #ff4d4d; box-shadow: 0 0 8px rgba(255, 77, 77, 0.3); }
         input:invalid:focus, select:invalid:focus { border-color: #ff4d4d; box-shadow: 0 0 12px rgba(255, 77, 77, 0.5); }
         input.invalid, select.invalid { border-color: #ff4d4d; box-shadow: 0 0 8px rgba(255, 77, 77, 0.3); }
@@ -104,6 +105,7 @@
         .copy-btn { background: #2a2a35; color: #add8e6; border: 1px solid #444; padding: 4px 10px; border-radius: 4px; font-size: 0.65rem; cursor: pointer; transition: 0.2s; }
         .copy-btn:hover { background: #add8e6; color: #000; border-color: #add8e6; }
         .copy-btn.copied { background: #00ff88; color: #000; border-color: #00ff88; }
+        .luck-disabled-msg { color: #ff6b35; font-size: 0.65rem; margin-top: 4px; display: none; }
 
         /* Settings Tab */
         .settings-tab { background: #1a1a2e; border: 1px solid #9b59b6; border-radius: 8px; padding: 10px; margin-top: 10px; }
@@ -169,6 +171,7 @@
         body.light-theme .progress-container { background: #e0e0e0; }
         body.light-theme .preset-label { color: #888; }
         body.light-theme .prefix { color: #222; }
+        body.light-theme .luck-disabled-msg { color: #e67e22; }
 
         /* Compact Mode */
         body.compact-mode .section { padding: 8px; margin-bottom: 8px; }
@@ -294,6 +297,7 @@
                     <div>
                         <label>Current Luck (no L glove)</label>
                         <input type="number" id="luck" value="0">
+                        <div class="luck-disabled-msg" id="luckDisabledMsg">⚠️ Luck is ignored for Cyberspace auras</div>
                     </div>
                 </div>
                 
@@ -836,7 +840,6 @@
         if (!soundEnabled) return;
         try {
             initAudio();
-            // Play a pleasant ascending tone
             const notes = [523, 659, 784];
             notes.forEach((freq, i) => {
                 const oscillator = audioCtx.createOscillator();
@@ -871,7 +874,6 @@
             oscillator.start(audioCtx.currentTime);
             oscillator.stop(audioCtx.currentTime + 0.15);
             
-            // Add a second tone for emphasis
             setTimeout(() => {
                 const osc2 = audioCtx.createOscillator();
                 const gain2 = audioCtx.createGain();
@@ -1003,7 +1005,6 @@
         const tag = document.activeElement?.tagName;
         const isInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
         
-        // Only intercept Ctrl+C when not in an input field
         if (e.ctrlKey && e.key === 'c' && !isInput) {
             e.preventDefault();
             copyResult();
@@ -1112,7 +1113,6 @@
     }
     
     function resetSettings() {
-        // Reset all settings to defaults
         document.getElementById('settingsShowEventGear').checked = false;
         document.getElementById('settingsShowEventPotions').checked = false;
         document.getElementById('settingsShowBiomes').checked = true;
@@ -1123,10 +1123,7 @@
         document.getElementById('settingsDecimalPrecision').value = '4';
         document.getElementById('settingsTimeFormat').value = 'auto';
         
-        // Apply the settings
         applySettings();
-        
-        // Show feedback without reloading
         showCopyFeedback('⚙️ Settings reset to defaults');
         playClickSound();
         setTimeout(saveState, 100);
@@ -1475,7 +1472,6 @@
         const box = document.getElementById(elementId);
         if (!box) return;
         
-        // Remove all glow classes
         box.classList.remove('glow-low', 'glow-mid', 'glow-high', 'glow-very-high');
         
         if (chancePercent <= 0) return;
@@ -1488,7 +1484,6 @@
             box.classList.add('glow-high');
         } else {
             box.classList.add('glow-very-high');
-            // Play success sound for very high chance
             if (lastChancePercent < 99 && soundEnabled) {
                 playSuccessSound();
             }
@@ -1497,7 +1492,7 @@
     }
     
     // ============================================================
-    // BIOME DATA (unchanged)
+    // BIOME DATA
     // ============================================================
     const biomeData = {
         windy: { boost: 3 }, snowy: { boost: 3 }, rainy: { boost: 4 },
@@ -1608,10 +1603,8 @@
         else uptime = getEffectiveUptime(biomeId, useSC, useBR, lanternBiome);
         
         if (isNative) {
-            // Native: can roll anywhere, boosted in biome
             return (uptime * biome.boost) + (1 - uptime);
         } else {
-            // Exclusive: ONLY rolls in biome
             return uptime * biome.boost;
         }
     }
@@ -1622,8 +1615,23 @@
         const perpetual = document.getElementById('perpetualBiome').checked;
         const useSC = document.getElementById('useStrangeController');
         const useBR = document.getElementById('useBiomeRandomizer');
+        const luckInput = document.getElementById('luck');
+        const luckMsg = document.getElementById('luckDisabledMsg');
+        
         if (perpetual) { useSC.disabled = true; useBR.disabled = true; }
         else { useSC.disabled = false; useBR.disabled = false; }
+        
+        // Handle Cyberspace luck disabling
+        const isCyberspace = biome === 'cyberspace';
+        if (isCyberspace) {
+            luckInput.disabled = true;
+            luckInput.value = 0;
+            luckMsg.style.display = 'block';
+        } else {
+            luckInput.disabled = false;
+            luckMsg.style.display = 'none';
+        }
+        
         if (biome === 'cyberspace' || biome === 'dreamspace' || biome === 'glitch') {
             optionsDiv.style.opacity = '0.5';
             document.querySelector('input[name="biomeType"][value="exclusive"]').checked = true;
@@ -1666,6 +1674,12 @@
     // LUCK CALCULATIONS
     // ============================================================
     function calculateOverworldLuck() {
+        // If Cyberspace is selected, luck is ignored
+        const biomeId = document.getElementById('biome').value;
+        if (biomeId === 'cyberspace') {
+            return 1; // Return base luck of 1 (no effect)
+        }
+        
         let resValue = parseFloat(document.getElementById('resonance').value);
         if (isNaN(resValue)) resValue = 0;
         resValue = Math.min(22, Math.max(0, resValue));
@@ -1855,7 +1869,6 @@
         else if (clampedPercent < 50) bar.classList.add('progress-mid');
         else bar.classList.add('progress-high');
         
-        // Update glow effect on the parent result box
         const resultBox = bar.closest('.result-box');
         if (resultBox) {
             updateGlowEffect(resultBox.id, clampedPercent);
@@ -1863,11 +1876,9 @@
     }
     
     function ensureResultBox(containerId, boxId) {
-        // First check if the box already exists anywhere
         let box = document.getElementById(boxId);
         if (box) return box;
         
-        // If not, create it in the container
         const container = document.getElementById(containerId);
         if (container) {
             box = document.createElement('div');
@@ -1911,7 +1922,6 @@
             return minutes.toFixed(2) + ' minutes';
         }
         
-        // Auto format
         if (days < 0.001) {
             const minutes = days * 1440;
             if (minutes < 1) {
@@ -1984,7 +1994,7 @@
             const pPerRolls = rolls.map(r => { 
                 let luck = r.luck * vipMulti * eventMulti;
                 let p = luck / R;
-                return Math.min(p, 1); // Cap at 100%
+                return Math.min(p, 1);
             });
             if (auraCount > 1) {
                 let probAtLeastOne = 1;
@@ -2027,7 +2037,6 @@
     function calculateAfkOverworld() {
         const R = getRarityFromInput('rarity');
         if (R === null) {
-            // Show placeholder message instead of calculating with invalid rarity
             const summaryDiv = document.getElementById('summaryText');
             summaryDiv.innerHTML = 'Please enter a valid rarity above.';
             const daysResult = document.getElementById('daysResult');
@@ -2047,10 +2056,20 @@
         const useSC = document.getElementById('useStrangeController').checked && !isPerpetual;
         const useBR = document.getElementById('useBiomeRandomizer').checked && !isPerpetual;
         const lanternBiome = document.getElementById('lantern').value;
+        
+        const isCyberspace = biomeId === 'cyberspace';
         let totalLuck = calculateOverworldLuck();
         let biomeMulti = getBiomeMultiplier(biomeId, isPerpetual, isNative, useSC, useBR, lanternBiome);
-        let pPerRoll = (totalLuck / R) * biomeMulti;
+        
+        let pPerRoll;
+        if (isCyberspace) {
+            // For Cyberspace, luck is completely ignored - just use 1/R
+            pPerRoll = (1 / R) * biomeMulti;
+        } else {
+            pPerRoll = (totalLuck / R) * biomeMulti;
+        }
         pPerRoll = Math.min(pPerRoll, 1);
+        
         let resValue = parseFloat(document.getElementById('resonance').value);
         if (isNaN(resValue)) resValue = 0;
         resValue = Math.min(22, Math.max(0, resValue));
@@ -2078,6 +2097,7 @@
         const skipCount = parseFloat(document.getElementById('rollSkips').value) || 0;
         const infiniteSkips = document.getElementById('infiniteSkips').checked;
         const auraCount = parseInt(document.getElementById('auraCount').value) || 1;
+        
         if (currentAfkSubMode === 'time') {
             const targetInput = document.getElementById('targetP');
             let targetVal = (parseFloat(targetInput.value) || 0) / 100;
@@ -2100,8 +2120,9 @@
                 const daysNeeded = timeNeeded / 86400;
                 let resultElement = ensureResultBox('afkTimeReqSection', 'targetPResult');
                 const timeStr = daysNeeded > 1000 ? daysNeeded.toExponential(2) + " Days" : formatTime(daysNeeded);
-                resultElement.innerHTML = `<div class="result-val">${timeStr}</div><span class="stat-subtext">${Math.ceil(rollsNeeded).toLocaleString()} rolls needed</span>`;
-                currentResultText = `To get this aura, you need to AFK for approximately ${timeStr}. (${Math.ceil(rollsNeeded).toLocaleString()} rolls needed)`;
+                const luckInfo = isCyberspace ? ' (Luck ignored)' : '';
+                resultElement.innerHTML = `<div class="result-val">${timeStr}</div><span class="stat-subtext">${Math.ceil(rollsNeeded).toLocaleString()} rolls needed${luckInfo}</span>`;
+                currentResultText = `To get this aura${isCyberspace ? ' (Cyberspace - luck ignored)' : ''}, you need to AFK for approximately ${timeStr}. (${Math.ceil(rollsNeeded).toLocaleString()} rolls needed)`;
                 updateGlowEffect('targetPResult', targetVal * 100);
             } else {
                 let resultElement = ensureResultBox('afkTimeReqSection', 'targetPResult');
@@ -2128,9 +2149,10 @@
             const chancePercent = P * 100;
             let resultElement = ensureResultBox('afkChanceSection', 'daysResult');
             const pStr = (P >= 0.9999999) ? "99.99%+" : formatPercent(chancePercent);
-            resultElement.innerHTML = `<div class="result-val">${pStr}</div><div class="progress-container"><div class="progress-bar" id="overworldProgressBar" style="width:${Math.min(chancePercent, 100)}%;"></div></div><span class="stat-subtext">${Math.floor(totalRolls).toLocaleString()} total rolls</span>`;
+            const luckInfo = isCyberspace ? ' (Luck ignored)' : '';
+            resultElement.innerHTML = `<div class="result-val">${pStr}</div><div class="progress-container"><div class="progress-bar" id="overworldProgressBar" style="width:${Math.min(chancePercent, 100)}%;"></div></div><span class="stat-subtext">${Math.floor(totalRolls).toLocaleString()} total rolls${luckInfo}</span>`;
             updateProgressBar('overworldProgressBar', chancePercent);
-            currentResultText = `After AFKing for ${days} day${days !== 1 ? 's' : ''}, you have a ${chancePercent.toFixed(2)}% chance of getting this aura. (${Math.floor(totalRolls).toLocaleString()} total rolls)`;
+            currentResultText = `After AFKing for ${days} day${days !== 1 ? 's' : ''}${isCyberspace ? ' in Cyberspace (luck ignored)' : ''}, you have a ${chancePercent.toFixed(2)}% chance of getting this aura. (${Math.floor(totalRolls).toLocaleString()} total rolls)`;
             updateGlowEffect('daysResult', chancePercent);
         }
         const summaryDiv = document.getElementById('summaryText');
