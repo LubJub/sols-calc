@@ -106,6 +106,11 @@
         .copy-btn:hover { background: #add8e6; color: #000; border-color: #add8e6; }
         .copy-btn.copied { background: #00ff88; color: #000; border-color: #00ff88; }
         .luck-disabled-msg { color: #ff6b35; font-size: 0.65rem; margin-top: 4px; display: none; }
+        .special-chance-box { background: #1a0a1a; border: 1px solid #9b59b6; border-radius: 6px; padding: 8px; margin-top: 10px; }
+        .special-chance-box .label { color: #c39bd3; font-size: 0.7rem; font-weight: bold; display: block; margin-bottom: 4px; }
+        .special-chance-box .chance-row { display: flex; justify-content: space-between; padding: 2px 0; font-size: 0.7rem; color: #ccc; border-bottom: 1px solid #2a1a3a; }
+        .special-chance-box .chance-row:last-child { border-bottom: none; }
+        .special-chance-box .chance-value { color: #e8d5f5; font-weight: bold; }
 
         /* Settings Tab */
         .settings-tab { background: #1a1a2e; border: 1px solid #9b59b6; border-radius: 8px; padding: 10px; margin-top: 10px; }
@@ -172,6 +177,10 @@
         body.light-theme .preset-label { color: #888; }
         body.light-theme .prefix { color: #222; }
         body.light-theme .luck-disabled-msg { color: #e67e22; }
+        body.light-theme .special-chance-box { background: #f5e8f5; border-color: #ab47bc; }
+        body.light-theme .special-chance-box .label { color: #7b1fa2; }
+        body.light-theme .special-chance-box .chance-row { color: #666; border-color: #e0d0e0; }
+        body.light-theme .special-chance-box .chance-value { color: #6a1b9a; }
 
         /* Compact Mode */
         body.compact-mode .section { padding: 8px; margin-bottom: 8px; }
@@ -188,6 +197,8 @@
         body.compact-mode .result-box { padding: 12px; }
         body.compact-mode .footer { margin-top: 10px; padding-top: 5px; }
         body.compact-mode .preset-btn { font-size: 0.55rem; padding: 3px 6px; }
+        body.compact-mode .special-chance-box .chance-row { font-size: 0.6rem; }
+        body.compact-mode .special-chance-box .label { font-size: 0.6rem; }
 
         /* Mobile Responsiveness */
         @media (max-width: 480px) {
@@ -222,6 +233,7 @@
             .progress-container { height: 6px; }
             .settings-grid { grid-template-columns: 1fr; }
             .copy-btn { font-size: 0.55rem; padding: 3px 8px; }
+            .special-chance-box { padding: 6px; }
         }
     </style>
 </head>
@@ -755,6 +767,12 @@
             </div>
             <div class="summary-text" id="potionSummaryText">
                 Enter values above to see results
+            </div>
+            <!-- Special Potion Chances -->
+            <div class="special-chance-box" id="potionSpecialChances" style="display:none;">
+                <span class="label">✨ Special Potion Rewards</span>
+                <div class="chance-row"><span>Neferkhaf (from Dune)</span><span class="chance-value" id="neferkhafChance">0.00%</span></div>
+                <div class="chance-row"><span>Fragments of the Crimson Moon (Red I + II)</span><span class="chance-value" id="redMoonChance">0.00%</span></div>
             </div>
         </div>
 
@@ -1969,6 +1987,72 @@
         else if (currentGlobalMode === 'potion') calculatePotionMode();
     }
     
+    // ============================================================
+    // POTION SPECIAL CHANCE CALCULATIONS
+    // ============================================================
+    function calculateSpecialPotionChances() {
+        const duneQty = parseInt(document.getElementById('potionDuneQty').value) || 0;
+        const redMoonIQty = parseInt(document.getElementById('potionRedMoonIQty').value) || 0;
+        const redMoonIIQty = parseInt(document.getElementById('potionRedMoonIIQty').value) || 0;
+        const duneChecked = document.getElementById('potionDune').checked;
+        const redMoonIChecked = document.getElementById('potionRedMoonI').checked;
+        const redMoonIIChecked = document.getElementById('potionRedMoonII').checked;
+        
+        let neferkhafChance = 0;
+        let redMoonTotalChance = 0;
+        let hasSpecial = false;
+        
+        // Neferkhaf: 1/1000 per Dune potion
+        if (duneChecked && duneQty > 0) {
+            const pPerRoll = 1 / 1000;
+            neferkhafChance = 1 - Math.pow(1 - pPerRoll, duneQty);
+            if (neferkhafChance > 0) hasSpecial = true;
+        }
+        
+        // Combined Red Moon chance (from both Red I and Red II)
+        // Red I: 1/1000, Red II: 1/100
+        let redMoonIChance = 0;
+        let redMoonIIChance = 0;
+        if (redMoonIChecked && redMoonIQty > 0) {
+            const pPerRoll = 1 / 1000;
+            redMoonIChance = 1 - Math.pow(1 - pPerRoll, redMoonIQty);
+        }
+        if (redMoonIIChecked && redMoonIIQty > 0) {
+            const pPerRoll = 1 / 100;
+            redMoonIIChance = 1 - Math.pow(1 - pPerRoll, redMoonIIQty);
+        }
+        
+        // Combine the two chances (probability of getting at least one from either source)
+        if (redMoonIChance > 0 || redMoonIIChance > 0) {
+            // The total probability is 1 - (probability of NOT getting it from either)
+            const probNotI = 1 - redMoonIChance;
+            const probNotII = 1 - redMoonIIChance;
+            redMoonTotalChance = 1 - (probNotI * probNotII);
+            if (redMoonTotalChance > 0) hasSpecial = true;
+        }
+        
+        const specialBox = document.getElementById('potionSpecialChances');
+        if (hasSpecial) {
+            specialBox.style.display = 'block';
+            document.getElementById('neferkhafChance').textContent = formatPercent(neferkhafChance * 100);
+            document.getElementById('redMoonChance').textContent = formatPercent(redMoonTotalChance * 100);
+        } else {
+            specialBox.style.display = 'none';
+        }
+    }
+    
+    // ============================================================
+    // EDEN SPAWN CHANCE CALCULATION
+    // ============================================================
+    function calculateEdenChance(totalSeconds) {
+        // Eden spawns every 2 minutes (120 seconds) with 1/50,000 chance per interval
+        const intervalSeconds = 120;
+        const intervals = Math.floor(totalSeconds / intervalSeconds);
+        const pPerInterval = 1 / 50000;
+        if (intervals <= 0) return 0;
+        return 1 - Math.pow(1 - pPerInterval, intervals);
+    }
+    
     function calculatePotionMode() {
         const R = getRarityFromInput('potionRarity');
         if (R === null) {
@@ -1976,6 +2060,7 @@
             document.getElementById('potionDetail').innerText = '0 rolls';
             document.getElementById('potionSummaryText').innerHTML = 'Please enter a valid rarity above.';
             updateProgressBar('potionProgressBar', 0);
+            document.getElementById('potionSpecialChances').style.display = 'none';
             return;
         }
         
@@ -2032,6 +2117,9 @@
             else potionResultBox.classList.add('status-high');
         }
         updateGlowEffect('potionResultBox', chancePercent);
+        
+        // Calculate special potion chances
+        calculateSpecialPotionChances();
     }
     
     function calculateAfkOverworld() {
@@ -2063,7 +2151,6 @@
         
         let pPerRoll;
         if (isCyberspace) {
-            // For Cyberspace, luck is completely ignored - just use 1/R
             pPerRoll = (1 / R) * biomeMulti;
         } else {
             pPerRoll = (totalLuck / R) * biomeMulti;
@@ -2194,6 +2281,12 @@
         const baseRollSpeed = document.getElementById('limboQuickRoll').checked ? 1 : 0.5;
         let rollsPerSecond = baseRollSpeed * (1 + (speedBonus / 100));
         const auraCount = parseInt(document.getElementById('limboAuraCount').value) || 1;
+        
+        // Calculate total seconds for Eden spawn chance
+        let totalSeconds = 0;
+        let days = 0;
+        let edenChance = 0;
+        
         if (currentLimboSubMode === 'time') {
             const targetInput = document.getElementById('limboTargetP');
             let targetVal = (parseFloat(targetInput.value) || 0) / 100;
@@ -2205,10 +2298,17 @@
                 else rollsNeeded = Math.log(1 - targetVal) / Math.log(1 - pPerRoll);
                 timeNeeded = rollsNeeded / rollsPerSecond;
                 const daysNeeded = timeNeeded / 86400;
+                totalSeconds = timeNeeded;
+                days = daysNeeded;
+                
+                // Calculate Eden chance
+                edenChance = calculateEdenChance(totalSeconds);
+                
                 let resultElement = ensureResultBox('limboTimeReqSection', 'limboTargetPResult');
                 const timeStr = daysNeeded > 1000 ? daysNeeded.toExponential(2) + " Days" : formatTime(daysNeeded);
-                resultElement.innerHTML = `<div class="result-val">${timeStr}</div><span class="stat-subtext">${Math.ceil(rollsNeeded).toLocaleString()} rolls needed</span>`;
-                currentResultText = `To get this aura in Limbo, you need to AFK for approximately ${timeStr}. (${Math.ceil(rollsNeeded).toLocaleString()} rolls needed)`;
+                const edenInfo = edenChance > 0 ? ` | Eden: ${formatPercent(edenChance * 100)}` : '';
+                resultElement.innerHTML = `<div class="result-val">${timeStr}</div><span class="stat-subtext">${Math.ceil(rollsNeeded).toLocaleString()} rolls needed${edenInfo}</span>`;
+                currentResultText = `To get this aura in Limbo, you need to AFK for approximately ${timeStr}. (${Math.ceil(rollsNeeded).toLocaleString()} rolls needed)${edenChance > 0 ? ` Eden spawn chance: ${formatPercent(edenChance * 100)}` : ''}`;
                 updateGlowEffect('limboTargetPResult', targetVal * 100);
             } else {
                 let resultElement = ensureResultBox('limboTimeReqSection', 'limboTargetPResult');
@@ -2217,9 +2317,13 @@
                 updateGlowEffect('limboTargetPResult', 0);
             }
         } else {
-            const days = parseFloat(document.getElementById('limboDays').value) || 0;
-            const totalSeconds = 86400 * days;
+            days = parseFloat(document.getElementById('limboDays').value) || 0;
+            totalSeconds = 86400 * days;
             const totalRolls = totalSeconds * rollsPerSecond;
+            
+            // Calculate Eden chance
+            edenChance = calculateEdenChance(totalSeconds);
+            
             let P;
             if (auraCount > 1 && totalRolls > 0 && pPerRoll > 0 && pPerRoll < 1) {
                 P = probabilityAtLeastNRolls(pPerRoll, totalRolls, auraCount);
@@ -2227,9 +2331,10 @@
             const chancePercent = P * 100;
             let resultElement = ensureResultBox('limboChanceSection', 'limboDaysResult');
             const pStr = (P >= 0.9999999) ? "99.99%+" : formatPercent(chancePercent);
-            resultElement.innerHTML = `<div class="result-val">${pStr}</div><div class="progress-container"><div class="progress-bar" id="limboProgressBar" style="width:${Math.min(chancePercent, 100)}%;"></div></div><span class="stat-subtext">${Math.floor(totalRolls).toLocaleString()} total rolls</span>`;
+            const edenInfo = edenChance > 0 ? `<br><span style="font-size:0.6rem; color:#ff6b35;">Eden spawn: ${formatPercent(edenChance * 100)}</span>` : '';
+            resultElement.innerHTML = `<div class="result-val">${pStr}</div><div class="progress-container"><div class="progress-bar" id="limboProgressBar" style="width:${Math.min(chancePercent, 100)}%;"></div></div><span class="stat-subtext">${Math.floor(totalRolls).toLocaleString()} total rolls${edenInfo}</span>`;
             updateProgressBar('limboProgressBar', chancePercent);
-            currentResultText = `After AFKing for ${days} day${days !== 1 ? 's' : ''} in Limbo, you have a ${chancePercent.toFixed(2)}% chance of getting this aura. (${Math.floor(totalRolls).toLocaleString()} total rolls)`;
+            currentResultText = `After AFKing for ${days} day${days !== 1 ? 's' : ''} in Limbo, you have a ${chancePercent.toFixed(2)}% chance of getting this aura. (${Math.floor(totalRolls).toLocaleString()} total rolls)${edenChance > 0 ? ` Eden spawn chance: ${formatPercent(edenChance * 100)}` : ''}`;
             updateGlowEffect('limboDaysResult', chancePercent);
         }
         const summaryDiv = document.getElementById('summaryText');
