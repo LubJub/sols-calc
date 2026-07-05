@@ -6,8 +6,8 @@
         body { font-family: sans-serif; padding: 20px; background: #050a0f; color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; transition: background 0.3s, color 0.3s; }
         .calc-card { width: 100%; max-width: 460px; background: #0d141f; padding: 25px; border-radius: 12px; border: 2px solid #00d4ff; box-shadow: 0 0 20px rgba(0, 212, 255, 0.4); transition: background 0.3s, border-color 0.3s, box-shadow 0.3s; }
         h2 { text-align: center; text-transform: uppercase; margin-top: 0; margin-bottom: 20px; letter-spacing: 2px; }
-        .mode-switch { display: flex; background: #000; border-radius: 10px; padding: 6px; margin-bottom: 20px; border: 2px solid #444; }
-        .mode-btn { flex: 1; padding: 12px; border: none; background: none; color: #888; cursor: pointer; font-weight: 900; font-size: 0.6rem; border-radius: 7px; text-transform: uppercase; transition: 0.2s; text-align: center; }
+        .mode-switch { display: flex; background: #000; border-radius: 10px; padding: 6px; margin-bottom: 20px; border: 2px solid #444; flex-wrap: wrap; }
+        .mode-btn { flex: 1; padding: 10px 6px; border: none; background: none; color: #888; cursor: pointer; font-weight: 900; font-size: 0.55rem; border-radius: 7px; text-transform: uppercase; transition: 0.2s; text-align: center; min-width: 50px; }
         .mode-btn.active { background: #add8e6; color: #000; }
         .mode-btn.settings-active { background: #9b59b6; color: #fff; }
         .section { margin-bottom: 15px; padding: 12px; background: #161c26; border-radius: 8px; border: 1px solid #2a3545; transition: background 0.3s, border-color 0.3s; }
@@ -79,9 +79,16 @@
         .modal-box .modal-buttons .cancel-btn { background: #444; color: white; }
         .modal-box .modal-buttons .cancel-btn:hover { background: #666; }
         .footer-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-        .footer-actions .undo-btn, .footer-actions .redo-btn { background: #2a2a35; color: #ccc; border: 1px solid #444; padding: 6px 10px; border-radius: 4px; font-size: 0.7rem; cursor: pointer; transition: 0.2s; }
-        .footer-actions .undo-btn:hover, .footer-actions .redo-btn:hover { background: #444; color: #fff; }
-        .footer-actions .undo-btn:disabled, .footer-actions .redo-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+        .footer-actions .save-btn, .footer-actions .load-btn, .footer-actions .export-btn, .footer-actions .import-btn { background: #2a2a35; color: #ccc; border: 1px solid #444; padding: 6px 10px; border-radius: 4px; font-size: 0.65rem; cursor: pointer; transition: 0.2s; }
+        .footer-actions .save-btn:hover, .footer-actions .load-btn:hover, .footer-actions .export-btn:hover, .footer-actions .import-btn:hover { background: #444; color: #fff; }
+        .footer-actions .save-btn { color: #00ff88; border-color: #00ff88; }
+        .footer-actions .save-btn:hover { background: #00ff88; color: #000; }
+        .footer-actions .load-btn { color: #ffcc00; border-color: #ffcc00; }
+        .footer-actions .load-btn:hover { background: #ffcc00; color: #000; }
+        .footer-actions .export-btn { color: #add8e6; border-color: #add8e6; }
+        .footer-actions .export-btn:hover { background: #add8e6; color: #000; }
+        .footer-actions .import-btn { color: #ff6b35; border-color: #ff6b35; }
+        .footer-actions .import-btn:hover { background: #ff6b35; color: #000; }
         .progress-container { width: 100%; height: 8px; background: #222; border-radius: 4px; margin: 8px 0; overflow: hidden; }
         .progress-bar { height: 100%; border-radius: 4px; transition: width 0.3s ease; }
         .progress-low { background: #ff4d4d; }
@@ -133,8 +140,12 @@
         body.light-theme .redmoon-group, body.light-theme .exclusive-group { background: #f3e5f5; }
         body.light-theme .redmoon-group label, body.light-theme .exclusive-group label { color: #7b1fa2; }
         body.light-theme .limbo-only { border-color: #ff6b35; }
-        body.light-theme .footer-actions .undo-btn, body.light-theme .footer-actions .redo-btn { background: #e0e0e0; color: #666; border-color: #ccc; }
-        body.light-theme .footer-actions .undo-btn:hover, body.light-theme .footer-actions .redo-btn:hover { background: #ccc; color: #222; }
+        body.light-theme .footer-actions .save-btn, body.light-theme .footer-actions .load-btn, body.light-theme .footer-actions .export-btn, body.light-theme .footer-actions .import-btn { background: #e0e0e0; color: #666; border-color: #ccc; }
+        body.light-theme .footer-actions .save-btn:hover, body.light-theme .footer-actions .load-btn:hover, body.light-theme .footer-actions .export-btn:hover, body.light-theme .footer-actions .import-btn:hover { background: #ccc; color: #222; }
+        body.light-theme .footer-actions .save-btn { color: #00aa66; border-color: #00aa66; }
+        body.light-theme .footer-actions .save-btn:hover { background: #00aa66; color: #fff; }
+        body.light-theme .footer-actions .load-btn { color: #cc9900; border-color: #cc9900; }
+        body.light-theme .footer-actions .load-btn:hover { background: #cc9900; color: #fff; }
         body.light-theme .copy-btn { background: #e0e0e0; color: #2980b9; border-color: #ccc; }
         body.light-theme .copy-btn:hover { background: #2980b9; color: #fff; border-color: #2980b9; }
         body.light-theme .settings-tab { background: #f3e5f5; border-color: #ab47bc; }
@@ -193,7 +204,7 @@
             .summary-text { font-size: 0.7rem; padding: 8px; }
             .result-box { padding: 15px; }
             .stat-subtext { font-size: 0.6rem; }
-            .footer-actions .undo-btn, .footer-actions .redo-btn { font-size: 0.6rem; padding: 4px 8px; }
+            .footer-actions .save-btn, .footer-actions .load-btn, .footer-actions .export-btn, .footer-actions .import-btn { font-size: 0.5rem; padding: 4px 6px; }
             .reset-btn { font-size: 0.6rem; padding: 4px 10px; }
             .modal-box { padding: 20px; margin: 15px; }
             .modal-box h3 { font-size: 1.1rem; }
@@ -223,7 +234,7 @@
             <div class="section settings-tab">
                 <label style="color: #c39bd3; font-weight: bold;">Settings</label>
                 <div class="settings-grid">
-                    <label class="check-row"><input type="checkbox" id="settingsShowEventGear" checked onchange="applySettings()"> Show Event Gear</label>
+                    <label class="check-row"><input type="checkbox" id="settingsShowEventGear" onchange="applySettings()"> Show Event Gear</label>
                     <label class="check-row"><input type="checkbox" id="settingsShowEventPotions" onchange="applySettings()"> Show Event Potions</label>
                     <label class="check-row"><input type="checkbox" id="settingsShowBiomes" checked onchange="applySettings()"> Show Biomes</label>
                     <label class="check-row"><input type="checkbox" id="settingsShowUndoRedo" checked onchange="applySettings()"> Show Undo/Redo Buttons</label>
@@ -256,6 +267,7 @@
                     <div class="shortcut-row"><span>Redo</span><kbd>Ctrl+Y</kbd></div>
                     <div class="shortcut-row"><span>Reset (with confirmation)</span><kbd>Ctrl+R</kbd></div>
                     <div class="shortcut-row"><span>Copy Result</span><kbd>Ctrl+C</kbd></div>
+                    <div class="shortcut-row"><span>Save Preset</span><kbd>Ctrl+S</kbd></div>
                 </div>
             </div>
         </div>
@@ -740,8 +752,10 @@
         <div class="footer">
             <div><a href="https://discord.gg/yTreH64JBC" class="discord-link" target="_blank">Join the Discord!</a><div style="font-size:0.6rem; color:#666;">By @LubJub</div></div>
             <div class="footer-actions" id="footerActions">
-                <button type="button" class="undo-btn" id="undoBtn" onclick="undoState()" disabled title="Ctrl+Z">↩️</button>
-                <button type="button" class="redo-btn" id="redoBtn" onclick="redoState()" disabled title="Ctrl+Y">↪️</button>
+                <button type="button" class="save-btn" id="saveBtn" onclick="savePreset()" title="Save current setup as preset (Ctrl+S)">💾 Save</button>
+                <button type="button" class="load-btn" id="loadBtn" onclick="loadPreset()" title="Load a saved preset">📂 Load</button>
+                <button type="button" class="export-btn" id="exportBtn" onclick="exportConfig()" title="Export configuration as JSON">📤 Export</button>
+                <button type="button" class="import-btn" id="importBtn" onclick="importConfig()" title="Import configuration from JSON">📥 Import</button>
                 <button type="button" class="copy-btn" id="copyBtn" onclick="copyResult()" title="Copy result to clipboard (Ctrl+C)">Copy</button>
                 <button type="button" class="reset-btn" onclick="confirmReset()">Reset</button>
             </div>
@@ -749,14 +763,28 @@
     </form>
 </div>
 
-<!-- Reset Confirmation Modal -->
-<div class="modal-overlay" id="resetModal">
-    <div class="modal-box">
-        <h3>⚠️ Confirm Reset</h3>
-        <p>Are you sure you want to reset all settings? This cannot be undone.</p>
+<!-- Load Preset Modal -->
+<div class="modal-overlay" id="loadModal">
+    <div class="modal-box" style="border-color: #ffcc00; max-width: 400px;">
+        <h3 style="color: #ffcc00;">📂 Load Preset</h3>
+        <div id="presetList" style="text-align: left; margin: 15px 0; max-height: 300px; overflow-y: auto;">
+            <p style="color: #888; font-size: 0.8rem;">No saved presets found.</p>
+        </div>
         <div class="modal-buttons">
-            <button class="confirm-btn" onclick="fullReset()">Yes, Reset</button>
-            <button class="cancel-btn" onclick="closeResetModal()">Cancel</button>
+            <button class="cancel-btn" onclick="closeLoadModal()" style="background: #444; color: white; border: none; padding: 10px 25px; border-radius: 6px; cursor: pointer; font-weight: bold;">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- Import Modal -->
+<div class="modal-overlay" id="importModal">
+    <div class="modal-box" style="border-color: #ff6b35; max-width: 400px;">
+        <h3 style="color: #ff6b35;">📥 Import Configuration</h3>
+        <p style="color: #ccc; font-size: 0.8rem; text-align: left;">Paste the JSON configuration below:</p>
+        <textarea id="importTextarea" style="width: 100%; height: 150px; background: #000; color: #fff; border: 1px solid #444; border-radius: 4px; padding: 8px; font-size: 0.7rem; font-family: monospace; margin: 10px 0; resize: vertical;"></textarea>
+        <div class="modal-buttons">
+            <button class="confirm-btn" onclick="doImport()" style="background: #ff6b35; color: white; border: none; padding: 10px 25px; border-radius: 6px; cursor: pointer; font-weight: bold;">Import</button>
+            <button class="cancel-btn" onclick="closeImportModal()" style="background: #444; color: white; border: none; padding: 10px 25px; border-radius: 6px; cursor: pointer; font-weight: bold;">Cancel</button>
         </div>
     </div>
 </div>
@@ -769,201 +797,139 @@
     let currentAfkSubMode = 'chance';
     let currentLimboSubMode = 'chance';
     let previousPotionState = {};
+    let currentPresetName = '';
+    let isRestoring = false;
     
     // ============================================================
-    // UNDO/REDO SYSTEM
+    // SIMPLE UNDO/REDO - ONLY KEYBOARD SHORTCUTS, NO BUTTONS
     // ============================================================
     const history = [];
     let historyIndex = -1;
     const maxHistory = 30;
-    let isRestoringState = false;
-    let currentResultText = '';
-    let stateChangeTimeout = null;
     
-    function getCurrentState() {
+    function saveState() {
+        if (isRestoring) return;
+        
         const state = {};
-        const inputs = document.querySelectorAll('input, select');
-        inputs.forEach(el => {
+        document.querySelectorAll('input, select').forEach(el => {
             const id = el.id;
             if (!id) return;
             if (el.type === 'checkbox' || el.type === 'radio') {
                 state[id] = el.checked;
-            } else if (el.type === 'number' || el.type === 'text') {
-                state[id] = el.value;
-            } else if (el.tagName === 'SELECT') {
+            } else {
                 state[id] = el.value;
             }
         });
-        state.currentGlobalMode = currentGlobalMode;
-        state.currentAfkSubMode = currentAfkSubMode;
-        state.currentLimboSubMode = currentLimboSubMode;
-        return state;
+        state.globalMode = currentGlobalMode;
+        state.afkMode = currentAfkSubMode;
+        state.limboMode = currentLimboSubMode;
+        
+        history.splice(historyIndex + 1);
+        history.push(state);
+        historyIndex = history.length - 1;
+        
+        while (history.length > maxHistory) {
+            history.shift();
+            historyIndex--;
+        }
     }
     
-    function restoreState(state) {
-        isRestoringState = true;
+    function restoreState(index) {
+        if (index < 0 || index >= history.length) return;
+        isRestoring = true;
+        const state = history[index];
+        
         for (const [key, value] of Object.entries(state)) {
             const el = document.getElementById(key);
-            if (el) {
-                if (el.type === 'checkbox' || el.type === 'radio') {
-                    el.checked = value;
-                } else if (el.tagName === 'SELECT') {
-                    el.value = value;
-                } else {
-                    el.value = value;
-                }
+            if (!el) continue;
+            if (el.type === 'checkbox' || el.type === 'radio') {
+                el.checked = value;
+            } else {
+                el.value = value;
             }
         }
-        if (state.currentGlobalMode) setGlobalMode(state.currentGlobalMode);
-        if (state.currentAfkSubMode) setAfkSubMode(state.currentAfkSubMode);
-        if (state.currentLimboSubMode) setLimboSubMode(state.currentLimboSubMode);
-        isRestoringState = false;
+        if (state.globalMode) setGlobalMode(state.globalMode);
+        if (state.afkMode) setAfkSubMode(state.afkMode);
+        if (state.limboMode) setLimboSubMode(state.limboMode);
+        
+        isRestoring = false;
         calculate();
-        updateUndoButtons();
-    }
-    
-    function saveState() {
-        if (isRestoringState) return;
-        if (stateChangeTimeout) clearTimeout(stateChangeTimeout);
-        stateChangeTimeout = setTimeout(() => {
-            history.splice(historyIndex + 1);
-            const state = getCurrentState();
-            history.push(state);
-            historyIndex = history.length - 1;
-            while (history.length > maxHistory) {
-                history.shift();
-                historyIndex--;
-            }
-            updateUndoButtons();
-            stateChangeTimeout = null;
-        }, 100);
     }
     
     function undoState() {
         if (historyIndex > 0) {
             historyIndex--;
-            restoreState(history[historyIndex]);
-            updateUndoButtons();
+            restoreState(historyIndex);
         }
     }
     
     function redoState() {
         if (historyIndex < history.length - 1) {
             historyIndex++;
-            restoreState(history[historyIndex]);
-            updateUndoButtons();
+            restoreState(historyIndex);
         }
     }
     
-    function updateUndoButtons() {
-        const undoBtn = document.getElementById('undoBtn');
-        const redoBtn = document.getElementById('redoBtn');
-        if (undoBtn) undoBtn.disabled = historyIndex <= 0;
-        if (redoBtn) redoBtn.disabled = historyIndex >= history.length - 1;
-    }
+    // Save state on any input change
+    document.addEventListener('input', function() {
+        if (!isRestoring) setTimeout(saveState, 100);
+    });
+    document.addEventListener('change', function() {
+        if (!isRestoring) setTimeout(saveState, 100);
+    });
+    
+    // Save state when modes change
+    document.querySelectorAll('.mode-btn, .afk-submode-btn, .area-btn').forEach(el => {
+        el.addEventListener('click', function() {
+            setTimeout(saveState, 200);
+        });
+    });
     
     // Keyboard shortcuts
     document.addEventListener('keydown', function(e) {
         const tag = document.activeElement?.tagName;
         const isInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
         
-        if (e.ctrlKey && e.key === 'z' && !e.shiftKey && !isInput) {
+        // Ctrl+Z = Undo
+        if (e.ctrlKey && e.key === 'z' && !isInput) {
             e.preventDefault();
             undoState();
         }
+        // Ctrl+Y = Redo
         if (e.ctrlKey && e.key === 'y' && !isInput) {
             e.preventDefault();
             redoState();
         }
+        // Ctrl+R = Reset (with confirmation)
         if (e.ctrlKey && e.key === 'r' && !isInput) {
             e.preventDefault();
-            confirmReset();
+            if (confirm('Are you sure you want to reset all settings?')) {
+                location.reload();
+            }
         }
+        // Ctrl+C = Copy
         if (e.ctrlKey && e.key === 'c' && !isInput) {
             e.preventDefault();
             copyResult();
         }
+        // Ctrl+S = Save Preset
+        if (e.ctrlKey && e.key === 's' && !isInput) {
+            e.preventDefault();
+            savePreset();
+        }
     });
     
-    document.addEventListener('input', function() { if (!isRestoringState) saveState(); });
-    document.addEventListener('change', function() { if (!isRestoringState) saveState(); });
-    document.querySelectorAll('.mode-btn, .afk-submode-btn, .area-btn').forEach(el => {
-        el.addEventListener('click', function() { setTimeout(saveState, 50); });
-    });
-    
     // ============================================================
-    // SETTINGS HELPERS
+    // RESET - SIMPLY RELOAD THE PAGE
     // ============================================================
-    function getDecimalPrecision() {
-        const val = document.getElementById('settingsDecimalPrecision')?.value;
-        return parseInt(val) || 4;
-    }
-    
-    function getTimeFormat() {
-        return document.getElementById('settingsTimeFormat')?.value || 'auto';
-    }
-    
-    function formatPercent(value) {
-        const precision = getDecimalPrecision();
-        if (value >= 99.99) return '99.99%+';
-        return value.toFixed(precision) + '%';
+    function confirmReset() {
+        if (confirm('Are you sure you want to reset all settings? This cannot be undone.')) {
+            location.reload();
+        }
     }
     
     // ============================================================
-    // TIME FORMATTING
-    // ============================================================
-    function formatTime(days) {
-        const format = getTimeFormat();
-        
-        if (format === 'days') {
-            if (days > 1000) return days.toExponential(2) + ' days';
-            return days.toFixed(2) + ' days';
-        }
-        if (format === 'hours') {
-            const hours = days * 24;
-            if (hours > 1000) return hours.toExponential(2) + ' hours';
-            return hours.toFixed(2) + ' hours';
-        }
-        if (format === 'minutes') {
-            const minutes = days * 1440;
-            if (minutes > 1000) return minutes.toExponential(2) + ' minutes';
-            return minutes.toFixed(2) + ' minutes';
-        }
-        
-        // Auto format
-        if (days < 0.001) {
-            const minutes = days * 1440;
-            if (minutes < 1) {
-                const seconds = days * 86400;
-                return `${seconds.toFixed(0)} seconds`;
-            }
-            return `${minutes.toFixed(1)} minutes`;
-        }
-        if (days < 1) {
-            const hours = days * 24;
-            return `${hours.toFixed(1)} hours`;
-        }
-        if (days < 2) {
-            const hours = (days - 1) * 24;
-            if (hours < 1) return `1 day`;
-            return `1 day, ${hours.toFixed(0)} hours`;
-        }
-        if (days < 30) {
-            const wholeDays = Math.floor(days);
-            const hours = (days - wholeDays) * 24;
-            if (hours < 1) return `${wholeDays} days`;
-            return `${wholeDays} days, ${hours.toFixed(0)} hours`;
-        }
-        if (days < 365) {
-            return `${days.toFixed(2)} days`;
-        }
-        const years = days / 365;
-        if (years < 2) return `1 year (${days.toFixed(2)} days)`;
-        return `${years.toFixed(2)} years (${days.toFixed(2)} days)`;
-    }
-    
-    // ============================================================
-    // SETTINGS UI
+    // SETTINGS (unchanged)
     // ============================================================
     function toggleSettings() {
         const settings = document.getElementById('settingsContent');
@@ -997,7 +963,7 @@
                 if (modeBtnId) document.getElementById(modeBtnId).classList.add('active');
             }
         }
-        setTimeout(saveState, 50);
+        setTimeout(saveState, 100);
     }
     
     function applySettings() {
@@ -1019,29 +985,25 @@
             el.style.display = showEventPotions ? 'flex' : 'none';
         });
         
-        const undoBtn = document.getElementById('undoBtn');
-        const redoBtn = document.getElementById('redoBtn');
-        if (undoBtn) undoBtn.style.display = showUndoRedo ? 'inline-block' : 'none';
-        if (redoBtn) redoBtn.style.display = showUndoRedo ? 'inline-block' : 'none';
+        const saveBtn = document.getElementById('saveBtn');
+        const loadBtn = document.getElementById('loadBtn');
+        const exportBtn = document.getElementById('exportBtn');
+        const importBtn = document.getElementById('importBtn');
+        if (saveBtn) saveBtn.style.display = showUndoRedo ? 'inline-block' : 'none';
+        if (loadBtn) loadBtn.style.display = showUndoRedo ? 'inline-block' : 'none';
+        if (exportBtn) exportBtn.style.display = showUndoRedo ? 'inline-block' : 'none';
+        if (importBtn) importBtn.style.display = showUndoRedo ? 'inline-block' : 'none';
         
         document.body.classList.toggle('compact-mode', compactMode);
         document.body.classList.toggle('light-theme', lightTheme);
         
         calculate();
-        setTimeout(saveState, 50);
+        setTimeout(saveState, 100);
     }
     
     function resetSettings() {
-        document.getElementById('settingsShowEventGear').checked = true;
-        document.getElementById('settingsShowEventPotions').checked = false;
-        document.getElementById('settingsShowBiomes').checked = true;
-        document.getElementById('settingsShowUndoRedo').checked = true;
-        document.getElementById('settingsCompactMode').checked = false;
-        document.getElementById('settingsLightTheme').checked = false;
-        document.getElementById('settingsDecimalPrecision').value = '4';
-        document.getElementById('settingsTimeFormat').value = 'auto';
         applySettings();
-        fullReset();
+        confirmReset();
     }
     
     // ============================================================
@@ -1087,164 +1049,227 @@
     }
     
     // ============================================================
-    // VALIDATION HELPERS
+    // PRESET SYSTEM
     // ============================================================
-    function validateInput(input) {
-        const val = input.value.trim();
-        const tooltip = input.parentElement?.querySelector('.validation-tooltip');
-        
-        if (input.id === 'rarity' || input.id === 'limboRarity' || input.id === 'potionRarity') {
-            const num = parseInt(val.replace(/,/g, ''));
-            if (val && (isNaN(num) || num < 1)) {
-                input.classList.add('invalid');
-                if (tooltip) {
-                    tooltip.textContent = 'Please enter a number greater than 0';
-                    tooltip.classList.add('visible');
-                }
-                return false;
-            }
+    function getPresets() {
+        try {
+            const data = localStorage.getItem('solsRngPresets');
+            return data ? JSON.parse(data) : {};
+        } catch (e) {
+            return {};
         }
-        
-        if (input.id === 'luck' || input.id === 'resonance') {
-            const num = parseFloat(val);
-            if (val && isNaN(num)) {
-                input.classList.add('invalid');
-                if (tooltip) {
-                    tooltip.textContent = 'Please enter a valid number';
-                    tooltip.classList.add('visible');
-                }
-                return false;
+    }
+    
+    function savePresets(presets) {
+        localStorage.setItem('solsRngPresets', JSON.stringify(presets));
+    }
+    
+    function getState() {
+        const state = {};
+        document.querySelectorAll('input, select').forEach(el => {
+            const id = el.id;
+            if (!id) return;
+            if (el.type === 'checkbox' || el.type === 'radio') {
+                state[id] = el.checked;
+            } else {
+                state[id] = el.value;
             }
-        }
-        
-        input.classList.remove('invalid');
-        if (tooltip) tooltip.classList.remove('visible');
-        return true;
-    }
-    
-    function setupValidation(input) {
-        const parent = input.parentElement;
-        const tooltip = document.createElement('div');
-        tooltip.className = 'validation-tooltip';
-        parent.appendChild(tooltip);
-        
-        input.addEventListener('input', function() { validateInput(this); });
-        input.addEventListener('blur', function() { validateInput(this); });
-    }
-    
-    // ============================================================
-    // RESET FUNCTIONS (split for clarity)
-    // ============================================================
-    function resetAfkOverworld() {
-        document.getElementById('leftGlove').value = "thing";
-        document.getElementById('rightGlove').value = "200,22.0";
-        document.getElementById('bankLevel').value = "0";
-        document.getElementById('eventMulti').value = "1";
-        document.getElementById('infiniteSkips').checked = false;
-        document.getElementById('rollSkips').disabled = false;
-        document.getElementById('rollSkips').value = "0";
-        document.getElementById('resonance').value = "0";
-        document.getElementById('luck').value = "0";
-        document.getElementById('quickRoll').checked = true;
-        document.getElementById('vip').checked = true;
-        document.getElementById('vipPlus').checked = true;
-        document.getElementById('auraCount').value = "1";
-        document.getElementById('biome').value = "none";
-        document.getElementById('perpetualBiome').checked = false;
-        document.getElementById('useStrangeController').checked = false;
-        document.getElementById('useBiomeRandomizer').checked = false;
-        document.getElementById('lantern').value = "none";
-        document.querySelector('input[name="biomeType"][value="native"]').checked = true;
-        document.getElementById('targetP').value = "";
-        document.getElementById('days').value = "";
-        document.getElementById('rarity').value = "";
-    }
-    
-    function resetAfkLimbo() {
-        document.getElementById('limboLeftGlove').value = "thing,0,0";
-        document.getElementById('limboRightGlove').value = "200,22.0";
-        document.getElementById('limboEventMulti').value = "1";
-        document.getElementById('limboVip').checked = true;
-        document.getElementById('limboVipPlus').checked = true;
-        document.getElementById('limboQuickRoll').checked = true;
-        document.getElementById('davesHope').value = "1";
-        document.getElementById('forbidden1').checked = false;
-        document.getElementById('forbidden2').checked = false;
-        document.getElementById('forbidden3').checked = false;
-        document.getElementById('limboAuraCount').value = "1";
-        document.getElementById('limboTargetP').value = "";
-        document.getElementById('limboDays').value = "";
-        document.getElementById('limboRarity').value = "";
-    }
-    
-    function resetPotionMode() {
-        document.getElementById('potionRarity').value = "";
-        document.getElementById('potionStacked').checked = false;
-        document.getElementById('potionHeavenly').checked = false;
-        document.getElementById('potionHeavenlyQty').value = "0";
-        document.getElementById('potionGodlike').checked = false;
-        document.getElementById('potionGodlikeQty').value = "0";
-        document.getElementById('potionBound').checked = false;
-        document.getElementById('potionBoundQty').value = "0";
-        document.getElementById('potionWishStar').checked = false;
-        document.getElementById('potionWishStarQty').value = "0";
-        document.getElementById('potionCandycorn').checked = false;
-        document.getElementById('potionCandycornQty').value = "0";
-        document.getElementById('potionPumpking').checked = false;
-        document.getElementById('potionPumpkingQty').value = "0";
-        document.getElementById('potionPopping').checked = false;
-        document.getElementById('potionPoppingQty').value = "0";
-        document.getElementById('potionDune').checked = false;
-        document.getElementById('potionDuneQty').value = "0";
-        document.getElementById('potionRedMoonI').checked = false;
-        document.getElementById('potionRedMoonIQty').value = "0";
-        document.getElementById('potionRedMoonII').checked = false;
-        document.getElementById('potionRedMoonIIQty').value = "0";
-        document.getElementById('potionOblivion').checked = false;
-        document.getElementById('potionOblivionQty').value = "0";
-        document.getElementById('potionVoidHeart').checked = false;
-        document.getElementById('potionVoidHeartQty').value = "0";
-        document.getElementById('potionAuraCount').value = "1";
-        document.getElementById('potionVip').checked = true;
-        document.getElementById('potionVipPlus').checked = true;
-        document.getElementById('potionEventMulti').value = "1";
-        previousPotionState = {};
-        
-        document.querySelectorAll('#potionModeContent .event-potion').forEach(el => {
-            el.style.display = 'none';
         });
+        state.globalMode = currentGlobalMode;
+        state.afkMode = currentAfkSubMode;
+        state.limboMode = currentLimboSubMode;
+        return state;
     }
     
-    function resetSettingsUI() {
-        document.getElementById('settingsShowEventGear').checked = true;
-        document.getElementById('settingsShowEventPotions').checked = false;
-        document.getElementById('settingsShowBiomes').checked = true;
-        document.getElementById('settingsShowUndoRedo').checked = true;
-        document.getElementById('settingsCompactMode').checked = false;
-        document.getElementById('settingsLightTheme').checked = false;
-        document.getElementById('settingsDecimalPrecision').value = '4';
-        document.getElementById('settingsTimeFormat').value = 'auto';
+    function setState(state) {
+        isRestoring = true;
+        for (const [key, value] of Object.entries(state)) {
+            const el = document.getElementById(key);
+            if (!el) continue;
+            if (el.type === 'checkbox' || el.type === 'radio') {
+                el.checked = value;
+            } else {
+                el.value = value;
+            }
+        }
+        if (state.globalMode) setGlobalMode(state.globalMode);
+        if (state.afkMode) setAfkSubMode(state.afkMode);
+        if (state.limboMode) setLimboSubMode(state.limboMode);
+        isRestoring = false;
+        calculate();
+        saveState();
     }
     
-    function fullReset() {
-        resetAfkOverworld();
-        resetAfkLimbo();
-        resetPotionMode();
-        resetSettingsUI();
+    function savePreset() {
+        const name = prompt('Enter a name for this preset:', currentPresetName || 'My Setup');
+        if (!name) return;
         
-        updateBiomeOptions();
-        setAfkSubMode('chance');
-        setLimboSubMode('chance');
-        setGlobalMode('afkOverworld');
-        applySettings();
-        closeResetModal();
+        const presets = getPresets();
+        presets[name] = getState();
+        savePresets(presets);
+        currentPresetName = name;
+        showCopyFeedback('💾 Preset "' + name + '" saved!');
+    }
+    
+    function loadPreset() {
+        const presets = getPresets();
+        const names = Object.keys(presets);
         
-        history.length = 0;
-        historyIndex = -1;
-        setTimeout(() => {
+        const modal = document.getElementById('loadModal');
+        const list = document.getElementById('presetList');
+        
+        if (names.length === 0) {
+            list.innerHTML = '<p style="color: #888; font-size: 0.8rem;">No saved presets found.</p>';
+        } else {
+            let html = '';
+            names.forEach(name => {
+                html += `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; margin: 4px 0; background: #2a2a3a; border-radius: 4px; border: 1px solid #444;">
+                        <span style="color: #fff; font-size: 0.85rem;">${name}</span>
+                        <div>
+                            <button onclick="loadPresetByName('${name}')" style="background: #00ff88; color: #000; border: none; padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 0.7rem; margin-right: 5px;">Load</button>
+                            <button onclick="deletePreset('${name}')" style="background: #ff4d4d; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.7rem;">✕</button>
+                        </div>
+                    </div>
+                `;
+            });
+            list.innerHTML = html;
+        }
+        
+        modal.style.display = 'flex';
+    }
+    
+    function closeLoadModal() {
+        document.getElementById('loadModal').style.display = 'none';
+    }
+    
+    function loadPresetByName(name) {
+        const presets = getPresets();
+        if (presets[name]) {
+            setState(presets[name]);
+            currentPresetName = name;
+            closeLoadModal();
+            showCopyFeedback('📂 Loaded preset: ' + name);
+        }
+    }
+    
+    function deletePreset(name) {
+        if (confirm('Delete preset "' + name + '"?')) {
+            const presets = getPresets();
+            delete presets[name];
+            savePresets(presets);
+            loadPreset();
+        }
+    }
+    
+    // ============================================================
+    // EXPORT / IMPORT
+    // ============================================================
+    function exportConfig() {
+        const presets = getPresets();
+        const currentState = getState();
+        const data = {
+            version: '1.0',
+            exportedAt: new Date().toISOString(),
+            currentState: currentState,
+            presets: presets
+        };
+        
+        const json = JSON.stringify(data, null, 2);
+        
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'sols_rng_config.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        showCopyFeedback('📤 Config exported!');
+    }
+    
+    function importConfig() {
+        document.getElementById('importModal').style.display = 'flex';
+        document.getElementById('importTextarea').value = '';
+    }
+    
+    function closeImportModal() {
+        document.getElementById('importModal').style.display = 'none';
+    }
+    
+    function doImport() {
+        const textarea = document.getElementById('importTextarea');
+        const json = textarea.value.trim();
+        
+        if (!json) {
+            alert('Please paste a valid JSON configuration.');
+            return;
+        }
+        
+        try {
+            const data = JSON.parse(json);
+            
+            if (!data.version || !data.currentState) {
+                alert('Invalid configuration file. Missing version or currentState.');
+                return;
+            }
+            
+            if (data.currentState) {
+                setState(data.currentState);
+            }
+            
+            if (data.presets && typeof data.presets === 'object') {
+                const existing = getPresets();
+                const merged = { ...existing, ...data.presets };
+                savePresets(merged);
+            }
+            
+            closeImportModal();
+            showCopyFeedback('📥 Config imported successfully!');
+            calculate();
             saveState();
-            updateUndoButtons();
-        }, 100);
+        } catch (e) {
+            alert('Error importing configuration: ' + e.message);
+        }
+    }
+    
+    // ============================================================
+    // VOID HEART HANDLING
+    // ============================================================
+    function handleVoidHeart() {
+        const voidHeartChecked = document.getElementById('potionVoidHeart').checked;
+        const stackableIds = [
+            'potionHeavenly', 'potionGodlike', 'potionBound', 
+            'potionWishStar', 'potionCandycorn', 'potionPumpking',
+            'potionPopping', 'potionDune', 'potionRedMoonI', 
+            'potionRedMoonII', 'potionOblivion'
+        ];
+        
+        if (voidHeartChecked) {
+            previousPotionState = {};
+            stackableIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    previousPotionState[id] = el.checked;
+                }
+            });
+            stackableIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.checked = false;
+            });
+        } else {
+            stackableIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el && previousPotionState[id] !== undefined) {
+                    el.checked = previousPotionState[id];
+                }
+            });
+            previousPotionState = {};
+        }
+        calculatePotionMode();
+        setTimeout(saveState, 50);
     }
     
     // ============================================================
@@ -1295,65 +1320,14 @@
     function setLimboTargetPreset(percent) { document.getElementById('limboTargetP').value = percent; calculateAfkLimbo(); }
     function setLimboDaysPreset(days) { document.getElementById('limboDays').value = days; calculateAfkLimbo(); }
     
-    function confirmReset() { document.getElementById('resetModal').style.display = 'flex'; }
-    function closeResetModal() { document.getElementById('resetModal').style.display = 'none'; }
-    
     // ============================================================
-    // VOID HEART HANDLING (with restore)
-    // ============================================================
-    function handleVoidHeart() {
-        const voidHeartChecked = document.getElementById('potionVoidHeart').checked;
-        const stackableIds = [
-            'potionHeavenly', 'potionGodlike', 'potionBound', 
-            'potionWishStar', 'potionCandycorn', 'potionPumpking',
-            'potionPopping', 'potionDune', 'potionRedMoonI', 
-            'potionRedMoonII', 'potionOblivion'
-        ];
-        
-        if (voidHeartChecked) {
-            // Save current state before clearing
-            previousPotionState = {};
-            stackableIds.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) {
-                    previousPotionState[id] = el.checked;
-                }
-            });
-            // Uncheck all other potions
-            stackableIds.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.checked = false;
-            });
-        } else {
-            // Restore previous state
-            stackableIds.forEach(id => {
-                const el = document.getElementById(id);
-                if (el && previousPotionState[id] !== undefined) {
-                    el.checked = previousPotionState[id];
-                }
-            });
-            previousPotionState = {};
-        }
-        calculatePotionMode();
-        setTimeout(saveState, 50);
-    }
-    
-    // ============================================================
-    // BIOME DATA
+    // BIOME DATA (unchanged)
     // ============================================================
     const biomeData = {
-        windy: { boost: 3 },
-        snowy: { boost: 3 },
-        rainy: { boost: 4 },
-        sandstorm: { boost: 4 },
-        hell: { boost: 6 },
-        starfall: { boost: 5 },
-        heaven: { boost: 5 },
-        corruption: { boost: 5 },
-        null: { boost: 1000 },
-        singularity: { boost: 5 },
-        day: { boost: 1 },
-        night: { boost: 10 },
+        windy: { boost: 3 }, snowy: { boost: 3 }, rainy: { boost: 4 },
+        sandstorm: { boost: 4 }, hell: { boost: 6 }, starfall: { boost: 5 },
+        heaven: { boost: 5 }, corruption: { boost: 5 }, null: { boost: 1000 },
+        singularity: { boost: 5 }, day: { boost: 1 }, night: { boost: 10 },
         cyberspace: { boost: 1, special: true },
         dreamspace: { boost: 1, special: true },
         glitch: { boost: 1, special: true },
@@ -1483,59 +1457,20 @@
     }
     
     // ============================================================
-    // CALCULATION HELPERS
+    // SETUP RARITY INPUT
     // ============================================================
-    function logChoose(n, k) {
-        if (k < 0 || k > n) return -Infinity;
-        if (k === 0 || k === n) return 0;
-        let logSum = 0;
-        for (let i = 1; i <= k; i++) {
-            logSum += Math.log(n - k + i) - Math.log(i);
-        }
-        return logSum;
-    }
-    
-    function probabilityAtLeastNRolls(p, rolls, n) {
-        if (n <= 1) return 1 - Math.pow(1 - p, rolls);
-        let log1MinusP = Math.log(1 - p);
-        let logP = Math.log(p);
-        let logProbLessThanN = -Infinity;
-        for (let k = 0; k < n; k++) {
-            let logTerm = logChoose(rolls, k) + k * logP + (rolls - k) * log1MinusP;
-            logProbLessThanN = logSumExp(logProbLessThanN, logTerm);
-        }
-        return 1 - Math.exp(logProbLessThanN);
-    }
-    
-    function logSumExp(logA, logB) {
-        if (logA === -Infinity) return logB;
-        if (logB === -Infinity) return logA;
-        if (logA > logB) return logA + Math.log(1 + Math.exp(logB - logA));
-        return logB + Math.log(1 + Math.exp(logA - logB));
-    }
-    
     function formatWithCommas(num) {
         return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-    }
-    
-    function parseRarityValue(inputElement) {
-        let rawValue = inputElement.value.replace(/,/g, '');
-        let val = Math.floor(parseFloat(rawValue));
-        if (val < 1 || isNaN(val)) val = 1;
-        return val;
     }
     
     function setupRarityInput(inputId) {
         const input = document.getElementById(inputId);
         if (!input) return;
-        setupValidation(input);
         input.addEventListener('input', function() {
             let raw = this.value.replace(/,/g, '');
             let num = parseFloat(raw);
             if (!isNaN(num) && num >= 1) {
                 this.value = formatWithCommas(Math.floor(num));
-            } else if (this.value === '' || this.value === '0') {
-                // Allow empty input
             }
             calculate();
         });
@@ -1544,52 +1479,8 @@
         }
     }
     
-    function setupValidation(input) {
-        const parent = input.parentElement;
-        const tooltip = document.createElement('div');
-        tooltip.className = 'validation-tooltip';
-        parent.appendChild(tooltip);
-        
-        input.addEventListener('input', function() { validateInput(this); });
-        input.addEventListener('blur', function() { validateInput(this); });
-    }
-    
-    function validateInput(input) {
-        const val = input.value.trim();
-        const parent = input.parentElement;
-        const tooltip = parent?.querySelector('.validation-tooltip');
-        
-        if (input.id === 'rarity' || input.id === 'limboRarity' || input.id === 'potionRarity') {
-            const num = parseInt(val.replace(/,/g, ''));
-            if (val && (isNaN(num) || num < 1)) {
-                input.classList.add('invalid');
-                if (tooltip) {
-                    tooltip.textContent = 'Please enter a number greater than 0';
-                    tooltip.classList.add('visible');
-                }
-                return false;
-            }
-        }
-        
-        if (input.id === 'luck' || input.id === 'resonance') {
-            const num = parseFloat(val);
-            if (val && isNaN(num)) {
-                input.classList.add('invalid');
-                if (tooltip) {
-                    tooltip.textContent = 'Please enter a valid number';
-                    tooltip.classList.add('visible');
-                }
-                return false;
-            }
-        }
-        
-        input.classList.remove('invalid');
-        if (tooltip) tooltip.classList.remove('visible');
-        return true;
-    }
-    
     // ============================================================
-    // LUCK CALCULATIONS
+    // LUCK CALCULATIONS (unchanged)
     // ============================================================
     function calculateOverworldLuck() {
         let resValue = parseFloat(document.getElementById('resonance').value);
@@ -1729,6 +1620,48 @@
         return rolls;
     }
     
+    function probabilityAtLeastNRolls(p, rolls, n) {
+        if (n <= 1) return 1 - Math.pow(1 - p, rolls);
+        let log1MinusP = Math.log(1 - p);
+        let logP = Math.log(p);
+        let logProbLessThanN = -Infinity;
+        for (let k = 0; k < n; k++) {
+            let logTerm = logChoose(rolls, k) + k * logP + (rolls - k) * log1MinusP;
+            logProbLessThanN = logSumExp(logProbLessThanN, logTerm);
+        }
+        return 1 - Math.exp(logProbLessThanN);
+    }
+    
+    function logChoose(n, k) {
+        if (k < 0 || k > n) return -Infinity;
+        if (k === 0 || k === n) return 0;
+        let logSum = 0;
+        for (let i = 1; i <= k; i++) {
+            logSum += Math.log(n - k + i) - Math.log(i);
+        }
+        return logSum;
+    }
+    
+    function logSumExp(logA, logB) {
+        if (logA === -Infinity) return logB;
+        if (logB === -Infinity) return logA;
+        if (logA > logB) return logA + Math.log(1 + Math.exp(logB - logA));
+        return logB + Math.log(1 + Math.exp(logA - logB));
+    }
+    
+    function findRollsForTarget(p, targetProb, n, maxRolls = 1e12) {
+        if (n <= 1) { let rollsNeeded = Math.log(1 - targetProb) / Math.log(1 - p); return Math.ceil(rollsNeeded); }
+        let low = n, high = maxRolls, bestRolls = maxRolls;
+        for (let iter = 0; iter < 100; iter++) {
+            let mid = Math.floor((low + high) / 2);
+            let prob = probabilityAtLeastNRolls(p, mid, n);
+            if (prob >= targetProb) { bestRolls = mid; high = mid; }
+            else low = mid + 1;
+            if (low >= high) break;
+        }
+        return bestRolls;
+    }
+    
     function updateProgressBar(elementId, percent) {
         const bar = document.getElementById(elementId);
         if (!bar) return;
@@ -1754,22 +1687,71 @@
         return box;
     }
     
-    function findRollsForTarget(p, targetProb, n, maxRolls = 1e12) {
-        if (n <= 1) { let rollsNeeded = Math.log(1 - targetProb) / Math.log(1 - p); return Math.ceil(rollsNeeded); }
-        let low = n, high = maxRolls, bestRolls = maxRolls;
-        for (let iter = 0; iter < 100; iter++) {
-            let mid = Math.floor((low + high) / 2);
-            let prob = probabilityAtLeastNRolls(p, mid, n);
-            if (prob >= targetProb) { bestRolls = mid; high = mid; }
-            else low = mid + 1;
-            if (low >= high) break;
-        }
-        return bestRolls;
+    function getDecimalPrecision() {
+        const val = document.getElementById('settingsDecimalPrecision')?.value;
+        return parseInt(val) || 4;
     }
     
-    // ============================================================
-    // MAIN CALCULATE FUNCTIONS
-    // ============================================================
+    function getTimeFormat() {
+        return document.getElementById('settingsTimeFormat')?.value || 'auto';
+    }
+    
+    function formatPercent(value) {
+        const precision = getDecimalPrecision();
+        if (value >= 99.99) return '99.99%+';
+        return value.toFixed(precision) + '%';
+    }
+    
+    function formatTime(days) {
+        const format = getTimeFormat();
+        
+        if (format === 'days') {
+            if (days > 1000) return days.toExponential(2) + ' days';
+            return days.toFixed(2) + ' days';
+        }
+        if (format === 'hours') {
+            const hours = days * 24;
+            if (hours > 1000) return hours.toExponential(2) + ' hours';
+            return hours.toFixed(2) + ' hours';
+        }
+        if (format === 'minutes') {
+            const minutes = days * 1440;
+            if (minutes > 1000) return minutes.toExponential(2) + ' minutes';
+            return minutes.toFixed(2) + ' minutes';
+        }
+        
+        // Auto format
+        if (days < 0.001) {
+            const minutes = days * 1440;
+            if (minutes < 1) {
+                const seconds = days * 86400;
+                return `${seconds.toFixed(0)} seconds`;
+            }
+            return `${minutes.toFixed(1)} minutes`;
+        }
+        if (days < 1) {
+            const hours = days * 24;
+            return `${hours.toFixed(1)} hours`;
+        }
+        if (days < 2) {
+            const hours = (days - 1) * 24;
+            if (hours < 1) return `1 day`;
+            return `1 day, ${hours.toFixed(0)} hours`;
+        }
+        if (days < 30) {
+            const wholeDays = Math.floor(days);
+            const hours = (days - wholeDays) * 24;
+            if (hours < 1) return `${wholeDays} days`;
+            return `${wholeDays} days, ${hours.toFixed(0)} hours`;
+        }
+        if (days < 365) {
+            return `${days.toFixed(2)} days`;
+        }
+        const years = days / 365;
+        if (years < 2) return `1 year (${days.toFixed(2)} days)`;
+        return `${years.toFixed(2)} years (${days.toFixed(2)} days)`;
+    }
+    
     function calculate() {
         if (currentGlobalMode === 'afkOverworld') calculateAfkOverworld();
         else if (currentGlobalMode === 'afkLimbo') calculateAfkLimbo();
@@ -2024,26 +2006,16 @@
         document.getElementById('rainyContainer').style.display = (v === "tide" || v === "blessed") ? "block" : "none";
     });
     
-    // Setup validation for all inputs
-    document.querySelectorAll('input').forEach(input => {
-        if (input.type === 'text' || input.type === 'number') {
-            setupValidation(input);
-        }
-    });
-    
-    // Setup rarity inputs with comma formatting
+    // ============================================================
+    // INIT
+    // ============================================================
     setupRarityInput('rarity');
     setupRarityInput('limboRarity');
     setupRarityInput('potionRarity');
     
-    // Initialize
     window.addEventListener('load', function() {
-        fullReset();
         applySettings();
-        setTimeout(() => {
-            saveState();
-            updateUndoButtons();
-        }, 200);
+        setTimeout(saveState, 200);
     });
     
     calculateAfkOverworld();
