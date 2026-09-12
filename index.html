@@ -316,10 +316,10 @@
                 <div class="glove-row">
                     <div>
                         <label>Left Hand</label>
-                        <select id="leftGlove" onchange="checkRainySupport()">
+                        <select id="leftGlove">
                             <option value="1">None</option>
-                            <option value="thing" selected>The Thing</option>
-                            <option value="1.98">Unfathomable</option>
+                            <option value="thing">The Thing</option>
+                            <option value="2.18" selected>Unfathomable (Ruins)</option>
                             <option value="1.8">Darkshader</option>
                             <option value="pole">Pole Light</option>
                             <option value="grav">Gravitational</option>
@@ -362,8 +362,6 @@
                         </select>
                     </div>
                 </div>
-                
-                <div id="rainyContainer" style="display:none; margin-bottom: 10px;"><label class="check-row" style="color: #add8e6;"><input type="checkbox" id="isRainy"> Rainy Aura?</label></div>
                 
                 <!-- Biome Section -->
                 <div class="biome-section" id="biomeSection">
@@ -491,7 +489,7 @@
             
             <div id="afkChanceSection">
                 <label>Rolling Duration (Days)</label>
-                <input type="number" id="days" placeholder="Days AFK" onkeydown="handleEnterKey(event, 'calculateAfkOverworld')">
+                <input type="number" id="days" placeholder="Days AFK" oninput="calculateAfkOverworld()">
                 <div class="preset-buttons">
                     <span class="preset-label">Presets:</span>
                     <button type="button" class="preset-btn" onclick="setDaysPreset(1)">1 Day</button>
@@ -504,7 +502,7 @@
             
             <div id="afkTimeReqSection" style="display:none;">
                 <label>Desired Success Rate (%)</label>
-                <input type="number" id="targetP" placeholder="Max 99.99" step="0.01" max="99.99" oninput="if(this.value>=100)this.value=99.99" onkeydown="handleEnterKey(event, 'calculateAfkOverworld')">
+                <input type="number" id="targetP" placeholder="Max 99.99" step="0.01" max="99.99" oninput="if(this.value>=100)this.value=99.99; calculateAfkOverworld();">
                 <div class="preset-buttons">
                     <span class="preset-label">Presets:</span>
                     <button type="button" class="preset-btn" onclick="setTargetPreset(1)">1%</button>
@@ -515,6 +513,7 @@
                     <button type="button" class="preset-btn" onclick="setTargetPreset(99.9)">99.9%</button>
                 </div>
             </div>
+            <div class="summary-text" id="summaryText">Enter values above to see results</div>
         </div>
 
         <!-- AFK Limbo Content -->
@@ -539,8 +538,8 @@
                         <label>Left Hand</label>
                         <select id="limboLeftGlove">
                             <option value="1,0,0">None</option>
-                            <option value="thing,0,0" selected>The Thing</option>
-                            <option value="1.98,0,0">Unfathomable</option>
+                            <option value="thing,0,0">The Thing</option>
+                            <option value="2.18,0,0" selected>Unfathomable (Ruins)</option>
                             <option value="1.8,0,0">Darkshader</option>
                             <option value="1.5,0,0">Gravitational</option>
                             <option value="1.35,0,0" class="event-luck">Ominous Coffin</option>
@@ -629,7 +628,7 @@
             
             <div id="limboChanceSection">
                 <label>Rolling Duration (Days)</label>
-                <input type="number" id="limboDays" placeholder="Days AFK" onkeydown="handleEnterKey(event, 'calculateAfkLimbo')">
+                <input type="number" id="limboDays" placeholder="Days AFK" oninput="calculateAfkLimbo()">
                 <div class="preset-buttons">
                     <span class="preset-label">Presets:</span>
                     <button type="button" class="preset-btn" onclick="setLimboDaysPreset(1)">1 Day</button>
@@ -642,7 +641,7 @@
             
             <div id="limboTimeReqSection" style="display:none;">
                 <label>Desired Success Rate (%)</label>
-                <input type="number" id="limboTargetP" placeholder="Max 99.99" step="0.01" max="99.99" oninput="if(this.value>=100)this.value=99.99" onkeydown="handleEnterKey(event, 'calculateAfkLimbo')">
+                <input type="number" id="limboTargetP" placeholder="Max 99.99" step="0.01" max="99.99" oninput="if(this.value>=100)this.value=99.99; calculateAfkLimbo();">
                 <div class="preset-buttons">
                     <span class="preset-label">Presets:</span>
                     <button type="button" class="preset-btn" onclick="setLimboTargetPreset(1)">1%</button>
@@ -653,6 +652,7 @@
                     <button type="button" class="preset-btn" onclick="setLimboTargetPreset(99.9)">99.9%</button>
                 </div>
             </div>
+            <div class="summary-text" id="limboSummaryText">Enter values above to see results</div>
         </div>
 
         <!-- Potion Mode Content -->
@@ -681,32 +681,32 @@
                     <div class="potion-qty-grid">
                         <div class="potion-row">
                             <label class="check-row"><input type="checkbox" id="potionHeavenly" onchange="calculatePotionMode()"> Heavenly (+150k)</label>
-                            <input type="number" id="potionHeavenlyQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" onkeydown="handleEnterKey(event, 'calculatePotionMode')">
+                            <input type="number" id="potionHeavenlyQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" oninput="calculatePotionMode()">
                         </div>
                         <div class="potion-row">
                             <label class="check-row"><input type="checkbox" id="potionGodlike" onchange="calculatePotionMode()"> Godlike (+400k)</label>
-                            <input type="number" id="potionGodlikeQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" onkeydown="handleEnterKey(event, 'calculatePotionMode')">
+                            <input type="number" id="potionGodlikeQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" oninput="calculatePotionMode()">
                         </div>
                         <div class="potion-row">
                             <label class="check-row"><input type="checkbox" id="potionBound" onchange="calculatePotionMode()"> Bound (+50k)</label>
-                            <input type="number" id="potionBoundQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" onkeydown="handleEnterKey(event, 'calculatePotionMode')">
+                            <input type="number" id="potionBoundQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" oninput="calculatePotionMode()">
                         </div>
                         <div class="potion-row">
                             <label class="check-row"><input type="checkbox" id="potionPopping" onchange="calculatePotionMode()"> Popping (+10k)</label>
-                            <input type="number" id="potionPoppingQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" onkeydown="handleEnterKey(event, 'calculatePotionMode')">
+                            <input type="number" id="potionPoppingQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" oninput="calculatePotionMode()">
                         </div>
                         <div class="potion-row">
                             <label class="check-row"><input type="checkbox" id="potionDune" onchange="calculatePotionMode()"> Dune (+10k)</label>
-                            <input type="number" id="potionDuneQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" onkeydown="handleEnterKey(event, 'calculatePotionMode')">
+                            <input type="number" id="potionDuneQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" oninput="calculatePotionMode()">
                         </div>
                         <!-- Event Potions (hidden by default) -->
                         <div class="potion-row event-potion" style="display:none;">
                             <label class="check-row"><input type="checkbox" id="potionWishStar" onchange="calculatePotionMode()"> Wish Star (+50k x5)</label>
-                            <input type="number" id="potionWishStarQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" onkeydown="handleEnterKey(event, 'calculatePotionMode')">
+                            <input type="number" id="potionWishStarQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" oninput="calculatePotionMode()">
                         </div>
                         <div class="potion-row event-potion" style="display:none;">
                             <label class="check-row"><input type="checkbox" id="potionCandycorn" onchange="calculatePotionMode()"> Candycorn (+75k)</label>
-                            <input type="number" id="potionCandycornQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" onkeydown="handleEnterKey(event, 'calculatePotionMode')">
+                            <input type="number" id="potionCandycornQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" oninput="calculatePotionMode()">
                         </div>
                     </div>
                     
@@ -715,11 +715,11 @@
                         <div class="potion-qty-grid">
                             <div class="potion-row">
                                 <label class="check-row"><input type="checkbox" id="potionRedMoonI" onchange="calculatePotionMode()"> Red Moon I (+10k)</label>
-                                <input type="number" id="potionRedMoonIQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" onkeydown="handleEnterKey(event, 'calculatePotionMode')">
+                                <input type="number" id="potionRedMoonIQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" oninput="calculatePotionMode()">
                             </div>
                             <div class="potion-row">
                                 <label class="check-row"><input type="checkbox" id="potionRedMoonII" onchange="calculatePotionMode()"> Red Moon II (+200k)</label>
-                                <input type="number" id="potionRedMoonIIQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" onkeydown="handleEnterKey(event, 'calculatePotionMode')">
+                                <input type="number" id="potionRedMoonIIQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" oninput="calculatePotionMode()">
                             </div>
                         </div>
                     </div>
@@ -729,15 +729,15 @@
                         <div class="potion-qty-grid">
                             <div class="potion-row">
                                 <label class="check-row"><input type="checkbox" id="potionOblivion" onchange="calculatePotionMode()"> Oblivion (+600k)</label>
-                                <input type="number" id="potionOblivionQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" onkeydown="handleEnterKey(event, 'calculatePotionMode')">
+                                <input type="number" id="potionOblivionQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" oninput="calculatePotionMode()">
                             </div>
                             <div class="potion-row event-potion" style="display:none;">
                                 <label class="check-row"><input type="checkbox" id="potionPumpking" onchange="calculatePotionMode()"> Pumpking's Blood (+700k)</label>
-                                <input type="number" id="potionPumpkingQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" onkeydown="handleEnterKey(event, 'calculatePotionMode')">
+                                <input type="number" id="potionPumpkingQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" oninput="calculatePotionMode()">
                             </div>
                             <div class="potion-row" id="voidHeartRow">
                                 <label class="check-row"><input type="checkbox" id="potionVoidHeart" onchange="handleVoidHeart()"> Void Heart (+300k) [Limbo]</label>
-                                <input type="number" id="potionVoidHeartQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" onkeydown="handleEnterKey(event, 'calculatePotionMode')">
+                                <input type="number" id="potionVoidHeartQty" value="0" min="0" step="1" style="width: 50px; padding: 4px; margin: 0;" oninput="calculatePotionMode()">
                             </div>
                         </div>
                     </div>
@@ -773,6 +773,8 @@
                 <span class="label">✨ Special Potion Rewards</span>
                 <div class="chance-row"><span>Neferkhaf (from Dune)</span><span class="chance-value" id="neferkhafChance">0.00%</span></div>
                 <div class="chance-row"><span>Fragments of the Crimson Moon (Red I + II)</span><span class="chance-value" id="redMoonChance">0.00%</span></div>
+                <div class="chance-row"><span>Memory (from Oblivion)</span><span class="chance-value" id="memoryChance">0.00%</span></div>
+                <div class="chance-row"><span>Oblivion Aura (from Oblivion)</span><span class="chance-value" id="oblivionSpecialChance">0.00%</span></div>
             </div>
         </div>
 
@@ -877,51 +879,6 @@
         }
     }
     
-    function playEnterSound() {
-        if (!soundEnabled) return;
-        try {
-            initAudio();
-            const oscillator = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
-            oscillator.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-            oscillator.frequency.value = 600;
-            oscillator.type = 'sine';
-            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
-            oscillator.start(audioCtx.currentTime);
-            oscillator.stop(audioCtx.currentTime + 0.15);
-            
-            setTimeout(() => {
-                const osc2 = audioCtx.createOscillator();
-                const gain2 = audioCtx.createGain();
-                osc2.connect(gain2);
-                gain2.connect(audioCtx.destination);
-                osc2.frequency.value = 900;
-                osc2.type = 'sine';
-                gain2.gain.setValueAtTime(0.08, audioCtx.currentTime);
-                gain2.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-                osc2.start(audioCtx.currentTime);
-                osc2.stop(audioCtx.currentTime + 0.1);
-            }, 100);
-        } catch (e) {
-            // Silently fail
-        }
-    }
-    
-    // ============================================================
-    // ENTER KEY HANDLER
-    // ============================================================
-    function handleEnterKey(event, callbackName) {
-        if (event.key === 'Enter') {
-            event.preventDefault();
-            playEnterSound();
-            if (typeof window[callbackName] === 'function') {
-                window[callbackName]();
-            }
-        }
-    }
-    
     // ============================================================
     // STATE
     // ============================================================
@@ -932,6 +889,7 @@
     let currentPresetName = '';
     let isRestoring = false;
     let lastChancePercent = -1;
+    let currentResultText = '';
     
     // ============================================================
     // SIMPLE UNDO/REDO - ONLY KEYBOARD SHORTCUTS
@@ -1003,12 +961,16 @@
         }
     }
     
-    // Save state on any input change
-    document.addEventListener('input', function() {
-        if (!isRestoring) setTimeout(saveState, 100);
+    // Save state on any input change, and recalculate live (no Enter key needed anywhere)
+    document.getElementById('calcForm').addEventListener('input', function(e) {
+        if (isRestoring) return;
+        calculate();
+        setTimeout(saveState, 100);
     });
-    document.addEventListener('change', function() {
-        if (!isRestoring) setTimeout(saveState, 100);
+    document.getElementById('calcForm').addEventListener('change', function(e) {
+        if (isRestoring) return;
+        calculate();
+        setTimeout(saveState, 100);
     });
     
     // Save state when modes change
@@ -1151,7 +1113,10 @@
     // COPY TO CLIPBOARD
     // ============================================================
     function copyResult() {
-        const resultText = document.getElementById('summaryText')?.innerText || 'No result to copy';
+        let sourceId = 'summaryText';
+        if (currentGlobalMode === 'afkLimbo') sourceId = 'limboSummaryText';
+        else if (currentGlobalMode === 'potion') sourceId = 'potionSummaryText';
+        const resultText = document.getElementById(sourceId)?.innerText || 'No result to copy';
         const fullText = `Sols Rng Calculator\n${resultText}`;
         
         if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -1994,12 +1959,16 @@
         const duneQty = parseInt(document.getElementById('potionDuneQty').value) || 0;
         const redMoonIQty = parseInt(document.getElementById('potionRedMoonIQty').value) || 0;
         const redMoonIIQty = parseInt(document.getElementById('potionRedMoonIIQty').value) || 0;
+        const oblivionQty = parseInt(document.getElementById('potionOblivionQty').value) || 0;
         const duneChecked = document.getElementById('potionDune').checked;
         const redMoonIChecked = document.getElementById('potionRedMoonI').checked;
         const redMoonIIChecked = document.getElementById('potionRedMoonII').checked;
+        const oblivionChecked = document.getElementById('potionOblivion').checked;
         
         let neferkhafChance = 0;
         let redMoonTotalChance = 0;
+        let memoryChance = 0;
+        let oblivionAuraChance = 0;
         let hasSpecial = false;
         
         // Neferkhaf: 1/1000 per Dune potion
@@ -2024,11 +1993,17 @@
         
         // Combine the two chances (probability of getting at least one from either source)
         if (redMoonIChance > 0 || redMoonIIChance > 0) {
-            // The total probability is 1 - (probability of NOT getting it from either)
             const probNotI = 1 - redMoonIChance;
             const probNotII = 1 - redMoonIIChance;
             redMoonTotalChance = 1 - (probNotI * probNotII);
             if (redMoonTotalChance > 0) hasSpecial = true;
+        }
+        
+        // Oblivion potion special rewards: Memory (1/100) and Oblivion aura (1/2000) per potion
+        if (oblivionChecked && oblivionQty > 0) {
+            memoryChance = 1 - Math.pow(1 - (1 / 100), oblivionQty);
+            oblivionAuraChance = 1 - Math.pow(1 - (1 / 2000), oblivionQty);
+            if (memoryChance > 0 || oblivionAuraChance > 0) hasSpecial = true;
         }
         
         const specialBox = document.getElementById('potionSpecialChances');
@@ -2036,6 +2011,8 @@
             specialBox.style.display = 'block';
             document.getElementById('neferkhafChance').textContent = formatPercent(neferkhafChance * 100);
             document.getElementById('redMoonChance').textContent = formatPercent(redMoonTotalChance * 100);
+            document.getElementById('memoryChance').textContent = formatPercent(memoryChance * 100);
+            document.getElementById('oblivionSpecialChance').textContent = formatPercent(oblivionAuraChance * 100);
         } else {
             specialBox.style.display = 'none';
         }
@@ -2126,7 +2103,7 @@
         const R = getRarityFromInput('rarity');
         if (R === null) {
             const summaryDiv = document.getElementById('summaryText');
-            summaryDiv.innerHTML = 'Please enter a valid rarity above.';
+            if (summaryDiv) summaryDiv.innerHTML = 'Please enter a valid rarity above.';
             const daysResult = document.getElementById('daysResult');
             if (daysResult) {
                 daysResult.innerHTML = `<div class="result-val">Enter rarity</div><span class="stat-subtext">0 rolls</span>`;
@@ -2243,14 +2220,14 @@
             updateGlowEffect('daysResult', chancePercent);
         }
         const summaryDiv = document.getElementById('summaryText');
-        summaryDiv.innerHTML = currentResultText;
+        if (summaryDiv) summaryDiv.innerHTML = currentResultText;
     }
     
     function calculateAfkLimbo() {
         const R = getRarityFromInput('limboRarity');
         if (R === null) {
-            const summaryDiv = document.getElementById('summaryText');
-            summaryDiv.innerHTML = 'Please enter a valid rarity above.';
+            const summaryDiv = document.getElementById('limboSummaryText');
+            if (summaryDiv) summaryDiv.innerHTML = 'Please enter a valid rarity above.';
             const limboDaysResult = document.getElementById('limboDaysResult');
             if (limboDaysResult) {
                 limboDaysResult.innerHTML = `<div class="result-val">Enter rarity</div><span class="stat-subtext">0 rolls</span>`;
@@ -2337,8 +2314,8 @@
             currentResultText = `After AFKing for ${days} day${days !== 1 ? 's' : ''} in Limbo, you have a ${chancePercent.toFixed(2)}% chance of getting this aura. (${Math.floor(totalRolls).toLocaleString()} total rolls)${edenChance > 0 ? ` Eden spawn chance: ${formatPercent(edenChance * 100)}` : ''}`;
             updateGlowEffect('limboDaysResult', chancePercent);
         }
-        const summaryDiv = document.getElementById('summaryText');
-        summaryDiv.innerHTML = currentResultText;
+        const summaryDiv = document.getElementById('limboSummaryText');
+        if (summaryDiv) summaryDiv.innerHTML = currentResultText;
     }
     
     // ============================================================
@@ -2359,20 +2336,6 @@
         if (this.value != val) this.value = val;
         calculateAfkOverworld();
     });
-    
-    document.getElementById('leftGlove')?.addEventListener('change', function() {
-        const v = this.value;
-        document.getElementById('rainyContainer').style.display = (v === "tide" || v === "blessed") ? "block" : "none";
-        playClickSound();
-    });
-    
-    // ============================================================
-    // CHECK RAINY SUPPORT
-    // ============================================================
-    function checkRainySupport() {
-        const v = document.getElementById('leftGlove').value;
-        document.getElementById('rainyContainer').style.display = (v === "tide" || v === "blessed") ? "block" : "none";
-    }
     
     // ============================================================
     // INIT
